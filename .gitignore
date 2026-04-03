@@ -138,7 +138,7 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
-# AI Studio Multi-Agent Core (local-only, not version controlled)
-.studio/
+# AI Workspace Multi-Agent Core (local-only, not version controlled)
+.workspace/
 .agents/
 .product/
