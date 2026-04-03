@@ -140,4 +140,5 @@ vite.config.ts.timestamp-*
 
 # AI Studio Memory Core (local-only, not version controlled)
 .studio/
-.agents/
+.agents/memory/
+.agents/memory/archive/
