@@ -5,6 +5,7 @@
   "packageManager": "pnpm@10.10.0",
   "scripts": {
     "dev": "next dev",
+    "dev:https": "bash ./scripts/dev-https.sh",
     "build": "next build",
     "start": "next start",
     "start:e2e": "next build && next start",

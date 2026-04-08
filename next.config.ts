@@ -1,7 +1,19 @@
+import { networkInterfaces } from 'node:os';
 import type { NextConfig } from 'next';
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 const scriptSources = ["'self'", "'unsafe-inline'"];
+const localDevOrigins = Array.from(
+  new Set([
+    'localhost',
+    '127.0.0.1',
+    ...Object.values(networkInterfaces()).flatMap((entry) =>
+      (entry ?? [])
+        .filter((network) => network.family === 'IPv4' && !network.internal)
+        .map((network) => network.address),
+    ),
+  ]),
+);
 
 if (isDevelopment) {
   scriptSources.push("'unsafe-eval'");
@@ -21,6 +33,7 @@ const contentSecurityPolicy = [
 ].join('; ');
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: isDevelopment ? localDevOrigins : undefined,
   async headers() {
     return [
       {

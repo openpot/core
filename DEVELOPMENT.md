@@ -13,6 +13,7 @@
 
 ## Development Workflow
 1. Start dev server: `pnpm dev`
+2. Start Android-installable HTTPS dev server: `OPENPOT_DEV_HOST=<your-lan-ip> pnpm dev:https`
 2. Run tests: `pnpm test`
 3. Lint: `pnpm lint`
 4. Build: `pnpm build`
@@ -26,6 +27,7 @@
 - Check execution-state.md for current status
 - Use stakeholder-board.md for questions
 - Run circuit-breaker on failures
+- For Android Chrome PWA tests, trust `.certs/openpot-local-dev-ca.crt` on the device and browse to `https://<your-lan-ip>:<port>`
 
 ## Deployment
 - Use `/deploy` workflow for production

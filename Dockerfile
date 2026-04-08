@@ -9,5 +9,6 @@ ENV NEXT_TELEMETRY_DISABLED=1
 WORKDIR /workspace
 
 RUN corepack enable
+RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
 
 CMD ["bash"]

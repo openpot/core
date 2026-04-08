@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { Logo } from '@/components/ui/Logo';
 import { useSecureTimer } from '@/hooks/use-secure-timer';
@@ -8,6 +8,30 @@ import { formatDuration, TIMER_STATUS } from '@/lib/timer/timer-machine';
 import { SYNC_STATUS } from '@/types/session';
 
 import type { SessionRecord } from '@/types/session';
+
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{
+    outcome: 'accepted' | 'dismissed';
+    platform: string;
+  }>;
+}
+
+function isStandaloneMode(): boolean {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
+  const navigatorWithStandalone = window.navigator as Navigator & {
+    standalone?: boolean;
+  };
+
+  return (
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.matchMedia('(display-mode: window-controls-overlay)').matches ||
+    navigatorWithStandalone.standalone === true
+  );
+}
 
 function getStatusCopy(status: string): string {
   if (status === TIMER_STATUS.ACTIVE) {
@@ -51,20 +75,56 @@ export function SecureTimerDashboard() {
     stopSession,
     syncWorkerNow,
   } = useSecureTimer();
+  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [isInstalled, setIsInstalled] = useState(false);
 
   useEffect(() => {
     if (!('serviceWorker' in navigator)) {
       return;
     }
 
+    setIsInstalled(isStandaloneMode());
+
+    const handleBeforeInstallPrompt = (event: Event) => {
+      const installEvent = event as BeforeInstallPromptEvent;
+      installEvent.preventDefault();
+      setInstallPrompt(installEvent);
+    };
+
+    const handleAppInstalled = () => {
+      setInstallPrompt(null);
+      setIsInstalled(true);
+    };
+
     void navigator.serviceWorker.register('/sw.js').catch(() => {
       // Service worker registration failure should not block the timer UI.
     });
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
   }, []);
+
+  const installApp = useCallback(async () => {
+    if (!installPrompt) {
+      return;
+    }
+
+    await installPrompt.prompt();
+    const choice = await installPrompt.userChoice;
+
+    setInstallPrompt(null);
+    setIsInstalled(choice.outcome === 'accepted' || isStandaloneMode());
+  }, [installPrompt]);
 
   const isActive = state.status === TIMER_STATUS.ACTIVE;
   const isStopped = state.status === TIMER_STATUS.STOPPED;
   const primaryActionLabel = isActive ? 'Stop' : isStopped ? 'Start Another Session' : 'Start';
+  const canInstall = installPrompt !== null && !isInstalled;
 
   return (
     <main className="relative min-h-screen overflow-hidden px-4 py-6 sm:px-6 sm:py-8">
@@ -129,6 +189,31 @@ export function SecureTimerDashboard() {
               Sync Now
             </button>
           </div>
+
+          {canInstall ? (
+            <div className="rounded-lg border border-border-subtle bg-bg-overlay px-4 py-3" data-testid="install-prompt">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-widest text-text-secondary">
+                    Install app
+                  </p>
+                  <p className="mt-1 text-sm text-text-secondary">
+                    Add Openpot to your Android home screen from Chrome.
+                  </p>
+                </div>
+                <button
+                  className="min-h-11 rounded-lg border border-border bg-bg-base px-4 py-3 text-sm font-semibold text-text-primary transition hover:bg-bg-subtle"
+                  data-testid="install-app-button"
+                  onClick={() => {
+                    void installApp();
+                  }}
+                  type="button"
+                >
+                  Install Openpot
+                </button>
+              </div>
+            </div>
+          ) : null}
 
           <div className="min-h-14 rounded-lg border border-border-subtle bg-bg-overlay px-4 py-3">
             <p className="text-xs font-semibold uppercase tracking-widest text-text-secondary">

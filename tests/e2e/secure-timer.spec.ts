@@ -39,6 +39,33 @@ test('renders the secure timer shell with PWA registration', async ({ page }) =>
   const manifestHref = await page.locator('link[rel="manifest"]').getAttribute('href');
   expect(manifestHref).toBe('/manifest.webmanifest');
 
+  const manifest = await page.evaluate(async () => {
+    const response = await fetch('/manifest.webmanifest');
+    return response.json();
+  });
+
+  expect(manifest).toMatchObject({
+    display: 'standalone',
+    id: '/',
+    prefer_related_applications: false,
+    scope: '/',
+    short_name: 'Openpot',
+    start_url: '/',
+  });
+
+  expect(manifest.icons).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        src: '/icon-192.png',
+        sizes: '192x192',
+      }),
+      expect.objectContaining({
+        src: '/icon.png',
+        sizes: '512x512',
+      }),
+    ]),
+  );
+
   await expect
     .poll(async () => {
       return page.evaluate(async () => {

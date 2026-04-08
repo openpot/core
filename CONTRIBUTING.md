@@ -4,6 +4,7 @@
 1. Fork the repo
 2. Create a feature branch from `main`
 3. Start the containerized workspace with `docker compose up --build app` or reopen the repo in the included dev container
+4. For Android PWA install testing, run `OPENPOT_DEV_HOST=<your-lan-ip> corepack pnpm dev:https` inside the container workspace
 4. Make your changes with tests and documentation
 5. Submit a pull request with a clear description
 

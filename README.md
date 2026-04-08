@@ -23,6 +23,23 @@ This repo is designed to be forked and worked on inside a container so contribut
 docker compose up --build app
 ```
 
+### Start HTTPS for Android Chrome
+
+```bash
+OPENPOT_DEV_HOST=192.168.x.x OPENPOT_DEV_PORT=3000 docker compose run --rm --service-ports app bash -lc "corepack pnpm install && corepack pnpm dev:https"
+```
+
+The HTTPS launcher generates a local CA at `.certs/openpot-local-dev-ca.crt` and a LAN certificate for `localhost`, `127.0.0.1`, and your `OPENPOT_DEV_HOST` value. Trust that CA on your Android device, then open `https://<OPENPOT_DEV_HOST>:3000` in Chrome.
+
+### Android Chrome installability
+
+The app is configured as an installable PWA, but Android Chrome will only offer installation from a secure context. That means:
+
+- `http://localhost` is installable for local desktop development.
+- A plain LAN URL such as `http://192.168.x.x:3200` is not considered secure by Chrome, so it will not show the install prompt on Android.
+- For local Android testing, run `pnpm dev:https` or the container command above, trust `.certs/openpot-local-dev-ca.crt` on the device, and use `https://<your-lan-ip>:<port>`.
+- If your Android policy blocks user-installed certificate authorities, use a production deploy or an HTTPS tunnel instead.
+
 ### Run the quality gates
 
 ```bash
