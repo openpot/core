@@ -1,0 +1,17 @@
+{
+  "name": "openpot-secure-timer",
+  "dockerComposeFile": "../compose.yaml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
+  "overrideCommand": true,
+  "shutdownAction": "stopCompose",
+  "postCreateCommand": "corepack pnpm install && corepack pnpm exec next telemetry disable",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  }
+}

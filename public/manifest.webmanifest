@@ -1,0 +1,24 @@
+{
+  "name": "Openpot Secure Timer",
+  "short_name": "Openpot",
+  "description": "A private-first session timer that stores data locally and syncs anonymously.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#14181f",
+  "theme_color": "#338f66",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

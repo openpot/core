@@ -1,0 +1,167 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: hsl(152 52% 42%);
+  --color-primary-hover: hsl(152 52% 36%);
+  --color-primary-subtle: hsl(152 40% 92%);
+  --color-accent: hsl(38 85% 55%);
+  --color-accent-hover: hsl(38 85% 48%);
+  --color-bg-base: hsl(220 16% 8%);
+  --color-bg-raised: hsl(220 14% 12%);
+  --color-bg-overlay: hsl(220 14% 16%);
+  --color-bg-subtle: hsl(220 12% 20%);
+  --color-border: hsl(220 10% 22%);
+  --color-border-subtle: hsl(220 8% 16%);
+  --color-text-primary: hsl(220 10% 94%);
+  --color-text-secondary: hsl(220 8% 62%);
+  --color-text-tertiary: hsl(220 6% 44%);
+  --color-text-inverse: hsl(220 16% 8%);
+  --color-success: hsl(152 60% 42%);
+  --color-warning: hsl(38 90% 50%);
+  --color-error: hsl(0 72% 56%);
+  --color-info: hsl(210 70% 55%);
+  --color-sync-pending: hsl(38 90% 50%);
+  --color-sync-synced: hsl(152 60% 42%);
+  --color-sync-error: hsl(0 72% 56%);
+  --color-sync-offline: hsl(220 8% 44%);
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --shadow-sm: 0 1px 2px hsl(0 0% 0% / 0.06);
+  --shadow-md: 0 8px 24px hsl(0 0% 0% / 0.18);
+  --shadow-glow: 0 0 20px hsl(152 52% 42% / 0.2);
+  --timer-display-size: clamp(4rem, 18vw, 7rem);
+}
+
+:root {
+  color-scheme: dark;
+  background:
+    radial-gradient(circle at top, hsl(152 52% 18% / 0.35), transparent 42%),
+    linear-gradient(180deg, hsl(220 16% 10%), hsl(220 16% 8%));
+  background-color: var(--color-bg-base);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    --color-bg-base: hsl(40 20% 97%);
+    --color-bg-raised: hsl(0 0% 100%);
+    --color-bg-overlay: hsl(0 0% 100%);
+    --color-bg-subtle: hsl(40 12% 93%);
+    --color-border: hsl(40 10% 85%);
+    --color-border-subtle: hsl(40 8% 90%);
+    --color-text-primary: hsl(220 16% 12%);
+    --color-text-secondary: hsl(220 8% 42%);
+    --color-text-tertiary: hsl(220 6% 60%);
+    background:
+      radial-gradient(circle at top, hsl(152 52% 64% / 0.18), transparent 42%),
+      linear-gradient(180deg, hsl(40 20% 97%), hsl(40 16% 94%));
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-bg-base);
+  color: var(--color-text-primary);
+  text-rendering: optimizeLegibility;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+.panel-shell {
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border-subtle);
+  background: linear-gradient(180deg, hsl(220 14% 13% / 0.92), hsl(220 14% 10% / 0.98));
+  box-shadow:
+    var(--shadow-md),
+    inset 0 1px 0 hsl(0 0% 100% / 0.04);
+  backdrop-filter: blur(18px);
+}
+
+@media (prefers-color-scheme: light) {
+  .panel-shell {
+    background: linear-gradient(180deg, hsl(0 0% 100% / 0.95), hsl(40 14% 96% / 0.98));
+  }
+}
+
+.timer-display {
+  font-family: var(--font-mono);
+  font-size: var(--timer-display-size);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.05em;
+  line-height: 0.92;
+  white-space: nowrap;
+}
+
+.ambient-orb {
+  position: absolute;
+  border-radius: 9999px;
+  background: radial-gradient(circle, hsl(152 52% 42% / 0.35), transparent 68%);
+  filter: blur(6px);
+  pointer-events: none;
+}
+
+.status-dot {
+  display: inline-block;
+  inline-size: 0.625rem;
+  block-size: 0.625rem;
+  border-radius: 9999px;
+}
+
+.toast-enter {
+  animation: toast-enter 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes toast-enter {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
