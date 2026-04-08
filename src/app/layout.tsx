@@ -1,8 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 
-import { PwaRegistrar } from '@/components/features/pwa/PwaRegistrar';
-
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -28,7 +26,7 @@ interface RootLayoutProps {
 }
 
 /**
- * Provides the global app shell, metadata wiring, and PWA registration hooks.
+ * Provides the global app shell and metadata wiring.
  *
  * @param children - Route content rendered inside the root layout.
  * @returns The application document structure.
@@ -36,10 +34,7 @@ interface RootLayoutProps {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en">
-      <body>
-        <PwaRegistrar />
-        {children}
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

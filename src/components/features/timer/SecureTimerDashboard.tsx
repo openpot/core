@@ -1,9 +1,10 @@
 'use client';
 
+import { useEffect } from 'react';
+
 import { Logo } from '@/components/ui/Logo';
 import { useSecureTimer } from '@/hooks/use-secure-timer';
-import { TIMER_STATUS } from '@/lib/timer/timer-machine';
-import { formatDuration } from '@/lib/utils/format-duration';
+import { formatDuration, TIMER_STATUS } from '@/lib/timer/timer-machine';
 import { SYNC_STATUS } from '@/types/session';
 
 import type { SessionRecord } from '@/types/session';
@@ -50,6 +51,16 @@ export function SecureTimerDashboard() {
     stopSession,
     syncWorkerNow,
   } = useSecureTimer();
+
+  useEffect(() => {
+    if (!('serviceWorker' in navigator)) {
+      return;
+    }
+
+    void navigator.serviceWorker.register('/sw.js').catch(() => {
+      // Service worker registration failure should not block the timer UI.
+    });
+  }, []);
 
   const isActive = state.status === TIMER_STATUS.ACTIVE;
   const isStopped = state.status === TIMER_STATUS.STOPPED;

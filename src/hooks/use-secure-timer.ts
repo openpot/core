@@ -2,10 +2,14 @@
 
 import { startTransition, useCallback, useEffect, useReducer, useRef, useState } from 'react';
 
-import { getSessionSummary, listRecentSessions, queueSession } from '@/lib/db/session-db';
-import { flushPendingSessions } from '@/lib/sync/flush-session-queue';
-import { createSessionRecord, getInitialTimerState, timerReducer, TIMER_STATUS } from '@/lib/timer/timer-machine';
-import { formatDuration } from '@/lib/utils/format-duration';
+import { flushPendingSessions, getSessionSummary, listRecentSessions, queueSession } from '@/lib/db/session-db';
+import {
+  createSessionRecord,
+  formatDuration,
+  getInitialTimerState,
+  timerReducer,
+  TIMER_STATUS,
+} from '@/lib/timer/timer-machine';
 
 import type { SessionSummary } from '@/lib/db/session-db';
 import type { SessionRecord } from '@/types/session';

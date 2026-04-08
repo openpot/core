@@ -54,14 +54,30 @@ function generateSessionId(): string {
   if (typeof webCrypto?.getRandomValues === 'function') {
     const randomBytes = new Uint8Array(16);
     webCrypto.getRandomValues(randomBytes);
+    const versionByte = randomBytes[6] ?? 0;
+    const variantByte = randomBytes[8] ?? 0;
 
-    randomBytes[6] = (randomBytes[6] & 0x0f) | 0x40;
-    randomBytes[8] = (randomBytes[8] & 0x3f) | 0x80;
+    randomBytes[6] = (versionByte & 0x0f) | 0x40;
+    randomBytes[8] = (variantByte & 0x3f) | 0x80;
 
     return formatUuidFromBytes(randomBytes);
   }
 
   return `session-${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
+}
+
+/**
+ * Formats elapsed seconds into a mobile-safe timer string.
+ *
+ * @param totalSeconds - Elapsed time in whole seconds.
+ * @returns A timer string like `00:00` or `61:09`.
+ */
+export function formatDuration(totalSeconds: number): string {
+  const safeSeconds = Math.max(0, Math.floor(totalSeconds));
+  const minutes = Math.floor(safeSeconds / 60);
+  const seconds = safeSeconds % 60;
+
+  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 }
 
 /**

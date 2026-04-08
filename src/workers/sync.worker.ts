@@ -1,7 +1,6 @@
 /// <reference lib="webworker" />
 
-import { flushPendingSessions } from '../lib/sync/flush-session-queue';
-import { getSessionSummary } from '../lib/db/session-db';
+import { flushPendingSessions, getSessionSummary } from '../lib/db/session-db';
 
 declare const self: DedicatedWorkerGlobalScope;
 

@@ -26,6 +26,11 @@ export interface SessionSummary {
   errorCount: number;
 }
 
+export interface QueueFlushResult {
+  refreshRequired: boolean;
+  summary: SessionSummary;
+}
+
 function createDatabase(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     if (typeof indexedDB === 'undefined') {
@@ -245,4 +250,53 @@ export async function getSessionSummary(): Promise<SessionSummary> {
       },
     );
   });
+}
+
+/**
+ * Flushes pending sessions to the local sync API and returns the updated queue summary.
+ *
+ * @param isOnline - Whether the current runtime can reach the network.
+ * @returns Summary data plus whether recent-session UI should refresh.
+ */
+export async function flushPendingSessions(isOnline: boolean): Promise<QueueFlushResult> {
+  if (!isOnline) {
+    return {
+      refreshRequired: false,
+      summary: await getSessionSummary(),
+    };
+  }
+
+  const pendingSessions = await getPendingSessions();
+
+  if (pendingSessions.length === 0) {
+    return {
+      refreshRequired: false,
+      summary: await getSessionSummary(),
+    };
+  }
+
+  let refreshRequired = false;
+
+  for (const session of pendingSessions) {
+    try {
+      const response = await fetch('/api/sync', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(session),
+      });
+
+      const nextStatus = response.ok ? SYNC_STATUS.SYNCED : SYNC_STATUS.ERROR;
+      await updateSessionSyncStatus(session.session_id, nextStatus);
+      refreshRequired = true;
+    } catch {
+      break;
+    }
+  }
+
+  return {
+    refreshRequired,
+    summary: await getSessionSummary(),
+  };
 }
