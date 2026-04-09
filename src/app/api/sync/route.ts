@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import fs from 'fs';
+import path from 'path';
 
 import { isSyncStatus, SESSION_RECORD_KEYS } from '@/types/session';
 
@@ -58,6 +60,21 @@ export async function POST(request: Request) {
           },
         },
       );
+    }
+
+    try {
+      const dbPath = path.join(process.cwd(), 'openpot-sessions-db.json');
+      let existingData = [];
+      if (fs.existsSync(dbPath)) {
+        const fileContent = fs.readFileSync(dbPath, 'utf8');
+        existingData = fileContent ? JSON.parse(fileContent) : [];
+      }
+      
+      // Append payload with a server-side timestamp for MVP demonstration
+      existingData.push({ ...payload, _logged_at: new Date().toISOString() });
+      fs.writeFileSync(dbPath, JSON.stringify(existingData, null, 2));
+    } catch (err) {
+      console.error('Failed to log session to JSON file:', err);
     }
 
     return NextResponse.json(
