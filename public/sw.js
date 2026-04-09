@@ -1,5 +1,5 @@
-const CACHE_NAME = 'openpot-secure-timer-v1';
-const APP_SHELL = ['/', '/manifest.webmanifest', '/icon.png', '/apple-icon.png'];
+const CACHE_NAME = 'openpot-secure-timer-v3';
+const APP_SHELL = ['/', '/manifest.webmanifest', '/icon.png', '/icon-192.png', '/apple-icon.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -31,19 +31,15 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  if (request.mode === 'navigate') {
-    event.respondWith(
-      fetch(request).catch(() => caches.match('/').then((response) => response || Response.error())),
-    );
-    return;
-  }
 
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
       const networkResponse = fetch(request)
         .then((response) => {
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
+          if (response && response.ok && response.status === 200 && response.type === 'basic') {
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
+          }
           return response;
         })
         .catch(() => cachedResponse || Response.error());
