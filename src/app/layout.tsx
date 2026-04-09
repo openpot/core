@@ -5,7 +5,7 @@ import './globals.css';
 
 export const metadata: Metadata = {
   applicationName: 'Openpot',
-  title: 'Openpot Secure Timer',
+  title: 'Openpot',
   description: 'A zero-knowledge session timer secured locally and synced anonymously.',
   manifest: '/manifest.webmanifest',
   appleWebApp: {
