@@ -62,5 +62,13 @@
     "duration_seconds": 2,
     "sync_status": "PENDING",
     "_logged_at": "2026-04-09T17:31:22.588Z"
+  },
+  {
+    "session_id": "b1e8aa95-df8a-43c2-8125-4c11d45ba590",
+    "start_time": "2026-04-09T20:22:35.368Z",
+    "end_time": "2026-04-09T20:22:37.308Z",
+    "duration_seconds": 1,
+    "sync_status": "PENDING",
+    "_logged_at": "2026-04-09T20:22:38.632Z"
   }
 ]
