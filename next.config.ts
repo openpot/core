@@ -1,3 +1,4 @@
+import { execSync } from 'node:child_process';
 import { networkInterfaces } from 'node:os';
 import type { NextConfig } from 'next';
 
@@ -32,7 +33,13 @@ const contentSecurityPolicy = [
   "form-action 'self'",
 ].join('; ');
 
+const commitHash = execSync('git rev-parse --short HEAD 2>/dev/null || echo "dev"').toString().trim();
+const packageVersion = process.env.npm_package_version || '0.1.0';
+
 const nextConfig: NextConfig = {
+  env: {
+    NEXT_PUBLIC_APP_VERSION: `v${packageVersion}-${commitHash}`,
+  },
   allowedDevOrigins: isDevelopment ? localDevOrigins : undefined,
   async headers() {
     return [

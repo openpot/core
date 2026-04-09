@@ -1,0 +1,18 @@
+[
+  {
+    "session_id": "bb5569d6-1826-4d6b-8cf0-7592cc001cde",
+    "start_time": "2026-04-09T16:00:32.941Z",
+    "end_time": "2026-04-09T16:00:41.483Z",
+    "duration_seconds": 8,
+    "sync_status": "PENDING",
+    "_logged_at": "2026-04-09T16:00:41.649Z"
+  },
+  {
+    "session_id": "fc4419fb-73bf-4133-871f-ed0eff4a415f",
+    "start_time": "2026-04-09T16:00:57.710Z",
+    "end_time": "2026-04-09T16:01:03.353Z",
+    "duration_seconds": 5,
+    "sync_status": "PENDING",
+    "_logged_at": "2026-04-09T16:01:03.415Z"
+  }
+]

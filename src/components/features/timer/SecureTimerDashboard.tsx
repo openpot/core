@@ -5,8 +5,6 @@ import { useCallback, useEffect, useState } from 'react';
 import { Logo } from '@/components/ui/Logo';
 import { useSecureTimer } from '@/hooks/use-secure-timer';
 import { formatDuration, TIMER_STATUS } from '@/lib/timer/timer-machine';
-import { SYNC_STATUS } from '@/types/session';
-
 import type { SessionRecord } from '@/types/session';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -45,17 +43,6 @@ function getStatusCopy(status: string): string {
   return 'Ready';
 }
 
-function getSyncTone(syncStatus: SessionRecord['sync_status']): string {
-  if (syncStatus === SYNC_STATUS.SYNCED) {
-    return 'var(--color-sync-synced)';
-  }
-
-  if (syncStatus === SYNC_STATUS.ERROR) {
-    return 'var(--color-sync-error)';
-  }
-
-  return 'var(--color-sync-pending)';
-}
 
 /**
  * Renders the secure timer dashboard and local sync status UI.
@@ -67,13 +54,10 @@ export function SecureTimerDashboard() {
     formattedElapsed,
     historyError,
     isLoadingHistory,
-    networkStatus,
     recentSessions,
     state,
-    summary,
     startSession,
     stopSession,
-    syncWorkerNow,
   } = useSecureTimer();
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
@@ -135,9 +119,14 @@ export function SecureTimerDashboard() {
         <header className="flex flex-col gap-4 border-b border-border-subtle pb-5">
           <Logo aria-hidden="true" className="h-12 w-auto text-text-primary sm:h-14" />
           <div className="space-y-1">
-            <h1 className="text-xs font-semibold uppercase tracking-widest text-text-secondary">
-              Secure Timer MVP
-            </h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-xs font-semibold uppercase tracking-widest text-text-secondary">
+                Secure Timer MVP
+              </h1>
+              <span className="inline-flex rounded border border-border-subtle bg-bg-base px-1.5 py-0.5 font-mono text-[10px] text-text-tertiary">
+                {process.env.NEXT_PUBLIC_APP_VERSION || 'v0.1.0-dev'}
+              </span>
+            </div>
             <p className="max-w-xl text-sm leading-6 text-text-secondary sm:text-base">
               Private session timing that stays on-device first and syncs without identity.
             </p>
@@ -170,23 +159,14 @@ export function SecureTimerDashboard() {
             </div>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="w-full">
             <button
-              className="min-h-12 rounded-lg bg-primary px-5 py-4 text-sm font-semibold text-text-inverse transition hover:bg-primary-hover"
+              className="w-full min-h-12 rounded-lg bg-primary px-5 py-4 text-sm font-semibold text-text-inverse transition hover:bg-primary-hover"
               data-testid="primary-timer-button"
               onClick={isActive ? stopSession : startSession}
               type="button"
             >
               {primaryActionLabel}
-            </button>
-            <button
-              className="min-h-12 rounded-lg border border-border bg-transparent px-5 py-4 text-sm font-semibold text-text-primary transition hover:bg-bg-subtle disabled:cursor-not-allowed disabled:text-text-tertiary"
-              data-testid="sync-now-button"
-              disabled={summary.pendingCount === 0 || networkStatus === 'offline'}
-              onClick={syncWorkerNow}
-              type="button"
-            >
-              Sync Now
             </button>
           </div>
 
@@ -229,61 +209,7 @@ export function SecureTimerDashboard() {
           </div>
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-2">
-          <section className="rounded-lg border border-border-subtle bg-bg-overlay px-4 py-4">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-widest text-text-secondary">
-                  Sync engine
-                </p>
-                <p className="mt-1 text-sm text-text-secondary">
-                  Dedicated worker monitoring the local queue.
-                </p>
-              </div>
-              <span
-                className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs font-semibold uppercase tracking-wider text-text-primary"
-                data-testid="sync-state"
-              >
-                <span
-                  className="status-dot"
-                  style={{
-                    backgroundColor:
-                      networkStatus === 'online'
-                        ? 'var(--color-sync-synced)'
-                        : 'var(--color-sync-offline)',
-                  }}
-                />
-                {networkStatus}
-              </span>
-            </div>
-
-            <dl className="mt-4 grid grid-cols-3 gap-3">
-              <div className="rounded-md bg-bg-base px-3 py-3">
-                <dt className="text-xs uppercase tracking-wider text-text-secondary">
-                  Pending
-                </dt>
-                <dd className="mt-1 text-2xl font-semibold text-text-primary" data-testid="pending-count">
-                  {summary.pendingCount}
-                </dd>
-              </div>
-              <div className="rounded-md bg-bg-base px-3 py-3">
-                <dt className="text-xs uppercase tracking-wider text-text-secondary">
-                  Synced
-                </dt>
-                <dd className="mt-1 text-2xl font-semibold text-text-primary">
-                  {summary.syncedCount}
-                </dd>
-              </div>
-              <div className="rounded-md bg-bg-base px-3 py-3">
-                <dt className="text-xs uppercase tracking-wider text-text-secondary">
-                  Errors
-                </dt>
-                <dd className="mt-1 text-2xl font-semibold text-text-primary">
-                  {summary.errorCount}
-                </dd>
-              </div>
-            </dl>
-          </section>
+        <div className="grid gap-4">
 
           <section className="rounded-lg border border-border-subtle bg-bg-overlay px-4 py-4">
             <div className="flex items-center justify-between gap-4">
@@ -321,10 +247,6 @@ export function SecureTimerDashboard() {
                           })}
                         </p>
                       </div>
-                      <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-text-primary">
-                        <span className="status-dot" style={{ backgroundColor: getSyncTone(session.sync_status) }} />
-                        {session.sync_status}
-                      </span>
                     </li>
                   ))}
                 </ul>
