@@ -78,9 +78,6 @@
 
 :root {
   color-scheme: dark;
-  background:
-    radial-gradient(circle at top, hsl(152 52% 18% / 0.35), transparent 42%),
-    linear-gradient(180deg, hsl(220 16% 10%), hsl(220 16% 8%));
   background-color: var(--color-bg-base);
   color: var(--color-text-primary);
   font-family: var(--font-sans);
@@ -98,9 +95,6 @@
     --color-text-primary: hsl(220 16% 12%);
     --color-text-secondary: hsl(220 8% 42%);
     --color-text-tertiary: hsl(220 6% 60%);
-    background:
-      radial-gradient(circle at top, hsl(152 52% 64% / 0.18), transparent 42%),
-      linear-gradient(180deg, hsl(40 20% 97%), hsl(40 16% 94%));
   }
 }
 
@@ -165,13 +159,6 @@ a:focus-visible {
   white-space: nowrap;
 }
 
-.ambient-orb {
-  position: absolute;
-  border-radius: 9999px;
-  background: radial-gradient(circle, hsl(152 52% 42% / 0.35), transparent 68%);
-  filter: blur(6px);
-  pointer-events: none;
-}
 
 .status-dot {
   display: inline-block;

@@ -112,20 +112,17 @@ export function SecureTimerDashboard() {
 
   return (
     <main className="relative min-h-screen overflow-hidden px-4 py-6 sm:px-6 sm:py-8">
-      <div className="ambient-orb -left-16 -top-12 h-40 w-40 sm:h-56 sm:w-56" />
-      <div className="ambient-orb -bottom-20 -right-8 h-48 w-48 sm:h-64 sm:w-64" />
-
       <section className="panel-shell relative mx-auto flex w-full max-w-3xl flex-col justify-between gap-6 overflow-hidden px-5 py-6 sm:px-8 sm:py-8" data-testid="timer-shell">
         <header className="flex items-center justify-between border-b border-border-subtle pb-5">
-          <div className="flex flex-col gap-1.5">
-            <h1 className="text-sm font-bold uppercase tracking-widest text-text-primary">
+          <Logo aria-hidden="true" className="h-[62px] w-auto text-white sm:h-[75px]" />
+          <div className="flex flex-col items-end gap-1.5">
+            <h1 className="text-sm font-bold uppercase tracking-widest text-white text-right">
               Secure Session Tracker
             </h1>
             <span className="inline-flex w-max rounded border border-border-subtle bg-bg-base px-1.5 py-0.5 font-mono text-[10px] text-text-tertiary">
               {process.env.NEXT_PUBLIC_APP_VERSION || 'v0.1.0-dev'}
             </span>
           </div>
-          <Logo aria-hidden="true" className="h-10 w-auto text-text-primary sm:h-12" />
         </header>
 
         <div className="flex flex-1 flex-col justify-center gap-8">
