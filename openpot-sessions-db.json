@@ -14,5 +14,13 @@
     "duration_seconds": 5,
     "sync_status": "PENDING",
     "_logged_at": "2026-04-09T16:01:03.415Z"
+  },
+  {
+    "session_id": "82a1f43e-24af-4938-8853-1f463da109a6",
+    "start_time": "2026-04-09T17:12:46.906Z",
+    "end_time": "2026-04-09T17:12:48.996Z",
+    "duration_seconds": 2,
+    "sync_status": "PENDING",
+    "_logged_at": "2026-04-09T17:12:49.013Z"
   }
 ]
