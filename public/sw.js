@@ -1,5 +1,5 @@
-const CACHE_NAME = 'openpot-secure-timer-v5';
-const APP_SHELL = ['/', '/manifest-navy.webmanifest', '/icon.png', '/icon-192.png', '/apple-icon.png'];
+const CACHE_NAME = 'openpot-secure-timer-v6';
+const APP_SHELL = ['/', '/manifest-navy.webmanifest', '/icon-512.png', '/icon-192.png', '/apple-icon-180.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(

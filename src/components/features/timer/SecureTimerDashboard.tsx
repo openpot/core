@@ -107,7 +107,13 @@ export function SecureTimerDashboard() {
 
   const isActive = state.status === TIMER_STATUS.ACTIVE;
   const isStopped = state.status === TIMER_STATUS.STOPPED;
-  const primaryActionLabel = isActive ? 'Stop' : isStopped ? 'Start Another Session' : 'Start';
+  const isStopDisabled = isActive && state.elapsedMs < 1000;
+
+  const primaryActionLabel = isStopped 
+    ? 'Start Another Session' 
+    : isActive 
+      ? (isStopDisabled ? (state.lastSavedSession ? 'Start Another Session' : 'Start Session') : 'Stop Session')
+      : 'Start Session';
   const canInstall = installPrompt !== null && !isInstalled;
 
   return (
@@ -148,8 +154,9 @@ export function SecureTimerDashboard() {
 
           <div className="w-full">
             <button
-              className="w-full min-h-12 rounded-lg bg-primary px-5 py-4 text-sm font-semibold text-text-inverse transition hover:bg-primary-hover"
+              className="w-full min-h-12 rounded-lg bg-primary px-5 py-4 text-sm font-semibold text-text-inverse transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-primary"
               data-testid="primary-timer-button"
+              disabled={isStopDisabled}
               onClick={isActive ? stopSession : startSession}
               type="button"
             >
