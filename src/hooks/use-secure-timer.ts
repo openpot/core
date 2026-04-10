@@ -4,6 +4,7 @@ import { startTransition, useCallback, useEffect, useReducer, useRef, useState }
 
 import { flushPendingSessions, getSessionSummary, listRecentSessions, queueSession } from '@/lib/db/session-db';
 import {
+  ACTIVE_SESSION_KEY,
   createSessionRecord,
   formatDuration,
   getInitialTimerState,
@@ -47,6 +48,23 @@ export function useSecureTimer() {
   const workerRef = useRef<Worker | null>(null);
   const fallbackIntervalRef = useRef<number | undefined>(undefined);
   const fallbackSyncInFlightRef = useRef(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const activeString = window.localStorage.getItem(ACTIVE_SESSION_KEY);
+      if (activeString) {
+        const startedAt = parseInt(activeString, 10);
+        if (!isNaN(startedAt) && startedAt <= Date.now()) {
+          dispatch({ type: 'START', startedAt });
+        } else {
+          window.localStorage.removeItem(ACTIVE_SESSION_KEY);
+        }
+      }
+    } catch {
+      // LocalStorage might be blocked by browser privacy settings
+    }
+  }, []);
 
   const loadSessions = useCallback(async () => {
     try {
@@ -239,12 +257,24 @@ export function useSecureTimer() {
   }, [state.notice]);
 
   const startSession = useCallback(() => {
-    dispatch({ type: 'START', startedAt: Date.now() });
+    const startedAt = Date.now();
+    try {
+      window.localStorage.setItem(ACTIVE_SESSION_KEY, String(startedAt));
+    } catch {
+      // Ignore storage errors safely
+    }
+    dispatch({ type: 'START', startedAt });
   }, []);
 
   const stopSession = useCallback(async () => {
     if (state.status !== TIMER_STATUS.ACTIVE || state.startedAt === undefined) {
       return;
+    }
+
+    try {
+      window.localStorage.removeItem(ACTIVE_SESSION_KEY);
+    } catch {
+      // Ignore storage errors safely
     }
 
     const session = createSessionRecord(state.startedAt, Date.now());

@@ -37,6 +37,10 @@ const commitHash = execSync('git rev-parse --short HEAD 2>/dev/null || echo "dev
 const packageVersion = process.env.npm_package_version || '0.1.0';
 
 const nextConfig: NextConfig = {
+  devIndicators: {
+    appIsrStatus: false,
+    buildActivity: false,
+  },
   env: {
     NEXT_PUBLIC_APP_VERSION: `v${packageVersion}-${commitHash}`,
   },

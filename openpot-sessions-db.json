@@ -70,5 +70,37 @@
     "duration_seconds": 1,
     "sync_status": "PENDING",
     "_logged_at": "2026-04-09T20:22:38.632Z"
+  },
+  {
+    "session_id": "c8403050-4831-47cc-bd31-b6bccba02a63",
+    "start_time": "2026-04-09T22:52:16.059Z",
+    "end_time": "2026-04-09T22:52:20.750Z",
+    "duration_seconds": 4,
+    "sync_status": "PENDING",
+    "_logged_at": "2026-04-09T22:52:21.234Z"
+  },
+  {
+    "session_id": "9807295c-36d1-4c0f-9498-1a0438ff1697",
+    "start_time": "2026-04-09T23:51:23.784Z",
+    "end_time": "2026-04-09T23:51:27.619Z",
+    "duration_seconds": 3,
+    "sync_status": "PENDING",
+    "_logged_at": "2026-04-09T23:51:27.683Z"
+  },
+  {
+    "session_id": "777a34ea-60cf-49fd-9049-18d682341cdb",
+    "start_time": "2026-04-10T17:29:02.621Z",
+    "end_time": "2026-04-10T17:29:06.262Z",
+    "duration_seconds": 3,
+    "sync_status": "PENDING",
+    "_logged_at": "2026-04-10T17:29:06.983Z"
+  },
+  {
+    "session_id": "777a34ea-60cf-49fd-9049-18d682341cdb",
+    "start_time": "2026-04-10T17:29:02.621Z",
+    "end_time": "2026-04-10T17:29:06.262Z",
+    "duration_seconds": 3,
+    "sync_status": "PENDING",
+    "_logged_at": "2026-04-10T17:29:06.985Z"
   }
 ]

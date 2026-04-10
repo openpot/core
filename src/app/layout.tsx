@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   applicationName: 'Openpot',
   title: 'Openpot',
   description: 'A zero-knowledge session timer secured locally and synced anonymously.',
-  manifest: '/manifest.webmanifest?v=2',
+  manifest: '/manifest-navy.webmanifest',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',

@@ -111,18 +111,13 @@ export function SecureTimerDashboard() {
   const canInstall = installPrompt !== null && !isInstalled;
 
   return (
-    <main className="relative min-h-screen overflow-hidden px-4 py-6 sm:px-6 sm:py-8">
+    <main className="relative flex min-h-screen flex-col overflow-hidden px-4 py-6 sm:px-6 sm:py-8">
       <section className="panel-shell relative mx-auto flex w-full max-w-3xl flex-col justify-between gap-6 overflow-hidden px-5 py-6 sm:px-8 sm:py-8" data-testid="timer-shell">
-        <header className="flex items-center justify-between border-b border-border-subtle pb-5">
-          <Logo aria-hidden="true" className="h-[62px] w-auto text-white sm:h-[75px]" />
-          <div className="flex flex-col items-end gap-1.5">
-            <h1 className="text-sm font-bold uppercase tracking-widest text-white text-right">
-              Secure Session Tracker
-            </h1>
-            <span className="inline-flex w-max rounded border border-border-subtle bg-bg-base px-1.5 py-0.5 font-mono text-[10px] text-text-tertiary">
-              {process.env.NEXT_PUBLIC_APP_VERSION || 'v0.1.0-dev'}
-            </span>
-          </div>
+        <header className="flex flex-col items-center justify-center border-b border-border-subtle pb-6 pt-2">
+          <Logo aria-hidden="true" className="mb-4 h-[72px] w-auto text-white sm:h-[84px]" />
+          <h1 className="text-sm font-bold uppercase tracking-widest text-white text-center">
+            Secure Session Tracker
+          </h1>
         </header>
 
         <div className="flex flex-1 flex-col justify-center gap-8">
@@ -247,6 +242,12 @@ export function SecureTimerDashboard() {
           </section>
         </div>
       </section>
+
+      <div className="mb-2 mt-auto pt-8 flex w-full justify-center">
+        <span className="inline-flex w-max rounded border border-border-subtle bg-bg-base/50 px-2 py-1 font-mono text-[10px] font-medium text-text-tertiary backdrop-blur-sm">
+          {process.env.NEXT_PUBLIC_APP_VERSION || 'v0.1.0-dev'}
+        </span>
+      </div>
     </main>
   );
 }

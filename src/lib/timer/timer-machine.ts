@@ -2,6 +2,8 @@ import { SYNC_STATUS } from '@/types/session';
 
 import type { SessionRecord } from '@/types/session';
 
+export const ACTIVE_SESSION_KEY = 'openpot_active_session_start';
+
 export const TIMER_STATUS = {
   READY: 'READY',
   ACTIVE: 'ACTIVE',
