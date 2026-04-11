@@ -2,7 +2,7 @@
 
 import { startTransition, useCallback, useEffect, useReducer, useRef, useState } from 'react';
 
-import { flushPendingSessions, getSessionSummary, listRecentSessions, queueSession } from '@/lib/db/session-db';
+import { deleteSession, flushPendingSessions, getSessionSummary, listRecentSessions, queueSession } from '@/lib/db/session-db';
 import {
   ACTIVE_SESSION_KEY,
   createSessionRecord,
@@ -266,6 +266,11 @@ export function useSecureTimer() {
     dispatch({ type: 'START', startedAt });
   }, []);
 
+  const removeSession = useCallback(async (sessionId: string) => {
+    await deleteSession(sessionId);
+    await loadSessions();
+  }, [loadSessions]);
+
   const stopSession = useCallback(async () => {
     if (state.status !== TIMER_STATUS.ACTIVE || state.startedAt === undefined) {
       return;
@@ -298,6 +303,7 @@ export function useSecureTimer() {
     isLoadingHistory,
     networkStatus,
     recentSessions,
+    removeSession,
     state,
     summary,
     startSession,

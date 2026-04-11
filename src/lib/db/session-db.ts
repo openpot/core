@@ -160,6 +160,24 @@ export async function queueSession(session: SessionRecord): Promise<Result<Sessi
 }
 
 /**
+ * Permanently removes a single secure session from the local IndexedDB store.
+ *
+ * @param sessionId - The unique session identifier to delete.
+ * @returns A result describing whether the deletion succeeded.
+ */
+export async function deleteSession(sessionId: string): Promise<Result<void>> {
+  try {
+    await withStore('readwrite', async (store) => {
+      await requestToPromise(store.delete(sessionId));
+    });
+
+    return { ok: true, value: undefined };
+  } catch {
+    return { ok: false, error: 'Unable to delete the session from this device.' };
+  }
+}
+
+/**
  * Lists the newest locally secured sessions for the dashboard history view.
  *
  * @param limit - Maximum number of sessions to return.

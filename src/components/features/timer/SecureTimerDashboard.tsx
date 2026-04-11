@@ -55,12 +55,14 @@ export function SecureTimerDashboard() {
     historyError,
     isLoadingHistory,
     recentSessions,
+    removeSession,
     state,
     startSession,
     stopSession,
   } = useSecureTimer();
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
+  const [activeDeleteId, setActiveDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!('serviceWorker' in navigator)) {
@@ -229,18 +231,59 @@ export function SecureTimerDashboard() {
               ) : (
                 <ul className="space-y-3">
                   {recentSessions.map((session) => (
-                    <li className="flex items-center justify-between gap-3 rounded-md bg-bg-base px-4 py-3" key={session.session_id}>
-                      <div>
-                        <p className="font-mono text-lg font-semibold text-text-primary">
-                          {formatDuration(session.duration_seconds)}
-                        </p>
-                        <p className="text-xs uppercase tracking-wider text-text-secondary">
-                          {new Date(session.start_time).toLocaleTimeString([], {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
-                        </p>
-                      </div>
+                    <li className="rounded-md bg-bg-base px-4 py-3" key={session.session_id}>
+                      {activeDeleteId === session.session_id ? (
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="text-xs text-text-secondary">Delete this session?</p>
+                          <div className="flex items-center gap-2">
+                            <button
+                              className="rounded px-3 py-1 text-xs font-semibold text-text-secondary transition hover:text-text-primary"
+                              onClick={() => setActiveDeleteId(null)}
+                              type="button"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              className="rounded bg-error/10 px-3 py-1 text-xs font-semibold text-error transition hover:bg-error/20"
+                              onClick={async () => {
+                                setActiveDeleteId(null);
+                                await removeSession(session.session_id);
+                              }}
+                              type="button"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-between gap-3">
+                          <div>
+                            <p className="font-mono text-lg font-semibold text-text-primary">
+                              {formatDuration(session.duration_seconds)}
+                            </p>
+                            <p className="text-xs uppercase tracking-wider text-text-secondary">
+                              {new Date(session.start_time).toLocaleTimeString([], {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </p>
+                          </div>
+                          <button
+                            aria-label="Delete session"
+                            className="rounded p-1.5 text-text-tertiary transition hover:bg-error/10 hover:text-error"
+                            onClick={() => setActiveDeleteId(session.session_id)}
+                            type="button"
+                          >
+                            <svg aria-hidden="true" fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                              <polyline points="3 6 5 6 21 6" />
+                              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                              <path d="M10 11v6" />
+                              <path d="M14 11v6" />
+                              <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                            </svg>
+                          </button>
+                        </div>
+                      )}
                     </li>
                   ))}
                 </ul>
