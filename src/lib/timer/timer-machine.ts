@@ -102,7 +102,12 @@ export function getInitialTimerState(): TimerState {
  * @param endedAt - Session stop time in epoch milliseconds.
  * @returns An anonymous session record ready for IndexedDB and sync.
  */
-export function createSessionRecord(startedAt: number, endedAt: number): SessionRecord {
+export function createSessionRecord(
+  startedAt: number,
+  endedAt: number,
+  customName?: string,
+  method?: string,
+): SessionRecord {
   const durationSeconds = Math.max(0, Math.floor((endedAt - startedAt) / 1000));
 
   return {
@@ -111,6 +116,8 @@ export function createSessionRecord(startedAt: number, endedAt: number): Session
     end_time: new Date(endedAt).toISOString(),
     duration_seconds: durationSeconds,
     sync_status: SYNC_STATUS.PENDING,
+    custom_name: customName || undefined,
+    method: method || undefined,
   };
 }
 

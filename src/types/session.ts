@@ -10,6 +10,8 @@ export const SESSION_RECORD_KEYS = [
   'end_time',
   'duration_seconds',
   'sync_status',
+  'custom_name',
+  'method',
 ] as const;
 
 export type SyncStatus = (typeof SYNC_STATUS)[keyof typeof SYNC_STATUS];
@@ -20,6 +22,8 @@ export interface SessionRecord {
   end_time: string;
   duration_seconds: number;
   sync_status: SyncStatus;
+  custom_name?: string;
+  method?: string;
 }
 
 /**

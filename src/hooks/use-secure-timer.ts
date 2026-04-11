@@ -2,7 +2,7 @@
 
 import { startTransition, useCallback, useEffect, useReducer, useRef, useState } from 'react';
 
-import { deleteSession, flushPendingSessions, getSessionSummary, listRecentSessions, queueSession } from '@/lib/db/session-db';
+import { deleteSession, flushPendingSessions, getGhostLibrary, getSessionSummary, listRecentSessions, queueSession, saveGhostName } from '@/lib/db/session-db';
 import {
   ACTIVE_SESSION_KEY,
   createSessionRecord,
@@ -41,6 +41,7 @@ type WorkerMessage = WorkerSummaryMessage | WorkerRefreshMessage;
 export function useSecureTimer() {
   const [state, dispatch] = useReducer(timerReducer, undefined, getInitialTimerState);
   const [recentSessions, setRecentSessions] = useState<SessionRecord[]>([]);
+  const [ghostLibrary, setGhostLibrary] = useState<string[]>([]);
   const [summary, setSummary] = useState<SessionSummary>(EMPTY_SUMMARY);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [historyError, setHistoryError] = useState<string>();
@@ -68,11 +69,16 @@ export function useSecureTimer() {
 
   const loadSessions = useCallback(async () => {
     try {
-      const [sessions, nextSummary] = await Promise.all([listRecentSessions(), getSessionSummary()]);
+      const [sessions, nextSummary, nextGhostLibrary] = await Promise.all([
+        listRecentSessions(),
+        getSessionSummary(),
+        getGhostLibrary(),
+      ]);
 
       startTransition(() => {
         setRecentSessions(sessions);
         setSummary(nextSummary);
+        setGhostLibrary(nextGhostLibrary);
         setHistoryError(undefined);
         setIsLoadingHistory(false);
       });
@@ -256,13 +262,20 @@ export function useSecureTimer() {
     };
   }, [state.notice]);
 
-  const startSession = useCallback(() => {
+  const startSession = useCallback((name?: string) => {
     const startedAt = Date.now();
     try {
       window.localStorage.setItem(ACTIVE_SESSION_KEY, String(startedAt));
     } catch {
       // Ignore storage errors safely
     }
+
+    if (name) {
+      void saveGhostName(name).then(() => {
+        void getGhostLibrary().then(setGhostLibrary);
+      });
+    }
+
     dispatch({ type: 'START', startedAt });
   }, []);
 
@@ -271,7 +284,7 @@ export function useSecureTimer() {
     await loadSessions();
   }, [loadSessions]);
 
-  const stopSession = useCallback(async () => {
+  const stopSession = useCallback(async (customName?: string, method?: string) => {
     if (state.status !== TIMER_STATUS.ACTIVE || state.startedAt === undefined) {
       return;
     }
@@ -282,7 +295,7 @@ export function useSecureTimer() {
       // Ignore storage errors safely
     }
 
-    const session = createSessionRecord(state.startedAt, Date.now());
+    const session = createSessionRecord(state.startedAt, Date.now(), customName, method);
     dispatch({ type: 'STOP', session });
 
     const result = await queueSession(session);
@@ -303,6 +316,7 @@ export function useSecureTimer() {
     isLoadingHistory,
     networkStatus,
     recentSessions,
+    ghostLibrary,
     removeSession,
     state,
     summary,

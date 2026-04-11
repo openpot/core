@@ -3,8 +3,9 @@ import { SESSION_RECORD_KEYS, SYNC_STATUS } from '@/types/session';
 import type { SessionRecord, SyncStatus } from '@/types/session';
 
 const DB_NAME = 'openpot-db';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const SESSION_STORE_NAME = 'sessionQueue';
+const GHOST_LIBRARY_STORE_NAME = 'ghostLibrary';
 const SYNC_STATUS_INDEX = 'sync_status';
 
 interface ResultSuccess<T> {
@@ -49,6 +50,12 @@ function createDatabase(): Promise<IDBDatabase> {
         });
 
         store.createIndex(SYNC_STATUS_INDEX, SESSION_RECORD_KEYS[4], { unique: false });
+      }
+
+      if (!database.objectStoreNames.contains(GHOST_LIBRARY_STORE_NAME)) {
+        database.createObjectStore(GHOST_LIBRARY_STORE_NAME, {
+          keyPath: 'name',
+        });
       }
     };
 
@@ -130,6 +137,74 @@ async function withStore<T>(
   });
 }
 
+async function withGhostStore<T>(
+  mode: IDBTransactionMode,
+  callback: (store: IDBObjectStore) => Promise<T> | T,
+): Promise<T> {
+  const database = await createDatabase();
+
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(GHOST_LIBRARY_STORE_NAME, mode);
+    const store = transaction.objectStore(GHOST_LIBRARY_STORE_NAME);
+    let callbackResult!: T;
+    let callbackFinished = false;
+    let transactionFinished = false;
+    let settled = false;
+
+    const closeDatabase = () => {
+      database.close();
+    };
+
+    const rejectOnce = (error: unknown) => {
+      if (settled) {
+        return;
+      }
+
+      settled = true;
+      closeDatabase();
+      reject(error);
+    };
+
+    const resolveWhenReady = () => {
+      if (!settled && callbackFinished && transactionFinished) {
+        settled = true;
+        closeDatabase();
+        resolve(callbackResult);
+      }
+    };
+
+    transaction.oncomplete = () => {
+      transactionFinished = true;
+      resolveWhenReady();
+    };
+
+    transaction.onabort = () => {
+      rejectOnce(transaction.error ?? new Error('A ghost library transaction was aborted.'));
+    };
+
+    transaction.onerror = () => {
+      rejectOnce(transaction.error ?? new Error('A ghost library transaction failed.'));
+    };
+
+    Promise.resolve(callback(store))
+      .then((value) => {
+        callbackResult = value;
+        callbackFinished = true;
+        resolveWhenReady();
+      })
+      .catch((error) => {
+        try {
+          transaction.abort();
+        } catch {
+          rejectOnce(error);
+          return;
+        }
+
+        rejectOnce(error);
+      });
+  });
+}
+
 function requestToPromise<T>(request: IDBRequest<T>): Promise<T> {
   return new Promise((resolve, reject) => {
     request.onsuccess = () => resolve(request.result);
@@ -174,6 +249,42 @@ export async function deleteSession(sessionId: string): Promise<Result<void>> {
     return { ok: true, value: undefined };
   } catch {
     return { ok: false, error: 'Unable to delete the session from this device.' };
+  }
+}
+
+/**
+ * Saves a custom name to the local Ghost Library for future suggestions.
+ *
+ * @param name - The custom name used for a session.
+ */
+export async function saveGhostName(name: string): Promise<void> {
+  if (!name.trim()) return;
+
+  try {
+    await withGhostStore('readwrite', async (store) => {
+      await requestToPromise(store.put({ name: name.trim(), last_used: Date.now() }));
+    });
+  } catch {
+    // Ignore ghost library errors to avoid blocking the primary flow.
+  }
+}
+
+/**
+ * Returns the 3 most recently used custom names from the Ghost Library.
+ *
+ * @returns An array of up to 3 unique custom name strings.
+ */
+export async function getGhostLibrary(): Promise<string[]> {
+  try {
+    return await withGhostStore('readonly', async (store) => {
+      const all = (await requestToPromise(store.getAll())) as { name: string; last_used: number }[];
+      return all
+        .sort((a, b) => b.last_used - a.last_used)
+        .slice(0, 3)
+        .map((entry) => entry.name);
+    });
+  } catch {
+    return [];
   }
 }
 
@@ -297,12 +408,15 @@ export async function flushPendingSessions(isOnline: boolean): Promise<QueueFlus
 
   for (const session of pendingSessions) {
     try {
+      // Privacy Firewall: Strip custom_name before syncing to the cloud
+      const { custom_name, ...payload } = session;
+
       const response = await fetch('/api/sync', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(session),
+        body: JSON.stringify(payload),
       });
 
       const nextStatus = response.ok ? SYNC_STATUS.SYNCED : SYNC_STATUS.ERROR;
