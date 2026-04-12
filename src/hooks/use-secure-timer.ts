@@ -2,7 +2,7 @@
 
 import { startTransition, useCallback, useEffect, useReducer, useRef, useState } from 'react';
 
-import { deleteSession, flushPendingSessions, getGhostLibrary, getSessionSummary, listRecentSessions, queueSession, saveGhostName } from '@/lib/db/session-db';
+import { deleteGhostName, deleteSession, flushPendingSessions, getGhostLibrary, getSessionSummary, listRecentSessions, queueSession, saveGhostName } from '@/lib/db/session-db';
 import {
   ACTIVE_SESSION_KEY,
   createSessionRecord,
@@ -310,6 +310,12 @@ export function useSecureTimer() {
     requestSync();
   }, [loadSessions, requestSync, state.startedAt, state.status]);
 
+  const removeGhostSuggestion = useCallback(async (name: string) => {
+    await deleteGhostName(name);
+    const nextGhostLibrary = await getGhostLibrary();
+    setGhostLibrary(nextGhostLibrary);
+  }, []);
+
   return {
     formattedElapsed: formatDuration(state.elapsedMs / 1000),
     historyError,
@@ -318,6 +324,7 @@ export function useSecureTimer() {
     recentSessions,
     ghostLibrary,
     removeSession,
+    removeGhostSuggestion,
     state,
     summary,
     startSession,

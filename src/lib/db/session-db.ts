@@ -253,6 +253,21 @@ export async function deleteSession(sessionId: string): Promise<Result<void>> {
 }
 
 /**
+ * Permanently removes a custom name from the local Ghost Library.
+ *
+ * @param name - The custom name to remove.
+ */
+export async function deleteGhostName(name: string): Promise<void> {
+  try {
+    await withGhostStore('readwrite', async (store) => {
+      await requestToPromise(store.delete(name));
+    });
+  } catch {
+    // Ignore ghost library errors to avoid blocking the primary flow.
+  }
+}
+
+/**
  * Saves a custom name to the local Ghost Library for future suggestions.
  *
  * @param name - The custom name used for a session.

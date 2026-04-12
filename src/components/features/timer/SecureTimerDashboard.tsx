@@ -31,18 +31,8 @@ function isStandaloneMode(): boolean {
   );
 }
 
-function getStatusCopy(status: string): string {
-  if (status === TIMER_STATUS.ACTIVE) {
-    return 'Active';
-  }
 
-  if (status === TIMER_STATUS.STOPPED) {
-    return 'Stopped';
-  }
-
-  return 'Ready';
-}
-
+const PILL_CLASSES = "inline-flex items-center justify-center h-9 min-w-[85px] rounded-full border border-border bg-bg-overlay px-4 text-xs font-semibold font-sans uppercase tracking-widest text-text-secondary transition-all leading-none";
 
 /**
  * Renders the secure timer dashboard and local sync status UI.
@@ -57,6 +47,7 @@ export function SecureTimerDashboard() {
     recentSessions,
     ghostLibrary,
     removeSession,
+    removeGhostSuggestion,
     state,
     startSession,
     stopSession,
@@ -66,6 +57,7 @@ export function SecureTimerDashboard() {
   const [activeDeleteId, setActiveDeleteId] = useState<string | null>(null);
   const [customName, setCustomName] = useState('');
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
+  const [isEditingStrains, setIsEditingStrains] = useState(false);
 
   const methods = ['Flower', 'Vape', 'Extract', 'Edible', 'Drink', 'Tincture'];
 
@@ -134,75 +126,139 @@ export function SecureTimerDashboard() {
         </header>
 
         <div className="flex flex-1 flex-col justify-center gap-8">
-          <div className="space-y-4 text-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-bg-overlay px-4 py-2 text-xs font-semibold uppercase tracking-widest text-text-secondary">
-              <span
-                className="status-dot"
-                style={{
-                  backgroundColor: isActive
-                    ? 'var(--color-accent)'
-                    : isStopped
-                      ? 'var(--color-success)'
-                      : 'var(--color-primary)',
-                }}
-              />
-              <span data-testid="timer-state">{getStatusCopy(state.status)}</span>
-            </div>
+          <div className="space-y-8 text-center">
 
             {!isActive && !isStopped && (
               <div className="mx-auto w-full max-w-md space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
                 <div className="space-y-2 text-left">
-                  <label htmlFor="custom-name" className="block text-[10px] font-bold uppercase tracking-widest text-text-tertiary">
-                    What are you tracking?
-                  </label>
+                  <div className="flex items-center gap-1.5">
+                    <label htmlFor="custom-name" className="block text-[10px] font-bold uppercase tracking-widest text-text-tertiary">
+                      STRAIN
+                    </label>
+                    <button 
+                      type="button" 
+                      onClick={() => setIsEditingStrains(!isEditingStrains)}
+                      className={`flex h-5 w-5 items-center justify-center rounded-full transition-all duration-200 ${
+                        isEditingStrains 
+                          ? 'bg-primary text-text-inverse shadow-sm' 
+                          : 'text-text-tertiary hover:bg-bg-overlay hover:text-text-secondary'
+                      }`}
+                      aria-label={isEditingStrains ? "Disable edit mode" : "Enable edit mode"}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/>
+                      </svg>
+                    </button>
+                  </div>
                   <input
                     id="custom-name"
                     type="text"
-                    placeholder="E.g. Morning Routine, Work Session"
+                    placeholder="E.g. OG Kush, Blue Dream"
                     value={customName}
                     onChange={(e) => setCustomName(e.target.value)}
                     className="w-full rounded-lg border border-border bg-bg-base/50 px-4 py-2.5 text-sm text-text-primary placeholder:text-text-tertiary focus:border-primary focus:outline-none transition-colors"
                   />
                   {ghostLibrary.length > 0 && (
-                    <div className="flex flex-wrap justify-center gap-2">
+                    <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide no-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                       {ghostLibrary.map((name) => (
-                        <button
+                        <div 
                           key={name}
-                          type="button"
-                          onClick={() => setCustomName(name)}
-                          className="rounded-full border border-border bg-bg-overlay px-4 py-2 text-xs font-semibold uppercase tracking-widest text-text-secondary hover:border-text-tertiary hover:text-text-primary transition-colors"
+                          className={`shrink-0 flex items-center h-9 rounded-full border transition-all overflow-hidden ${
+                            customName === name
+                              ? 'bg-primary border-primary'
+                              : 'bg-bg-overlay border-border hover:border-text-tertiary'
+                          }`}
                         >
-                          {name}
-                        </button>
+                          <button
+                            type="button"
+                            onClick={() => setCustomName(name)}
+                            className={`pl-4 h-full text-xs font-semibold font-sans uppercase tracking-widest transition-colors leading-none ${
+                               isEditingStrains ? 'pr-3' : 'pr-4'
+                            } ${
+                              customName === name ? '!text-text-inverse' : 'text-text-secondary'
+                            }`}
+                            style={{ 
+                              fontSize: '12px',
+                              transform: 'none', 
+                              WebkitTransform: 'none'
+                            }}
+                          >
+                            {name}
+                          </button>
+                          {isEditingStrains && (
+                            <>
+                              <div className={`h-4 w-px shrink-0 ${customName === name ? 'bg-text-inverse/20' : 'bg-border'}`} />
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  removeGhostSuggestion(name);
+                                }}
+                                className={`pl-2 pr-3 h-full flex items-center justify-center transition-colors animate-in fade-in zoom-in-95 duration-200 ${
+                                  customName === name 
+                                    ? '!text-text-inverse hover:bg-white/10' 
+                                    : 'text-text-tertiary hover:text-error hover:bg-error/5'
+                                }`}
+                                aria-label={`Remove ${name} from suggestions`}
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                  <polyline points="3 6 5 6 21 6" />
+                                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                                  <path d="M10 11v6" />
+                                  <path d="M14 11v6" />
+                                  <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                                </svg>
+                              </button>
+                            </>
+                          )}
+                        </div>
                       ))}
                     </div>
                   )}
                 </div>
 
                 <div className="space-y-2 text-left">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-text-tertiary">Method</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-text-tertiary">Method</p>
+                    <button 
+                      type="button" 
+                      className="flex h-5 w-5 items-center justify-center rounded-full text-text-tertiary transition-all duration-200 hover:bg-bg-overlay hover:text-text-secondary"
+                      aria-label="Method information"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+                      </svg>
+                    </button>
+                  </div>
                   <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide no-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                     {methods.map((m) => (
                       <button
                         key={m}
                         type="button"
                         onClick={() => setSelectedMethod(selectedMethod === m ? null : m)}
-                        className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-widest transition-all border ${
+                        className={`shrink-0 ${PILL_CLASSES} !text-xs ${
                           selectedMethod === m
-                            ? 'bg-primary border-primary text-text-inverse'
-                            : 'border-border bg-bg-overlay text-text-secondary hover:border-text-tertiary'
+                            ? 'bg-primary border-primary !text-text-inverse'
+                            : 'hover:border-text-tertiary text-text-secondary'
                         }`}
+                        style={{ 
+                          fontSize: '12px', 
+                          transform: 'none', 
+                          WebkitTransform: 'none',
+                          opacity: 1
+                        }}
                       >
                         {m}
                       </button>
                     ))}
                   </div>
-                  <style jsx>{`
-                    .scrollbar-hide::-webkit-scrollbar {
-                      display: none;
-                    }
-                  `}</style>
                 </div>
+
+                <style jsx>{`
+                  .scrollbar-hide::-webkit-scrollbar {
+                    display: none;
+                  }
+                `}</style>
               </div>
             )}
 
@@ -255,18 +311,6 @@ export function SecureTimerDashboard() {
             </div>
           ) : null}
 
-          <div className="min-h-14 rounded-lg border border-border-subtle bg-bg-overlay px-4 py-3">
-            <p className="text-xs font-semibold uppercase tracking-widest text-text-secondary">
-              Local confirmation
-            </p>
-            <p
-              aria-live="polite"
-              className={`mt-2 text-sm text-text-primary ${state.notice ? 'toast-enter' : ''}`}
-              data-testid="secure-notice"
-            >
-              {state.errorMessage ?? state.notice ?? 'Your next stop will secure a local session entry.'}
-            </p>
-          </div>
         </div>
 
         <div className="grid gap-4">
@@ -337,7 +381,7 @@ export function SecureTimerDashboard() {
                                 {formatDuration(session.duration_seconds)}
                               </p>
                               {session.method && (
-                                <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
+                                <span className="flex items-center justify-center h-4 min-w-[55px] rounded-full border border-border bg-bg-overlay px-2 text-[8px] font-semibold font-sans uppercase tracking-widest text-text-secondary leading-none">
                                   {session.method}
                                 </span>
                               )}
