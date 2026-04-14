@@ -1,4 +1,4 @@
-const CACHE_NAME = 'openpot-secure-timer-v10';
+const CACHE_NAME = 'openpot-secure-timer-v9';
 const APP_SHELL = [
   '/',
   '/manifest.webmanifest',
