@@ -46,7 +46,7 @@
   --color-primary-subtle: hsl(152 40% 92%);
   --color-accent: hsl(38 85% 55%);
   --color-accent-hover: hsl(38 85% 48%);
-  --color-bg-base: hsl(220 16% 8%);
+  --color-bg-base: #020617;
   --color-bg-raised: hsl(220 14% 12%);
   --color-bg-overlay: hsl(220 14% 16%);
   --color-bg-subtle: hsl(220 12% 20%);

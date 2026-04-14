@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Logo } from '@/components/ui/Logo';
 import { useSecureTimer } from '@/hooks/use-secure-timer';
 import { formatDuration, TIMER_STATUS } from '@/lib/timer/timer-machine';
+import { APP_VERSION } from '@/lib/version';
 import type { SessionRecord } from '@/types/session';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -515,7 +516,7 @@ export function SecureTimerDashboard() {
 
       <div className="mb-2 mt-auto pt-8 flex w-full justify-center">
         <span className="inline-flex w-max rounded border border-border-subtle bg-bg-base/50 px-2 py-1 font-mono text-[10px] font-medium text-text-tertiary backdrop-blur-sm">
-          {process.env.NEXT_PUBLIC_APP_VERSION || 'v0.1.0-dev'}
+          {APP_VERSION}
         </span>
       </div>
     </main>
