@@ -12,6 +12,7 @@ export const SESSION_RECORD_KEYS = [
   'sync_status',
   'custom_name',
   'method',
+  'rating',
 ] as const;
 
 export type SyncStatus = (typeof SYNC_STATUS)[keyof typeof SYNC_STATUS];
@@ -24,6 +25,7 @@ export interface SessionRecord {
   sync_status: SyncStatus;
   custom_name?: string;
   method?: string;
+  rating?: string;
 }
 
 /**

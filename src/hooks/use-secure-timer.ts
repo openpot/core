@@ -2,7 +2,7 @@
 
 import { startTransition, useCallback, useEffect, useReducer, useRef, useState } from 'react';
 
-import { deleteGhostName, deleteSession, flushPendingSessions, getGhostLibrary, getSessionSummary, listRecentSessions, queueSession, saveGhostName } from '@/lib/db/session-db';
+import { deleteGhostName, deleteSession, flushPendingSessions, getGhostLibrary, getSessionSummary, listRecentSessions, queueSession, saveGhostName, updateSessionRating } from '@/lib/db/session-db';
 import {
   ACTIVE_SESSION_KEY,
   createSessionRecord,
@@ -45,6 +45,8 @@ export function useSecureTimer() {
   const [summary, setSummary] = useState<SessionSummary>(EMPTY_SUMMARY);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [historyError, setHistoryError] = useState<string>();
+  const [customName, setCustomName] = useState('');
+  const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
   const [networkStatus, setNetworkStatus] = useState<'online' | 'offline'>('online');
   const workerRef = useRef<Worker | null>(null);
   const fallbackIntervalRef = useRef<number | undefined>(undefined);
@@ -55,12 +57,29 @@ export function useSecureTimer() {
     try {
       const activeString = window.localStorage.getItem(ACTIVE_SESSION_KEY);
       if (activeString) {
-        const startedAt = parseInt(activeString, 10);
-        if (!isNaN(startedAt) && startedAt <= Date.now()) {
-          dispatch({ type: 'START', startedAt });
-        } else {
-          window.localStorage.removeItem(ACTIVE_SESSION_KEY);
+        try {
+          // Attempt to parse as JSON (new format)
+          const data = JSON.parse(activeString);
+          if (data && typeof data === 'object' && typeof data.startedAt === 'number') {
+            const startedAt = data.startedAt;
+            if (startedAt <= Date.now()) {
+              if (data.customName) setCustomName(String(data.customName));
+              if (data.method) setSelectedMethod(String(data.method));
+              dispatch({ type: 'START', startedAt });
+              return;
+            }
+          }
+        } catch {
+          // Fallback to legacy format (raw timestamp)
+          const startedAt = parseInt(activeString, 10);
+          if (!isNaN(startedAt) && startedAt <= Date.now()) {
+            dispatch({ type: 'START', startedAt });
+            return;
+          }
         }
+
+        // If validation fails, clear the stale key
+        window.localStorage.removeItem(ACTIVE_SESSION_KEY);
       }
     } catch {
       // LocalStorage might be blocked by browser privacy settings
@@ -262,22 +281,29 @@ export function useSecureTimer() {
     };
   }, [state.notice]);
 
-  const startSession = useCallback((name?: string) => {
+  const startSession = useCallback((name?: string, method?: string) => {
     const startedAt = Date.now();
+    const effectiveName = name || customName;
+    const effectiveMethod = method || selectedMethod;
+
     try {
-      window.localStorage.setItem(ACTIVE_SESSION_KEY, String(startedAt));
+      window.localStorage.setItem(ACTIVE_SESSION_KEY, JSON.stringify({
+        startedAt,
+        customName: effectiveName,
+        method: effectiveMethod
+      }));
     } catch {
       // Ignore storage errors safely
     }
 
-    if (name) {
-      void saveGhostName(name).then(() => {
+    if (effectiveName) {
+      void saveGhostName(effectiveName).then(() => {
         void getGhostLibrary().then(setGhostLibrary);
       });
     }
 
     dispatch({ type: 'START', startedAt });
-  }, []);
+  }, [customName, selectedMethod]);
 
   const removeSession = useCallback(async (sessionId: string) => {
     await deleteSession(sessionId);
@@ -316,6 +342,22 @@ export function useSecureTimer() {
     setGhostLibrary(nextGhostLibrary);
   }, []);
 
+  const rateSession = useCallback(async (rating: string) => {
+    if (!state.pendingSession) {
+      return;
+    }
+
+    dispatch({ type: 'SET_RATING', rating });
+    await updateSessionRating(state.pendingSession.session_id, rating);
+    await loadSessions();
+  }, [loadSessions, state.pendingSession]);
+
+  const resetSession = useCallback(() => {
+    setCustomName('');
+    setSelectedMethod(null);
+    dispatch({ type: 'RESET' });
+  }, []);
+
   return {
     formattedElapsed: formatDuration(state.elapsedMs / 1000),
     historyError,
@@ -327,8 +369,14 @@ export function useSecureTimer() {
     removeGhostSuggestion,
     state,
     summary,
+    customName,
+    setCustomName,
+    selectedMethod,
+    setSelectedMethod,
+    rateSession,
     startSession,
     stopSession,
+    resetSession,
     syncWorkerNow: requestSync,
   };
 }

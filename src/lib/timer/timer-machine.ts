@@ -37,6 +37,7 @@ export type TimerEvent =
   | { type: 'STOP'; session: SessionRecord }
   | { type: 'SAVE_SUCCESS'; session: SessionRecord }
   | { type: 'SAVE_FAILURE'; message: string }
+  | { type: 'SET_RATING'; rating: string }
   | { type: 'DISMISS_NOTICE' }
   | { type: 'RESET' };
 
@@ -179,6 +180,19 @@ export function timerReducer(state: TimerState, event: TimerEvent): TimerState {
         saveStatus: SAVE_STATUS.ERROR,
         notice: undefined,
         errorMessage: event.message,
+      };
+
+    case 'SET_RATING':
+      if (!state.pendingSession) {
+        return state;
+      }
+
+      return {
+        ...state,
+        pendingSession: {
+          ...state.pendingSession,
+          rating: event.rating,
+        },
       };
 
     case 'DISMISS_NOTICE':

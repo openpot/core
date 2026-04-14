@@ -3,7 +3,7 @@ import { SESSION_RECORD_KEYS, SYNC_STATUS } from '@/types/session';
 import type { SessionRecord, SyncStatus } from '@/types/session';
 
 const DB_NAME = 'openpot-db';
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 const SESSION_STORE_NAME = 'sessionQueue';
 const GHOST_LIBRARY_STORE_NAME = 'ghostLibrary';
 const SYNC_STATUS_INDEX = 'sync_status';
@@ -357,6 +357,35 @@ export async function updateSessionSyncStatus(
     return { ok: true, value: undefined };
   } catch {
     return { ok: false, error: 'Unable to update the local sync status.' };
+  }
+}
+
+/**
+ * Updates the rating for a locally stored session.
+ *
+ * @param sessionId - Stable session identifier.
+ * @param rating - Qualitative rating string ("Dialed In", "Mellow", etc.).
+ * @returns A result describing whether the update succeeded.
+ */
+export async function updateSessionRating(
+  sessionId: string,
+  rating: string,
+): Promise<Result<void>> {
+  try {
+    await withStore('readwrite', async (store) => {
+      const session = (await requestToPromise(store.get(sessionId))) as SessionRecord | undefined;
+
+      if (!session) {
+        throw new Error('Missing session record.');
+      }
+
+      session.rating = rating;
+      await requestToPromise(store.put(session));
+    });
+
+    return { ok: true, value: undefined };
+  } catch {
+    return { ok: false, error: 'Unable to update the session rating.' };
   }
 }
 

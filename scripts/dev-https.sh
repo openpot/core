@@ -12,7 +12,7 @@ CERT_PATH="$CERT_DIR/openpot-local-dev.crt"
 CERT_EXT_PATH="$CERT_DIR/openpot-local-dev.ext"
 HOSTS_PATH="$CERT_DIR/openpot-local-dev.hosts"
 
-DEV_PORT="${OPENPOT_DEV_PORT:-${PORT:-3000}}"
+DEV_PORT="${OPENPOT_DEV_PORT:-${PORT:-3004}}"
 DEV_BIND_HOST="${OPENPOT_DEV_BIND_HOST:-0.0.0.0}"
 EXTRA_HOSTS="${OPENPOT_DEV_HOST:-}"
 
@@ -46,15 +46,32 @@ if [[ ! -f "$HOSTS_PATH" || "$EXPECTED_HOSTS" != "$(cat "$HOSTS_PATH")" || ! -f 
   fi
 
   if [[ ! -f "$CA_KEY_PATH" || ! -f "$CA_CERT_PATH" ]]; then
-    openssl req \
-      -x509 \
-      -newkey rsa:2048 \
+    echo "Generating new Root CA with modern extensions..."
+    CA_CONF_PATH="$CERT_DIR/ca.conf"
+    cat <<EOF > "$CA_CONF_PATH"
+[req]
+distinguished_name = req_distinguished_name
+x509_extensions = v3_ca
+prompt = no
+
+[req_distinguished_name]
+CN = Openpot Local Dev CA
+
+[v3_ca]
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid:always,issuer
+basicConstraints = critical, CA:TRUE
+keyUsage = critical, digitalSignature, cRLSign, keyCertSign
+EOF
+
+    openssl req -x509 -new -nodes -newkey rsa:2048 \
+      -config "$CA_CONF_PATH" \
       -keyout "$CA_KEY_PATH" \
       -out "$CA_CERT_PATH" \
       -days 825 \
-      -nodes \
-      -sha256 \
-      -subj "/CN=Openpot Local Dev CA"
+      -sha256
+    
+    rm -f "$CA_CONF_PATH"
   fi
 
   rm -f "$CERT_KEY_PATH" "$CERT_CSR_PATH" "$CERT_PATH" "$CERT_EXT_PATH"
