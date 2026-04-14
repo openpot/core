@@ -61,6 +61,7 @@ export function SecureTimerDashboard() {
   } = useSecureTimer();
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
   const [activeDeleteId, setActiveDeleteId] = useState<string | null>(null);
   const [isEditingStrains, setIsEditingStrains] = useState(false);
 
@@ -73,6 +74,8 @@ export function SecureTimerDashboard() {
     }
 
     setIsInstalled(isStandaloneMode());
+    setIsIOS(/iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream);
+
 
     const handleBeforeInstallPrompt = (event: Event) => {
       const installEvent = event as BeforeInstallPromptEvent;
@@ -127,7 +130,8 @@ export function SecureTimerDashboard() {
     : isActive 
       ? 'Stop Session' 
       : 'Start Session';
-  const canInstall = installPrompt !== null && !isInstalled;
+  
+  const showInstallPromotion = !isInstalled && (installPrompt !== null || isIOS);
 
   return (
     <main className="relative flex min-h-screen flex-col overflow-hidden px-4 py-6 sm:px-6 sm:py-8">
@@ -369,29 +373,46 @@ export function SecureTimerDashboard() {
             </div>
           </div>
 
-          {canInstall ? (
-            <div className="rounded-lg border border-border-subtle bg-bg-overlay px-4 py-3" data-testid="install-prompt">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-widest text-text-secondary">
-                    Install app
-                  </p>
-                  <p className="mt-1 text-sm text-text-secondary">
-                    Add Openpot to your Android home screen from Chrome.
-                  </p>
+          {showInstallPromotion ? (
+            <section className="rounded-lg border border-border-subtle bg-bg-overlay/50 px-4 py-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="3" y2="15"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold uppercase tracking-widest text-text-primary">
+                      {isIOS ? 'Install on iOS' : 'Install Openpot'}
+                    </h3>
+                    {isIOS ? (
+                      <div className="mt-1 flex flex-col gap-1.5">
+                        <p className="text-xs text-text-secondary leading-normal">
+                          Tap the <span className="inline-block p-1 bg-bg-base rounded -my-1 mx-0.5"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" x2="12" y1="2" y2="15"/></svg></span> **Share** button below
+                        </p>
+                        <p className="text-xs text-text-secondary leading-normal">
+                          Then scroll down and select <span className="inline-block p-1 bg-bg-base rounded -my-1 mx-0.5"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 8v8"/><path d="M8 12h8"/></svg></span> **Add to Home Screen**.
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="mt-1 text-xs text-text-secondary leading-normal">
+                        Add to home screen for the best experience and native-style tracking.
+                      </p>
+                    )}
+                  </div>
                 </div>
-                <button
-                  className="min-h-11 rounded-lg border border-border bg-bg-base px-4 py-3 text-sm font-semibold text-text-primary transition hover:bg-bg-subtle"
-                  data-testid="install-app-button"
-                  onClick={() => {
-                    void installApp();
-                  }}
-                  type="button"
-                >
-                  Install Openpot
-                </button>
+                {!isIOS && (
+                  <button
+                    className="min-h-11 shrink-0 rounded-full bg-primary px-5 py-2 text-xs font-bold text-text-inverse shadow-sm transition-all hover:bg-primary-hover active:scale-95"
+                    onClick={() => void installApp()}
+                    type="button"
+                  >
+                    Install Now
+                  </button>
+                )}
               </div>
-            </div>
+            </section>
           ) : null}
 
         </div>
