@@ -1,7 +1,7 @@
 {
   "name": "Openpot Secure Session Tracker",
   "short_name": "Openpot",
-  "description": "A private-first session timer that stores data locally and syncs anonymously.",
+  "description": "A private-first session timer that stores data locally.",
   "id": "/",
   "scope": "/",
   "start_url": "/",
