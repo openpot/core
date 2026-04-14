@@ -1,24 +1,37 @@
-# Open Source Contribution Guidelines
+# Contributing to Openpot
 
-## How to Contribute
-1. Fork the repo
-2. Create a feature branch from `main`
-3. Start the containerized workspace with `docker compose up --build app` or reopen the repo in the included dev container
-4. For Android PWA install testing, run `OPENPOT_DEV_HOST=<your-lan-ip> corepack pnpm dev:https` inside the container workspace
-4. Make your changes with tests and documentation
-5. Submit a pull request with a clear description
+We welcome contributions from the community! Openpot is built on the principles of software freedom and privacy.
+
+## How to Get Involved
+
+1. **Fork the Repository**: Create your own copy of the repository.
+2. **Create a Branch**: Work on a descriptive feature branch (e.g., `feat/secure-session-validation`).
+3. **Draft Your Code**: Implement your changes with clear, documented code.
+4. **Write Tests**: Ensure your changes are covered by unit or E2E tests.
+5. **Submit a Pull Request**: Provide a detailed description of your contribution.
 
 ## Code Standards
-- Follow `code-conventions.md` for style and structure
-- Include unit tests and ensure accessibility (WCAG 2.1 AA)
-- Run linting and type checking before submitting
-- Ensure security best practices (zero-knowledge compliance)
-- Keep all dependency installs inside the repo container workflow rather than relying on host-global tooling
 
-## Community
-- Use GitHub Issues for bug reports and feature requests
-- Follow conventional commit messages for PRs
-- Respect the code of conduct
+- **TypeScript Preferred**: Use strong typing to prevent runtime errors.
+- **Accessibility (A11y)**: All UI components must meet WCAG 2.1 AA standards.
+- **Privacy-First**: Never introduce third-party libraries that track user behavior or send data to external servers.
+- **Clean UI**: Maintain the minimalist, premium aesthetic of the project.
 
-## Licensing
-- AGPL-3.0: Any modifications must be open source
+## Quality Gates
+
+Before submitting your PR, please run the following:
+
+```bash
+pnpm lint       # Code style and best practices
+pnpm typecheck  # TypeScript types
+pnpm test       # Unit tests
+pnpm e2e        # End-to-end tests (Playwright)
+```
+
+## Security Reporting
+
+If you find a security vulnerability, please do NOT open a public issue. Instead, contact the maintainers directly at security@openpot.org (or the contact listed in the main repository).
+
+## License
+
+By contributing to Openpot, you agree that your contributions will be licensed under the **AGPL-3.0**.

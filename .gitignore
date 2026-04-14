@@ -144,7 +144,25 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
-# AI Workspace Multi-Agent Core (local-only, not version controlled)
+# AI Workspace Multi-Agent Core & Metadata (local-only)
 .workspace/
 .agents/
 .product/
+.cursor/
+.gemini/
+.brain/
+.agents_backup/
+
+# Internal Development Artifacts
+IMPLEMENTATION_PLAN.md
+TASK.md
+WALKTHROUGH.md
+STAKEHOLDER_BOARD.md
+memory-core.md
+*.tsbuildinfo
+
+# Local Environment & Secrets
+.env.local
+.env.*.local
+.certs/
+

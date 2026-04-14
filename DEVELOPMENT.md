@@ -1,34 +1,62 @@
-# Local Development Setup
+# Technical Development Guide
 
-## Prerequisites
-- Node.js 18+
-- pnpm (preferred) or npm
-- Git
+This guide covers the technical setup and architecture for developers looking to modify or extend the Openpot Secure Timer.
 
-## Bootstrap Workspace
-1. Clone repo
-2. Run `pnpm install` in project root
-3. Copy `.agents/` and `.workspace/` from template
-4. Run `/init-workspace` workflow
+## 🛠 Prerequisites
 
-## Development Workflow
-1. Start dev server: `pnpm dev`
-2. Start Android-installable HTTPS dev server: `OPENPOT_DEV_HOST=<your-lan-ip> pnpm dev:https`
-2. Run tests: `pnpm test`
-3. Lint: `pnpm lint`
-4. Build: `pnpm build`
+Ensure you have the following installed:
+- **Node.js**: v18.0.0 or higher
+- **pnpm**: v9.0.0 or higher (highly recommended)
+- **Local IP**: For mobile PWA testing, you'll need your machine's LAN IP.
 
-## Testing
-- Unit: `pnpm vitest`
-- E2E: `pnpm playwright test`
-- Accessibility: Built into Playwright
+## 🏗 Base Setup
 
-## Debugging
-- Check execution-state.md for current status
-- Use stakeholder-board.md for questions
-- Run circuit-breaker on failures
-- For Android Chrome PWA tests, trust `.certs/openpot-local-dev-ca.crt` on the device and browse to `https://<your-lan-ip>:<port>`
+1. **Install Dependencies**:
+   ```bash
+   pnpm install
+   ```
+2. **Local Dev Server**:
+   ```bash
+   pnpm dev
+   ```
+   The application will be available at `http://localhost:3000`.
 
-## Deployment
-- Use `/deploy` workflow for production
-- Monitor with included tools
+## 📱 PWA & Mobile Debugging
+
+Since PWAs require a Secure Context (HTTPS) for installation, we provide a custom script to generate local certificates and serve the app over LAN.
+
+1. **Generate Certs & Start**:
+   ```bash
+   OPENPOT_DEV_HOST=<your-lan-ip> pnpm dev:https
+   ```
+2. **Trust the CA**: Open `.certs/openpot-local-dev-ca.crt` on your mobile device and install it as a Trusted Root Certificate.
+3. **Browse**: Go to `https://<your-lan-ip>:3000`.
+
+## 🧬 Architecture
+
+### Local Persistence
+We use **IndexedDB** for all session data. There is no central database. If you clear your browser's site data, your session history will be lost. This is intentional for privacy.
+
+### Service Workers
+The application uses a Service Worker (found in `public/sw.js`) to handle asset caching and provide "New version available" prompts. During development, you may need to force a refresh (Cmd+Shift+R) to see changes to the Service Worker logic.
+
+## 🧪 Testing
+
+We use **Vitest** for unit tests and **Playwright** for E2E tests.
+
+### Running Unit Tests
+```bash
+pnpm test
+```
+
+### Running E2E Tests
+```bash
+pnpm e2e
+```
+*Note: Ensure the dev server is running before executing E2E tests.*
+
+## 🔒 Security Principles
+
+1. **Self-Contained**: No external CDNs. All assets (fonts, icons, scripts) must be bundled locally.
+2. **Minimal Surface**: Only use dependencies that are strictly necessary and audited for privacy.
+3. **Zero Telemetry**: Do not add any analytics or "ping-home" functionality.

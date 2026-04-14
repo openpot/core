@@ -132,11 +132,16 @@ export function SecureTimerDashboard() {
   return (
     <main className="relative flex min-h-screen flex-col overflow-hidden px-4 py-6 sm:px-6 sm:py-8">
       <section className="panel-shell relative mx-auto flex w-full max-w-3xl flex-col justify-between gap-6 overflow-hidden px-5 py-6 sm:px-8 sm:py-8" data-testid="timer-shell">
-        <header className="flex flex-col items-center justify-center border-b border-border-subtle pb-6 pt-2">
-          <Logo aria-hidden="true" className="mb-4 h-[72px] w-auto text-white sm:h-[84px]" />
-          <h1 className="text-sm font-bold uppercase tracking-widest text-white text-center">
-            Secure Session Tracker
-          </h1>
+        <header className="flex flex-row items-center justify-center gap-2 border-b border-border-subtle pb-6 pt-2">
+          <Logo aria-hidden="true" className="h-[35px] w-auto text-text-primary sm:h-[43px]" />
+          <div className="flex flex-col items-start gap-0.5 leading-none">
+            <h1 className="text-2xl font-bold leading-none text-text-primary sm:text-3xl">
+              Openpot
+            </h1>
+            <p className="text-[9px] font-medium uppercase tracking-[0.15em] text-text-secondary sm:text-[11px] leading-none">
+              Secure Session Tracker
+            </p>
+          </div>
         </header>
 
         <div className="flex flex-1 flex-col justify-center gap-8">

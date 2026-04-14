@@ -1,54 +1,77 @@
-# Openpot
+# Openpot Secure Timer 🛡️
 
-The privacy-first, zero-knowledge secure timer MVP.
+A premium, privacy-first, zero-knowledge session tracker built for sovereignty and anonymity. Openpot is designed to stay mathematically invisible and legally sovereign by keeping all user data strictly on-device.
 
-## Core
+![Openpot Banner](public/icon-512.png)
 
-Openpot is a sovereign session tracker built for the global cannabis community. Our architecture is designed to stay legally invisible and mathematically anonymous.
+## ✨ Features
 
-### Core Engineering Principles
+- **Privacy by Design**: No account creation, no tracking, and no remote data storage.
+- **Zero-Knowledge State**: All session histories are stored locally in your browser's IndexedDB.
+- **Progressive Web App (PWA)**: Install directly on your iOS/Android home screen or desktop for a native look and feel.
+- **Offline-First**: Full functionality without an internet connection, powered by robust Service Workers.
+- **Premium UI**: Sleek, minimalist interface with curated typographic hierarchy and seamless Light/Dark mode support.
+- **Sovereign Sync**: Optional anonymous syncing via secure schema that avoids sharing behavioral metadata.
 
-1. No server-side identity: we do not store names, emails, or device identifiers.
-2. Local-only state: session history lives in client-side IndexedDB.
-3. Anonymous sync: the background worker only posts the approved secure session schema to `/api/sync`.
-4. Stuttgart-safe: no telemetry, no remote fonts, no third-party tracking, and no behavior-sharing APIs.
+## 🛠️ Tech Stack
 
-## Run In Docker
+- **Framework**: [Next.js](https://next.js.org/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **Database**: [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) (Local-first)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **Packaging**: [pnpm](https://pnpm.io/)
 
-This repo is designed to be forked and worked on inside a container so contributors do not need Node, pnpm, or Playwright installed on the host machine.
+## 🚀 Getting Started
 
-### Start the app
+### Prerequisites
 
-```bash
-docker compose up --build app
-```
+- Node.js 18+
+- pnpm
 
-### Start HTTPS for Android Chrome
+### Installation
 
-```bash
-OPENPOT_DEV_HOST=192.168.x.x OPENPOT_DEV_PORT=3000 docker compose run --rm --service-ports app bash -lc "corepack pnpm install && corepack pnpm dev:https"
-```
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/openpot/openpot.git
+   cd openpot/core
+   ```
 
-The HTTPS launcher generates a local CA at `.certs/openpot-local-dev-ca.crt` and a LAN certificate for `localhost`, `127.0.0.1`, and your `OPENPOT_DEV_HOST` value. Trust that CA on your Android device, then open `https://<OPENPOT_DEV_HOST>:3000` in Chrome.
+2. Install dependencies:
+   ```bash
+   pnpm install
+   ```
 
-### Android Chrome installability
+3. Run the development server:
+   ```bash
+   pnpm dev
+   ```
 
-The app is configured as an installable PWA, but Android Chrome will only offer installation from a secure context. That means:
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-- `http://localhost` is installable for local desktop development.
-- A plain LAN URL such as `http://192.168.x.x:3200` is not considered secure by Chrome, so it will not show the install prompt on Android.
-- For local Android testing, run `pnpm dev:https` or the container command above, trust `.certs/openpot-local-dev-ca.crt` on the device, and use `https://<your-lan-ip>:<port>`.
-- If your Android policy blocks user-installed certificate authorities, use a production deploy or an HTTPS tunnel instead.
+### 📱 Testing on Mobile (Local HTTPS)
 
-### Run the quality gates
+To test the PWA installation experience on a mobile device, you must serve the application over HTTPS. Openpot includes a custom launcher for this:
 
-```bash
-docker compose run --rm app corepack pnpm typecheck
-docker compose run --rm app corepack pnpm lint
-docker compose run --rm app corepack pnpm test:coverage
-docker compose run --rm --service-ports app corepack pnpm e2e
-```
+1. Identify your local IP address (e.g., `192.168.1.5`).
+2. Run the secure dev environment:
+   ```bash
+   OPENPOT_DEV_HOST=192.168.1.5 pnpm dev:https
+   ```
+3. Trust the generated CA found at `.certs/openpot-local-dev-ca.crt` on your mobile device.
+4. Access the app via `https://192.168.1.5:3000`.
 
-### VS Code Dev Container
+## 🛡️ Security & Privacy
 
-If you use VS Code, reopen the repo in the provided `.devcontainer/` setup. It uses the same Docker service and installs dependencies inside the container after creation.
+Openpot follows the **Stuttgart-Safe** standard:
+- No remote fonts or scripts.
+- No telemetry or analytics.
+- No behavior-sharing APIs.
+- No third-party cookies or localStorage tracking.
+
+## 📄 License
+
+This project is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**. We believe in software freedom—modifications to this software must remain open source.
+
+---
+
+Built with ❤️ for the sovereign community.
