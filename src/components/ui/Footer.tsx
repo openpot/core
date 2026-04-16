@@ -40,6 +40,17 @@ export function Footer() {
         >
           Terms
         </Link>
+        {process.env.NODE_ENV !== 'production' && (
+          <>
+            <span className="opacity-50 text-[8px]" aria-hidden="true">•</span>
+            <Link 
+              href="/test" 
+              className="hover:text-primary transition-colors"
+            >
+              Test
+            </Link>
+          </>
+        )}
       </nav>
     </footer>
   );

@@ -67,6 +67,10 @@ export function SecureTimerDashboard() {
   const [isIOS, setIsIOS] = useState(false);
   const [activeDeleteId, setActiveDeleteId] = useState<string | null>(null);
   const [isEditingStrains, setIsEditingStrains] = useState(false);
+  const [isDismissed, setIsDismissed] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('openpot:install-banner-dismissed') === '1';
+  });
 
   const methods = ['Flower', 'Vape', 'Extract', 'Edible', 'Drink', 'Tincture'];
   const ratings = ["Dialed In", "Mellow", "Mid", "Too Heavy"];
@@ -166,7 +170,12 @@ export function SecureTimerDashboard() {
       ? 'Stop Session' 
       : 'Start Session';
   
-  const showInstallPromotion = !isInstalled && installPrompt !== null;
+  const showInstallPromotion = !isInstalled && !isDismissed;
+
+  const dismissInstallBanner = useCallback(() => {
+    localStorage.setItem('openpot:install-banner-dismissed', '1');
+    setIsDismissed(true);
+  }, []);
 
   return (
     <main className="relative flex min-h-screen flex-col items-center justify-start overflow-hidden px-4 py-8 sm:px-6 sm:py-12">
@@ -409,8 +418,21 @@ export function SecureTimerDashboard() {
           </div>
 
           {showInstallPromotion ? (
-            <section className="rounded-lg border border-border-subtle bg-bg-overlay/50 px-4 py-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <section className="relative rounded-lg border border-border-subtle bg-bg-overlay/50 px-4 py-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+              {/* Dismiss button */}
+              <button
+                type="button"
+                aria-label="Dismiss install banner"
+                onClick={dismissInstallBanner}
+                className="absolute top-3 right-3 flex h-6 w-6 items-center justify-center rounded-full text-text-tertiary transition-colors hover:bg-bg-subtle hover:text-text-primary active:scale-90"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pr-6">
                 <div className="flex items-start gap-3">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
