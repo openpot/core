@@ -166,3 +166,4 @@ memory-core.md
 .env.*.local
 .certs/
 
+.vercel

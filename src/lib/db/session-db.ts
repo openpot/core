@@ -304,7 +304,21 @@ export async function getGhostLibrary(): Promise<string[]> {
 }
 
 /**
+ * Returns all locally secured sessions sorted by newest first.
+ *
+ * @returns An array of all secure session records in IndexedDB.
+ */
+export async function listAllSessions(): Promise<SessionRecord[]> {
+  return withStore('readonly', async (store) => {
+    const sessions = (await requestToPromise(store.getAll())) as SessionRecord[];
+
+    return sessions.sort(sortByNewest);
+  });
+}
+
+/**
  * Lists the newest locally secured sessions for the dashboard history view.
+
  *
  * @param limit - Maximum number of sessions to return.
  * @returns A sorted array of recent secure session records.

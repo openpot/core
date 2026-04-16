@@ -33,8 +33,21 @@ const contentSecurityPolicy = [
   "form-action 'self'",
 ].join('; ');
 
-const commitHash = execSync('git rev-parse --short HEAD 2>/dev/null || echo "dev"').toString().trim();
-const packageVersion = process.env.npm_package_version || '0.1.0';
+const getCommitHash = () => {
+  // Use Vercel's provided SHA if available (preferred for CI)
+  if (process.env.VERCEL_GIT_COMMIT_SHA) {
+    return process.env.VERCEL_GIT_COMMIT_SHA.slice(0, 7);
+  }
+  
+  try {
+    return execSync('git rev-parse --short HEAD 2>/dev/null').toString().trim();
+  } catch {
+    return 'dev';
+  }
+};
+
+const commitHash = getCommitHash();
+const packageVersion = process.env.npm_package_version || '0.2.0';
 
 const nextConfig: NextConfig = {
   outputFileTracingRoot: process.cwd(),

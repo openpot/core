@@ -1,8 +1,11 @@
 'use client';
 
+import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 
-import { Logo } from '@/components/ui/Logo';
+import { Footer } from '@/components/ui/Footer';
+import { Logo, LogoMark } from '@/components/ui/Logo';
+import { listAllSessions } from '@/lib/db/session-db';
 import { useSecureTimer } from '@/hooks/use-secure-timer';
 import { formatDuration, TIMER_STATUS } from '@/lib/timer/timer-machine';
 import { APP_VERSION } from '@/lib/version';
@@ -120,6 +123,38 @@ export function SecureTimerDashboard() {
     setIsInstalled(choice.outcome === 'accepted' || isStandaloneMode());
   }, [installPrompt]);
 
+  const handleExportCSV = useCallback(async () => {
+    try {
+      const allSessions = await listAllSessions();
+      if (allSessions.length === 0) return;
+
+      const headers = ['Date', 'Time', 'Item', 'Method', 'Duration (sec)', 'Rating'];
+      const rows = allSessions.map(s => {
+        const dateObj = new Date(s.start_time);
+        return [
+          dateObj.toLocaleDateString(),
+          dateObj.toLocaleTimeString(),
+          s.custom_name || 'Unnamed',
+          s.method || 'N/A',
+          Math.floor((Date.parse(s.end_time) - Date.parse(s.start_time)) / 1000),
+          s.rating || 'Unrated'
+        ].map(val => `"${String(val).replace(/"/g, '""')}"`).join(',');
+      });
+
+      const csvContent = [headers.join(','), ...rows].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `openpot_full_log_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error('Failed to export sessions:', err);
+    }
+  }, []);
+
   const isIdle = state.status === TIMER_STATUS.READY;
   const isActive = state.status === TIMER_STATUS.ACTIVE;
   const isStopped = state.status === TIMER_STATUS.STOPPED;
@@ -131,18 +166,18 @@ export function SecureTimerDashboard() {
       ? 'Stop Session' 
       : 'Start Session';
   
-  const showInstallPromotion = !isInstalled && (installPrompt !== null || isIOS);
+  const showInstallPromotion = !isInstalled && installPrompt !== null;
 
   return (
-    <main className="relative flex min-h-screen flex-col overflow-hidden px-4 py-6 sm:px-6 sm:py-8">
+    <main className="relative flex min-h-screen flex-col items-center justify-start overflow-hidden px-4 py-8 sm:px-6 sm:py-12">
       <section className="panel-shell relative mx-auto flex w-full max-w-3xl flex-col justify-between gap-6 overflow-hidden px-5 py-6 sm:px-8 sm:py-8" data-testid="timer-shell">
-        <header className="flex flex-row items-center justify-center gap-2 border-b border-border-subtle pb-6 pt-2">
-          <Logo aria-hidden="true" className="h-[35px] w-auto text-text-primary sm:h-[43px]" />
-          <div className="flex flex-col items-start gap-0.5 leading-none">
-            <h1 className="text-2xl font-bold leading-none text-text-primary sm:text-3xl">
+        <header className="flex flex-row items-center justify-center gap-3 border-b border-border-subtle pb-6 pt-2">
+          <LogoMark aria-hidden="true" className="h-[38px] w-auto text-text-primary sm:h-[45px]" />
+          <div className="flex flex-col items-start gap-1 leading-none">
+            <h1 className="text-2xl font-bold tracking-tight text-text-primary sm:text-3xl leading-none">
               Openpot
             </h1>
-            <p className="text-[9px] font-medium uppercase tracking-[0.15em] text-text-secondary sm:text-[11px] leading-none">
+            <p className="text-[8px] font-bold uppercase tracking-[0.15em] text-text-secondary sm:text-[10px] leading-none">
               Secure Session Tracker
             </p>
           </div>
@@ -384,33 +419,20 @@ export function SecureTimerDashboard() {
                   </div>
                   <div>
                     <h3 className="text-sm font-bold uppercase tracking-widest text-text-primary">
-                      {isIOS ? 'Install on iOS' : 'Install Openpot'}
+                      Install Openpot
                     </h3>
-                    {isIOS ? (
-                      <div className="mt-1 flex flex-col gap-1.5">
-                        <p className="text-xs text-text-secondary leading-normal">
-                          Tap the <span className="inline-block p-1 bg-bg-base rounded -my-1 mx-0.5"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" x2="12" y1="2" y2="15"/></svg></span> **Share** button below
-                        </p>
-                        <p className="text-xs text-text-secondary leading-normal">
-                          Then scroll down and select <span className="inline-block p-1 bg-bg-base rounded -my-1 mx-0.5"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 8v8"/><path d="M8 12h8"/></svg></span> **Add to Home Screen**.
-                        </p>
-                      </div>
-                    ) : (
-                      <p className="mt-1 text-xs text-text-secondary leading-normal">
-                        Add to home screen for the best experience and native-style tracking.
-                      </p>
-                    )}
+                    <p className="mt-1 text-xs text-text-secondary leading-normal">
+                      Add to home screen for the best experience and native-style tracking.
+                    </p>
                   </div>
                 </div>
-                {!isIOS && (
-                  <button
-                    className="min-h-11 shrink-0 rounded-full bg-primary px-5 py-2 text-xs font-bold text-text-inverse shadow-sm transition-all hover:bg-primary-hover active:scale-95"
-                    onClick={() => void installApp()}
-                    type="button"
-                  >
-                    Install Now
-                  </button>
-                )}
+                <button
+                  className="min-h-11 shrink-0 rounded-full bg-primary px-5 py-2 text-xs font-bold text-text-inverse shadow-sm transition-all hover:bg-primary-hover active:scale-95"
+                  onClick={() => void installApp()}
+                  type="button"
+                >
+                  Install Now
+                </button>
               </div>
             </section>
           ) : null}
@@ -430,6 +452,17 @@ export function SecureTimerDashboard() {
                 </h2>
                 <p className="mt-1 text-sm text-text-secondary">
                   Anonymous records stored locally inside your device only.
+                  {recentSessions.length > 0 && (
+                    <>
+                      {' '}
+                      <button 
+                        onClick={() => void handleExportCSV()}
+                        className="text-primary hover:text-primary-hover font-bold transition-colors"
+                      >
+                        Download full log as CSV.
+                      </button>
+                    </>
+                  )}
                 </p>
               </div>
             </div>
@@ -540,11 +573,7 @@ export function SecureTimerDashboard() {
         </div>
       </section>
 
-      <div className="mb-2 mt-auto pt-8 flex w-full justify-center">
-        <span className="inline-flex w-max rounded border border-border-subtle bg-bg-base/50 px-2 py-1 font-mono text-[10px] font-medium text-text-tertiary backdrop-blur-sm">
-          {APP_VERSION}
-        </span>
-      </div>
+      <Footer />
     </main>
   );
 }

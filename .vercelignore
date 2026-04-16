@@ -1,0 +1,35 @@
+# Documentation
+README.md
+CONTRIBUTING.md
+DEVELOPMENT.md
+LICENSE
+NOTICE.md
+
+# AI & Agent Framework Metadata
+.agents/
+.product/
+.workspace/
+.codex
+.brain/
+.gemini/
+.cursor/
+
+# Local & Docker Development
+.certs/
+compose.yaml
+Dockerfile
+.dockerignore
+.devcontainer/
+
+# Data & Cache
+openpot-sessions-db.json
+tsconfig.tsbuildinfo
+.pnpm-store/
+.next/
+
+# Test Artifacts
+coverage/
+playwright-report/
+test-results/
+tests/
+vitest.config.ts
