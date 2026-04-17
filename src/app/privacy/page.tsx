@@ -12,7 +12,7 @@ export default function PrivacyPage() {
     <main className="relative flex min-h-screen flex-col items-center justify-start overflow-hidden px-4 py-8 sm:px-6 sm:py-12">
       <section className="panel-shell relative mx-auto flex w-full max-w-3xl flex-col gap-6 overflow-hidden px-5 py-6 sm:px-8 sm:py-8">
         <header className="border-b border-border-subtle pb-6 pt-2">
-          <Link href="/" className="flex flex-row items-center justify-center gap-3 transition-transform hover:scale-[1.02] active:scale-[0.98]">
+          <Link href="/" className="flex flex-row items-center justify-center gap-1.5 transition-transform hover:scale-[1.02] active:scale-[0.98]">
             <LogoMark aria-hidden="true" className="h-[38px] w-auto text-text-primary sm:h-[45px]" />
             <div className="flex flex-col items-start gap-1 leading-none text-left">
               <h1 className="text-2xl font-bold tracking-tight text-text-primary sm:text-3xl leading-none">

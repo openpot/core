@@ -67,6 +67,7 @@ export function SecureTimerDashboard() {
   const [isIOS, setIsIOS] = useState(false);
   const [activeDeleteId, setActiveDeleteId] = useState<string | null>(null);
   const [isEditingStrains, setIsEditingStrains] = useState(false);
+  const [isRatingDismissed, setIsRatingDismissed] = useState(false);
   const [isDismissed, setIsDismissed] = useState(() => {
     if (typeof window === 'undefined') return false;
     return localStorage.getItem('openpot:install-banner-dismissed') === '1';
@@ -162,6 +163,13 @@ export function SecureTimerDashboard() {
   const isIdle = state.status === TIMER_STATUS.READY;
   const isActive = state.status === TIMER_STATUS.ACTIVE;
   const isStopped = state.status === TIMER_STATUS.STOPPED;
+
+  useEffect(() => {
+    if (isActive) {
+      setIsRatingDismissed(false);
+    }
+  }, [isActive]);
+
   const isStopDisabled = isActive && state.elapsedMs < 1000;
 
   const primaryActionLabel = isStopped 
@@ -180,7 +188,7 @@ export function SecureTimerDashboard() {
   return (
     <main className="relative flex min-h-screen flex-col items-center justify-start overflow-hidden px-4 py-8 sm:px-6 sm:py-12">
       <section className="panel-shell relative mx-auto flex w-full max-w-3xl flex-col justify-between gap-6 overflow-hidden px-5 py-6 sm:px-8 sm:py-8" data-testid="timer-shell">
-        <header className="flex flex-row items-center justify-center gap-3 border-b border-border-subtle pb-6 pt-2">
+        <header className="flex flex-row items-center justify-center gap-1.5 border-b border-border-subtle pb-6 pt-2">
           <LogoMark aria-hidden="true" className="h-[38px] w-auto text-text-primary sm:h-[45px]" />
           <div className="flex flex-col items-start gap-1 leading-none">
             <h1 className="text-2xl font-bold tracking-tight text-text-primary sm:text-3xl leading-none">
@@ -197,6 +205,53 @@ export function SecureTimerDashboard() {
 
             {(
               <div className="mx-0 w-full space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                <div className="space-y-2 text-left">
+                  <div className="flex items-center gap-1.5 mb-2 relative group">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-text-tertiary text-left">
+                      HOW ARE YOU CONSUMING?
+                    </p>
+                    <div className="flex h-5 w-5 items-center justify-center cursor-help text-text-tertiary hover:text-text-secondary transition-colors">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+                      </svg>
+                    </div>
+
+                    {/* Tooltip */}
+                    <div className="absolute left-0 bottom-full mb-2 w-72 p-3 bg-bg-overlay/95 backdrop-blur-md border border-border rounded-lg shadow-2xl opacity-0 translate-y-1 scale-95 group-hover:opacity-100 group-hover:translate-y-0 group-hover:scale-100 transition-all pointer-events-none z-50">
+                      <ul className="space-y-2 text-[11px] leading-snug text-text-secondary">
+                        <li><span className="font-bold text-primary uppercase tracking-wider text-[9px]">Flower:</span> Buds for smoking or vaporizing.</li>
+                        <li><span className="font-bold text-primary uppercase tracking-wider text-[9px]">Vape:</span> Oil cartridges or pods.</li>
+                        <li><span className="font-bold text-primary uppercase tracking-wider text-[9px]">Extract:</span> Wax, shatter, or dabs.</li>
+                        <li><span className="font-bold text-primary uppercase tracking-wider text-[9px]">Edible:</span> Infused food or gummies.</li>
+                        <li><span className="font-bold text-primary uppercase tracking-wider text-[9px]">Drink:</span> Infused beverages.</li>
+                        <li><span className="font-bold text-primary uppercase tracking-wider text-[9px]">Tincture:</span> Sublingual liquid drops.</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide no-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                    {methods.map((m) => (
+                      <button
+                        key={m}
+                        type="button"
+                        disabled={!isIdle}
+                        onClick={() => setSelectedMethod(selectedMethod === m ? null : m)}
+                        className={`shrink-0 ${PILL_CLASSES} !text-xs ${
+                          selectedMethod === m
+                            ? 'bg-primary/10 border-primary/40 !text-primary'
+                            : 'hover:border-text-tertiary text-text-secondary'
+                        } ${!isIdle && selectedMethod !== m ? 'opacity-40 grayscale pointer-events-none' : ''} ${!isIdle && selectedMethod === m ? 'pointer-events-none' : ''}`}
+                        style={{ 
+                          fontSize: '12px', 
+                          transform: 'none', 
+                          WebkitTransform: 'none'
+                        }}
+                      >
+                        {m}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <div className="space-y-2 text-left">
                   <div className="flex items-center gap-1.5">
                     <label htmlFor="custom-name" className="block text-[10px] font-bold uppercase tracking-widest text-text-tertiary">
@@ -294,93 +349,6 @@ export function SecureTimerDashboard() {
                   )}
                 </div>
 
-                <div className="space-y-2 text-left">
-                  <div className="flex items-center gap-1.5 mb-2 relative group">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-text-tertiary text-left">
-                      HOW ARE YOU CONSUMING?
-                    </p>
-                    <div className="flex h-5 w-5 items-center justify-center cursor-help text-text-tertiary hover:text-text-secondary transition-colors">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
-                      </svg>
-                    </div>
-
-                    {/* Tooltip */}
-                    <div className="absolute left-0 bottom-full mb-2 w-72 p-3 bg-bg-overlay/95 backdrop-blur-md border border-border rounded-lg shadow-2xl opacity-0 translate-y-1 scale-95 group-hover:opacity-100 group-hover:translate-y-0 group-hover:scale-100 transition-all pointer-events-none z-50">
-                      <ul className="space-y-2 text-[11px] leading-snug text-text-secondary">
-                        <li><span className="font-bold text-primary uppercase tracking-wider text-[9px]">Flower:</span> Buds for smoking or vaporizing.</li>
-                        <li><span className="font-bold text-primary uppercase tracking-wider text-[9px]">Vape:</span> Oil cartridges or pods.</li>
-                        <li><span className="font-bold text-primary uppercase tracking-wider text-[9px]">Extract:</span> Wax, shatter, or dabs.</li>
-                        <li><span className="font-bold text-primary uppercase tracking-wider text-[9px]">Edible:</span> Infused food or gummies.</li>
-                        <li><span className="font-bold text-primary uppercase tracking-wider text-[9px]">Drink:</span> Infused beverages.</li>
-                        <li><span className="font-bold text-primary uppercase tracking-wider text-[9px]">Tincture:</span> Sublingual liquid drops.</li>
-                      </ul>
-                    </div>
-                  </div>
-                  <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide no-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                    {methods.map((m) => (
-                      <button
-                        key={m}
-                        type="button"
-                        disabled={!isIdle}
-                        onClick={() => setSelectedMethod(selectedMethod === m ? null : m)}
-                        className={`shrink-0 ${PILL_CLASSES} !text-xs ${
-                          selectedMethod === m
-                            ? 'bg-primary/10 border-primary/40 !text-primary'
-                            : 'hover:border-text-tertiary text-text-secondary'
-                        } ${!isIdle && selectedMethod !== m ? 'opacity-40 grayscale pointer-events-none' : ''} ${!isIdle && selectedMethod === m ? 'pointer-events-none' : ''}`}
-                        style={{ 
-                          fontSize: '12px', 
-                          transform: 'none', 
-                          WebkitTransform: 'none'
-                        }}
-                      >
-                        {m}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="mx-0 w-full animate-in fade-in slide-in-from-bottom-2 duration-500">
-                  <div className="flex items-center gap-1.5 mb-2 relative group">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-text-tertiary text-left">
-                      HOW WAS THE SESSION?
-                    </p>
-                    <div className="flex h-5 w-5 items-center justify-center cursor-help text-text-tertiary hover:text-text-secondary transition-colors">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
-                      </svg>
-                    </div>
-                    
-                    {/* Tooltip */}
-                    <div className="absolute left-0 bottom-full mb-2 w-64 p-3 bg-bg-overlay/95 backdrop-blur-md border border-border rounded-lg shadow-2xl opacity-0 translate-y-1 scale-95 group-hover:opacity-100 group-hover:translate-y-0 group-hover:scale-100 transition-all pointer-events-none z-50">
-                      <p className="text-[11px] leading-relaxed text-text-secondary font-medium">
-                        This can be changed any time until creating a new session.
-                      </p>
-                    </div>
-                  </div>
-                  <div className={`flex gap-2 overflow-x-auto pb-1 scrollbar-hide no-scrollbar transition-all duration-500 ${!isStopped ? 'opacity-40 grayscale pointer-events-none' : ''}`} style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                    {ratings.map((r) => (
-                      <button
-                        key={r}
-                        type="button"
-                        onClick={() => rateSession(r)}
-                        className={`shrink-0 ${PILL_CLASSES} !text-xs ${
-                          state.pendingSession?.rating === r
-                            ? 'bg-primary/10 border-primary/40 !text-primary'
-                            : 'hover:border-text-tertiary text-text-secondary'
-                        } ${!isStopped && !isIdle ? 'opacity-40 grayscale pointer-events-none' : ''} ${!isStopped && isIdle ? 'opacity-40 grayscale pointer-events-none' : ''}`}
-                        style={{ 
-                          fontSize: '12px', 
-                          transform: 'none', 
-                          WebkitTransform: 'none'
-                        }}
-                      >
-                        {r}
-                      </button>
-                    ))}
-                  </div>
-                </div>
 
                 <style jsx>{`
                   .scrollbar-hide::-webkit-scrollbar {
@@ -594,6 +562,40 @@ export function SecureTimerDashboard() {
           </section>
         </div>
       </section>
+
+      {isStopped && !isRatingDismissed && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg-base/80 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+          <div className="panel-shell w-full max-w-[320px] p-6 animate-in zoom-in-95 duration-300 shadow-2xl flex flex-col gap-5">
+            <div className="text-center">
+              <h2 className="text-[11px] font-bold tracking-widest text-text-primary uppercase opacity-90">
+                How was your session?
+              </h2>
+            </div>
+            <div className="grid grid-cols-2 gap-2.5">
+              {ratings.map((r) => (
+                <button
+                  key={r}
+                  type="button"
+                  onClick={() => {
+                    rateSession(r);
+                    setIsRatingDismissed(true);
+                  }}
+                  className={`${PILL_CLASSES} !w-full !max-w-none !min-w-0 !text-[11px] !min-h-[44px] !px-2 border-border-subtle bg-bg-overlay hover:border-primary/40 hover:text-primary transition-all`}
+                >
+                  {r}
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => setIsRatingDismissed(true)}
+                className={`${PILL_CLASSES} !w-full !max-w-none !min-w-0 !text-[10px] !min-h-[44px] col-span-2 mt-1 border-border-subtle hover:border-border bg-bg-subtle/50 hover:bg-bg-subtle text-text-tertiary hover:text-text-secondary transition-all opacity-80`}
+              >
+                SKIP
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </main>

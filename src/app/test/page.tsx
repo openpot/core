@@ -524,7 +524,7 @@ export default function TestPage() {
         <header className="border-b border-border-subtle pb-6 pt-2">
           <Link
             href="/"
-            className="flex flex-row items-center justify-center gap-3 transition-transform hover:scale-[1.02] active:scale-[0.98]"
+            className="flex flex-row items-center justify-center gap-1.5 transition-transform hover:scale-[1.02] active:scale-[0.98]"
           >
             <LogoMark aria-hidden="true" className="h-[38px] w-auto text-text-primary sm:h-[45px]" />
             <div className="flex flex-col items-start gap-1 leading-none text-left">
