@@ -91,11 +91,15 @@ export default function AboutPage() {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-primary mt-1">•</span>
-                    <span>Refined tracking selection forms and standardized top-anchored vertical rhythm.</span>
+                    <span>Refined tracking selection forms and re-ordered inputs (Consumption method first).</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-primary mt-1">•</span>
                     <span>Secure environment gating logic implemented for non-production lab routes.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-primary mt-1">•</span>
+                    <span>Standardized top-anchored vertical rhythm and tight logo horizontal lockups.</span>
                   </li>
                 </ul>
               </div>
