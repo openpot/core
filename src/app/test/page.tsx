@@ -518,7 +518,7 @@ function QuickSelectInput() {
 
 export default function TestPage() {
   return (
-    <main className="relative flex min-h-screen flex-col items-center justify-start overflow-hidden px-4 py-8 sm:px-6 sm:py-12">
+    <main className="relative flex min-h-screen flex-col items-center justify-start overflow-hidden px-4 py-6 sm:px-6 sm:py-12">
       <section className="panel-shell relative mx-auto flex w-full max-w-3xl flex-col gap-8 overflow-hidden px-5 py-6 sm:px-8 sm:py-8">
         {/* ── Header ── */}
         <header className="border-b border-border-subtle pb-6 pt-2">
