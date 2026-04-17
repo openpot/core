@@ -1,6 +1,6 @@
 {
   "name": "openpot-secure-timer",
-  "version": "v0.2.0+7a33993",
+  "version": "v0.4.0+dc11797",
   "private": true,
   "packageManager": "pnpm@10.10.0",
   "scripts": {

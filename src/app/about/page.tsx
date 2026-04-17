@@ -73,28 +73,57 @@ export default function AboutPage() {
             <div className="space-y-6">
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold text-primary uppercase tracking-tighter bg-primary/10 px-1.5 py-0.5 rounded">v0.3.0</span>
-                  <span className="text-xs font-bold text-text-primary">The Identity Release</span>
+                  <span className="text-[10px] font-bold text-primary uppercase tracking-tighter bg-primary/10 px-1.5 py-0.5 rounded">v0.4.0</span>
+                  <span className="text-xs font-bold text-text-primary">The Experience Release</span>
                 </div>
                 <ul className="space-y-1.5 text-[13px] text-text-secondary list-none pl-1">
                   <li className="flex items-start gap-2">
                     <span className="text-primary mt-1">•</span>
+                    <span>Decoupled session rating flow into a dedicated post-session modal.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-primary mt-1">•</span>
+                    <span>Optimized mobile entry flows with dedicated Amount Input Lab layout structures.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-primary mt-1">•</span>
+                    <span>Persistent, dismissible PWA install prompt shown proactively on unsupported devices.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-primary mt-1">•</span>
+                    <span>Refined tracking selection forms and standardized top-anchored vertical rhythm.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-primary mt-1">•</span>
+                    <span>Secure environment gating logic implemented for non-production lab routes.</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold text-text-tertiary uppercase tracking-tighter bg-bg-overlay border border-border-subtle px-1.5 py-0.5 rounded">v0.3.0</span>
+                  <span className="text-xs font-bold text-text-secondary">The Identity Release</span>
+                </div>
+                <ul className="space-y-1.5 text-[13px] text-text-tertiary list-none pl-1">
+                  <li className="flex items-start gap-2">
+                    <span className="opacity-50 mt-1">•</span>
                     <span>Unified project-wide branding with horizontal lockup and tuned tracking.</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-primary mt-1">•</span>
+                    <span className="opacity-50 mt-1">•</span>
                     <span>Universal &quot;Page Shell&quot; (panel-card) structure across all secondary pages.</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-primary mt-1">•</span>
+                    <span className="opacity-50 mt-1">•</span>
                     <span>Standardized Navigation Footer (Home • About • Privacy • Terms).</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-primary mt-1">•</span>
+                    <span className="opacity-50 mt-1">•</span>
                     <span>Optimized top-anchored layout for improved identity and readability.</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-primary mt-1">•</span>
+                    <span className="opacity-50 mt-1">•</span>
                     <span>Hardened build system with JSX entity sanitization for production stability.</span>
                   </li>
                 </ul>
