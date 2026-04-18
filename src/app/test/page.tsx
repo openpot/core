@@ -514,6 +514,146 @@ function QuickSelectInput() {
   );
 }
 
+// ─── Input 6: Combined Quick-Select Grid + Stepper ───────────────────────────
+
+function CombinedGridStepperInput() {
+  const [grams, setGrams] = useState<number>(0);
+  const [unit, setUnit] = useState<Unit>('g');
+  const [step, setStep] = useState(0.1);
+
+  const displayVal = formatAmount(grams, unit);
+
+  const inc = () => setGrams((g) => parseFloat((g + step).toFixed(4)));
+  const dec = () => setGrams((g) => Math.max(0, parseFloat((g - step).toFixed(4))));
+
+  const handleDirect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const parsed = parseToGrams(e.target.value.replace(/[^0-9.]/g, ''), unit);
+    if (parsed !== null) setGrams(parsed);
+  };
+
+  return (
+    <div className="flex flex-col gap-6">
+      {/* Unit toggle */}
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-text-tertiary">Unit:</span>
+        <div className="flex rounded-lg overflow-hidden border border-border text-xs font-bold">
+          {(['g', 'mg'] as Unit[]).map((u) => (
+            <button
+              key={u}
+              type="button"
+              onClick={() => setUnit(u)}
+              className={[
+                'px-4 py-1.5 transition-colors',
+                unit === u ? 'bg-primary text-text-inverse' : 'text-text-tertiary hover:text-text-secondary',
+              ].join(' ')}
+            >
+              {u}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Pill grid */}
+      <div
+        role="listbox"
+        aria-label="Quick amount selection"
+        className="grid grid-cols-5 gap-2"
+      >
+        {QUICK_AMOUNTS_G.map((g) => {
+          const label = formatAmount(g, unit);
+          const isActive = grams === g;
+          return (
+            <button
+              key={g}
+              type="button"
+              role="option"
+              aria-selected={isActive}
+              onClick={() => setGrams(g)}
+              className={[
+                'rounded-xl py-3 px-1 text-sm font-bold transition-all duration-150 border',
+                isActive
+                  ? 'bg-primary/20 border-primary text-primary shadow-[0_0_0_1px_hsl(152_52%_42%_/_0.35)]'
+                  : 'bg-bg-overlay border-border text-text-secondary hover:border-primary/50 hover:text-text-primary active:scale-95',
+              ].join(' ')}
+            >
+              {label}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="w-full flex items-center px-2">
+        <div className="flex-1 border-t border-border-subtle"></div>
+        <span className="text-[10px] font-bold uppercase tracking-widest text-text-tertiary px-3 bg-transparent">Or Custom</span>
+        <div className="flex-1 border-t border-border-subtle"></div>
+      </div>
+
+      {/* Stepper + Presets Component (from #3) */}
+      <div className="flex flex-col gap-4">
+        {/* Stepper row */}
+        <div
+          className="flex items-stretch overflow-hidden rounded-xl border border-border bg-bg-overlay transition-[border-color,box-shadow] focus-within:border-primary focus-within:shadow-[0_0_0_3px_hsl(152_52%_42%_/_0.18)]"
+          style={{ minHeight: '56px' }}
+        >
+          <button
+            type="button"
+            onClick={dec}
+            aria-label="Decrease amount"
+            className="flex min-w-[52px] items-center justify-center text-2xl font-light text-text-secondary transition-colors hover:bg-primary/10 active:bg-primary/20 border-r border-border"
+          >
+            −
+          </button>
+          <input
+            id="input-combined-stepper"
+            inputMode="decimal"
+            type="text"
+            pattern="[0-9]*\.?[0-9]*"
+            value={displayVal}
+            onChange={handleDirect}
+            aria-label={`Amount: ${displayVal} ${unit}`}
+            className="flex-1 bg-transparent py-3 text-center text-xl font-bold text-text-primary outline-none"
+          />
+          <button
+            type="button"
+            onClick={inc}
+            aria-label="Increase amount"
+            className="flex min-w-[52px] items-center justify-center text-2xl font-light text-text-secondary transition-colors hover:bg-primary/10 active:bg-primary/20 border-l border-border"
+          >
+            +
+          </button>
+        </div>
+
+        {/* Step row */}
+        <div className="flex flex-wrap gap-2 items-center">
+          <span className="text-xs text-text-tertiary mr-1">Step:</span>
+          {PRESETS_G.map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => setStep(s)}
+              className={[
+                'rounded-md px-2.5 py-1 text-xs font-bold transition-colors',
+                step === s
+                  ? 'bg-primary/20 text-primary border border-primary/40'
+                  : 'bg-bg-subtle text-text-tertiary hover:text-text-secondary border border-transparent',
+              ].join(' ')}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <p className="text-xs text-text-tertiary pl-1 border-t border-border-subtle pt-4 mt-2">
+        Final Value:{' '}
+        <span className="font-semibold text-text-secondary">
+          {formatAmount(grams, 'g')} g / {formatAmount(grams, 'mg')} mg
+        </span>
+      </p>
+    </div>
+  );
+}
+
 // ─── Page ────────────────────────────────────────────────────────────────────
 
 export default function TestPage() {
@@ -599,6 +739,93 @@ export default function TestPage() {
               description="Tap a common amount pill for one-tap entry, or use the custom field for any value."
             />
             <QuickSelectInput />
+          </div>
+
+          {/* 6 · Combined */}
+          <div className="flex flex-col gap-4 rounded-xl bg-bg-subtle/40 border border-border-subtle p-4 sm:p-5">
+            <SectionHeader
+              index={6}
+              title="Combined Grid + Stepper"
+              description="A hybrid approach. Tap a preset pill for instant selection, or use the interactive stepper below for precise custom tuning."
+            />
+            <CombinedGridStepperInput />
+          </div>
+
+          {/* 7 · Icon Lab: Eye Off Variations */}
+          <div className="flex flex-col gap-4 rounded-xl bg-bg-subtle/40 border border-border-subtle p-4 sm:p-5">
+            <SectionHeader
+              index={7}
+              title="Icon Lab: Eye Off Variations"
+              description="Comparing different 'eye with slash' icon styles for the 'Omit Amount' button. All rendered at 13x13 within the red button style."
+            />
+            
+            <div className="grid grid-cols-5 gap-3">
+              {[
+                {
+                  name: 'Current',
+                  svg: (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                      <line x1="1" y1="1" x2="23" y2="23"/>
+                    </svg>
+                  )
+                },
+                {
+                  name: 'Bold (3.0)',
+                  svg: (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                      <line x1="1" y1="1" x2="23" y2="23"/>
+                    </svg>
+                  )
+                },
+                {
+                  name: 'Filled/Bold',
+                  svg: (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                       <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.01 2.54 3.01 4.59 5.54 5.54L4.22 19.88l1.42 1.42 14.14-14.14-1.42-1.42-2.32 2.32C14.77 5.76 13.43 5.3 12 5.3c-2.76 0-5 2.24-5 5 0 .61.11 1.18.3 1.72L4.05 15.3C2.81 14.41 1.78 13.3 1 12c1.73-4.39 6-7.5 11-7.5.95 0 1.87.11 2.76.32l-1.47 1.47c-.42-.19-.85-.3-1.29-.3zM12 17c.44 0 .87-.04 1.29-.12l1.47-1.47c-.89.21-1.81.32-2.76.32-5 0-9.27-3.11-11-7.5.78-1.3 1.81-2.41 3.05-3.3l1.42 1.42C2.11 10.45 1.11 12.5 1 15c1.73 4.39 6 7.5 11 7.5zM12 10.5c.28 0 .55.03.82.08l-3.24 3.24c-.05-.27-.08-.54-.08-.82 0-1.38 1.12-2.5 2.5-2.5z"/>
+                       <path d="M1 1l22 22 1.414-1.414L2.414-.414z" />
+                    </svg>
+                  )
+                },
+                {
+                  name: 'Hero Style',
+                  svg: (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+                    </svg>
+                  )
+                },
+                {
+                  name: 'Sharp',
+                  svg: (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="square" strokeLinejoin="miter">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <line x1="1" y1="1" x2="23" y2="23" />
+                    </svg>
+                  )
+                },
+                {
+                  name: 'Requested',
+                  svg: (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 -960 960 960" fill="currentColor">
+                      <path d="m644-428-58-58q9-47-27-88t-93-32l-58-58q17-8 34.5-12t37.5-4q75 0 127.5 52.5T660-500q0 20-4 37.5T644-428Zm128 126-58-56q38-29 67.5-63.5T832-500q-50-101-143.5-160.5T480-720q-29 0-57 4t-55 12l-62-62q41-17 84-25.5t90-8.5q151 0 269 83.5T920-500q-23 59-60.5 109.5T772-302Zm20 246L624-222q-35 11-70.5 16.5T480-200q-151 0-269-83.5T40-500q21-53 53-98.5t73-81.5L56-792l56-56 736 736-56 56ZM222-624q-29 26-53 57t-41 67q50 101 143.5 160.5T480-280q20 0 39-2.5t39-5.5l-36-38q-11 3-21 4.5t-21 1.5q-75 0-127.5-52.5T300-500q0-11 1.5-21t4.5-21l-84-82Zm319 93Zm-151 75Z"/>
+                    </svg>
+                  )
+                }
+              ].map((icon, idx) => (
+                <div key={idx} className="flex flex-col items-center gap-2">
+                  <div className="w-10 h-10 rounded-lg border border-error bg-error text-white flex items-center justify-center">
+                    {icon.svg}
+                  </div>
+                  <span className="text-[9px] font-bold uppercase tracking-tight text-text-tertiary text-center leading-none px-1">
+                    {icon.name}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
 
         </div>

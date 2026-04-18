@@ -12,6 +12,8 @@ export const SESSION_RECORD_KEYS = [
   'sync_status',
   'custom_name',
   'method',
+  'amount',
+  'amount_unit',
   'rating',
 ] as const;
 
@@ -25,6 +27,8 @@ export interface SessionRecord {
   sync_status: SyncStatus;
   custom_name?: string;
   method?: string;
+  amount?: number;
+  amount_unit?: 'g' | 'mg';
   rating?: string;
 }
 

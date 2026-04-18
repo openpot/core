@@ -8,8 +8,13 @@ import { Logo, LogoMark } from '@/components/ui/Logo';
 import { listAllSessions } from '@/lib/db/session-db';
 import { useSecureTimer } from '@/hooks/use-secure-timer';
 import { formatDuration, TIMER_STATUS } from '@/lib/timer/timer-machine';
+import { TimeDisplay } from './TimeDisplay';
+
+const DEFAULT_METHODS = ['Flower', 'Vape', 'Extract', 'Edible', 'Drink', 'Tincture'];
+const METHODS_KEY = 'openpot:methods_order';
 import { APP_VERSION } from '@/lib/version';
 import type { SessionRecord } from '@/types/session';
+import { AmountInputModal } from '@/components/features/timer/AmountInputModal';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -57,6 +62,10 @@ export function SecureTimerDashboard() {
     setCustomName,
     selectedMethod,
     setSelectedMethod,
+    amount,
+    setAmount,
+    amountUnit,
+    setAmountUnit,
     rateSession,
     startSession,
     stopSession,
@@ -72,9 +81,40 @@ export function SecureTimerDashboard() {
     if (typeof window === 'undefined') return false;
     return localStorage.getItem('openpot:install-banner-dismissed') === '1';
   });
+  const [isAmountModalOpen, setIsAmountModalOpen] = useState(false);
+  const [pendingMethod, setPendingMethod] = useState<string | null>(null);
+  const [methods, setMethods] = useState<string[]>(DEFAULT_METHODS);
+  const [displayMethods, setDisplayMethods] = useState<string[]>(DEFAULT_METHODS);
+  const [displayGhost, setDisplayGhost] = useState<string[]>(ghostLibrary);
 
-  const methods = ['Flower', 'Vape', 'Extract', 'Edible', 'Drink', 'Tincture'];
+  const handleMethodClick = (m: string) => {
+    if (selectedMethod === m) {
+      // Re-open modal pre-filled with existing amount to edit
+      setPendingMethod(m);
+      setIsAmountModalOpen(true);
+    } else {
+      setPendingMethod(m);
+      setIsAmountModalOpen(true);
+    }
+  };
+
+  const handleAmountSave = (savedAmount: number | undefined, savedUnit: 'g' | 'mg') => {
+    if (pendingMethod) {
+      setSelectedMethod(pendingMethod);
+    }
+    setAmount(savedAmount);
+    setAmountUnit(savedUnit);
+    setIsAmountModalOpen(false);
+    setPendingMethod(null);
+  };
+
+  const handleAmountClose = () => {
+    setIsAmountModalOpen(false);
+    setPendingMethod(null);
+  };
+
   const ratings = ["Dialed In", "Mellow", "Mid", "Too Heavy"];
+
 
   useEffect(() => {
     if (!('serviceWorker' in navigator)) {
@@ -83,6 +123,18 @@ export function SecureTimerDashboard() {
 
     setIsInstalled(isStandaloneMode());
     setIsIOS(/iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream);
+
+    try {
+      const saved = localStorage.getItem(METHODS_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const merged = Array.from(new Set([...parsed, ...DEFAULT_METHODS]))
+            .filter(m => DEFAULT_METHODS.includes(m as string));
+          setMethods(merged as string[]);
+        }
+      }
+    } catch {}
 
 
     const handleBeforeInstallPrompt = (event: Event) => {
@@ -133,7 +185,7 @@ export function SecureTimerDashboard() {
       const allSessions = await listAllSessions();
       if (allSessions.length === 0) return;
 
-      const headers = ['Date', 'Time', 'Item', 'Method', 'Duration (sec)', 'Rating'];
+      const headers = ['Date', 'Time', 'Item', 'Method', 'Amount (g)', 'Duration (sec)', 'Rating'];
       const rows = allSessions.map(s => {
         const dateObj = new Date(s.start_time);
         return [
@@ -141,6 +193,7 @@ export function SecureTimerDashboard() {
           dateObj.toLocaleTimeString(),
           s.custom_name || 'Unnamed',
           s.method || 'N/A',
+          s.amount !== undefined ? s.amount.toFixed(3) : 'N/A',
           Math.floor((Date.parse(s.end_time) - Date.parse(s.start_time)) / 1000),
           s.rating || 'Unrated'
         ].map(val => `"${String(val).replace(/"/g, '""')}"`).join(',');
@@ -170,7 +223,27 @@ export function SecureTimerDashboard() {
     }
   }, [isActive]);
 
+  // Push used method to front ONLY after starting a new session
+  useEffect(() => {
+    if (isActive && selectedMethod) {
+      setMethods(prev => {
+        if (prev[0] === selectedMethod) return prev;
+        const next = [selectedMethod, ...prev.filter(m => m !== selectedMethod)];
+        try { localStorage.setItem(METHODS_KEY, JSON.stringify(next)); } catch {}
+        return next;
+      });
+    }
+  }, [isActive, selectedMethod]);
+
   const isStopDisabled = isActive && state.elapsedMs < 1000;
+
+  // Sync display states only when totally idle (so lists don't jump during a flow)
+  useEffect(() => {
+    if (isIdle) {
+      setDisplayMethods(methods);
+      setDisplayGhost(ghostLibrary);
+    }
+  }, [isIdle, methods, ghostLibrary]);
 
   const primaryActionLabel = isStopped 
     ? 'New Session' 
@@ -205,54 +278,52 @@ export function SecureTimerDashboard() {
 
             {(
               <div className="mx-0 w-full space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                <div className="space-y-2 text-left">
-                  <div className="flex items-center gap-1.5 mb-2 relative group">
+                <div className="space-y-[3.84px] text-left">
+                  <div className="flex items-center gap-1.5 relative group">
                     <p className="text-[10px] font-bold uppercase tracking-widest text-text-tertiary text-left">
                       HOW ARE YOU CONSUMING?
                     </p>
-                    <div className="flex h-5 w-5 items-center justify-center cursor-help text-text-tertiary hover:text-text-secondary transition-colors">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
-                      </svg>
-                    </div>
-
-                    {/* Tooltip */}
-                    <div className="absolute left-0 bottom-full mb-2 w-72 p-3 bg-bg-overlay/95 backdrop-blur-md border border-border rounded-lg shadow-2xl opacity-0 translate-y-1 scale-95 group-hover:opacity-100 group-hover:translate-y-0 group-hover:scale-100 transition-all pointer-events-none z-50">
-                      <ul className="space-y-2 text-[11px] leading-snug text-text-secondary">
-                        <li><span className="font-bold text-primary uppercase tracking-wider text-[9px]">Flower:</span> Buds for smoking or vaporizing.</li>
-                        <li><span className="font-bold text-primary uppercase tracking-wider text-[9px]">Vape:</span> Oil cartridges or pods.</li>
-                        <li><span className="font-bold text-primary uppercase tracking-wider text-[9px]">Extract:</span> Wax, shatter, or dabs.</li>
-                        <li><span className="font-bold text-primary uppercase tracking-wider text-[9px]">Edible:</span> Infused food or gummies.</li>
-                        <li><span className="font-bold text-primary uppercase tracking-wider text-[9px]">Drink:</span> Infused beverages.</li>
-                        <li><span className="font-bold text-primary uppercase tracking-wider text-[9px]">Tincture:</span> Sublingual liquid drops.</li>
-                      </ul>
-                    </div>
                   </div>
                   <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide no-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                    {methods.map((m) => (
-                      <button
-                        key={m}
-                        type="button"
-                        disabled={!isIdle}
-                        onClick={() => setSelectedMethod(selectedMethod === m ? null : m)}
-                        className={`shrink-0 ${PILL_CLASSES} !text-xs ${
-                          selectedMethod === m
-                            ? 'bg-primary/10 border-primary/40 !text-primary'
-                            : 'hover:border-text-tertiary text-text-secondary'
-                        } ${!isIdle && selectedMethod !== m ? 'opacity-40 grayscale pointer-events-none' : ''} ${!isIdle && selectedMethod === m ? 'pointer-events-none' : ''}`}
-                        style={{ 
-                          fontSize: '12px', 
-                          transform: 'none', 
-                          WebkitTransform: 'none'
-                        }}
-                      >
-                        {m}
-                      </button>
-                    ))}
+                    {displayMethods.map((m) => {
+                      const hasAmount = selectedMethod === m && amount !== undefined && amountUnit;
+                      return (
+                        <button
+                          key={m}
+                          type="button"
+                          disabled={!isIdle}
+                          onClick={() => handleMethodClick(m)}
+                          className={`shrink-0 ${PILL_CLASSES} !text-xs ${
+                            selectedMethod === m
+                              ? 'bg-primary/10 border-primary/40 !text-primary'
+                              : 'hover:border-text-tertiary text-text-secondary'
+                          } ${!isIdle && selectedMethod !== m ? 'opacity-40 grayscale pointer-events-none' : ''} ${!isIdle && selectedMethod === m ? 'pointer-events-none' : ''}`}
+                          style={{ 
+                            fontSize: '12px', 
+                            transform: 'none', 
+                            WebkitTransform: 'none'
+                          }}
+                        >
+                          {m}
+                          {hasAmount && (
+                            <>
+                              <div className={`mx-2.5 h-4 w-px shrink-0 ${selectedMethod === m ? 'bg-primary/30' : 'bg-border'}`} />
+                              <span className="normal-case">
+                                {amountUnit === 'mg' 
+                                  ? parseFloat((amount * 1000).toFixed(3)).toString() 
+                                  : parseFloat(amount.toFixed(3)).toString()
+                                }
+                                {amountUnit}
+                              </span>
+                            </>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
-                <div className="space-y-2 text-left">
+                <div className="space-y-[3.2px] text-left">
                   <div className="flex items-center gap-1.5">
                     <label htmlFor="custom-name" className="block text-[10px] font-bold uppercase tracking-widest text-text-tertiary">
                       WHAT ARE YOU TRACKING?
@@ -288,9 +359,9 @@ export function SecureTimerDashboard() {
                     onChange={(e) => setCustomName(e.target.value.slice(0, 20))}
                     className="w-full rounded-lg border border-border bg-bg-base/50 px-4 py-2.5 text-sm text-text-primary placeholder:text-text-tertiary focus:border-primary focus:outline-none transition-colors disabled:opacity-75 disabled:cursor-not-allowed"
                   />
-                  {ghostLibrary.length > 0 && (
+                  {displayGhost.length > 0 && (
                     <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide no-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                      {ghostLibrary.map((name) => (
+                      {displayGhost.map((name) => (
                         <div 
                           key={name}
                           className={`shrink-0 flex items-center h-9 min-w-[85px] rounded-full border transition-all overflow-hidden ${
@@ -470,7 +541,7 @@ export function SecureTimerDashboard() {
                 <ul className="space-y-3">
                   {recentSessions.map((session) => (
                     <li
-                      className="flex min-h-[4.5rem] items-center rounded-md bg-bg-base px-4"
+                      className="flex min-h-[4rem] items-center rounded-md bg-bg-base px-3"
                       key={session.session_id}
                     >
                       {activeDeleteId === session.session_id ? (
@@ -504,34 +575,46 @@ export function SecureTimerDashboard() {
                           </div>
                         </div>
                       ) : (
-                        <div className="flex w-full items-center justify-between gap-3">
+                        <div className="flex w-full items-center justify-between gap-2">
                           <div>
                             <div className="flex items-center gap-2">
                               <p className="font-mono text-lg font-semibold text-text-primary">
                                 {formatDuration(session.duration_seconds)}
                               </p>
                               {session.method && (
-                                <span className="flex items-center justify-center h-4 rounded-full border border-border bg-bg-overlay px-0.5 text-[11px] font-semibold font-sans uppercase tracking-widest text-text-secondary leading-none">
+                                <span className="flex items-center justify-center h-4 rounded-full border border-border bg-bg-overlay px-1 text-[11px] font-semibold font-sans uppercase tracking-widest text-text-secondary leading-none">
                                   {session.method}
                                 </span>
                               )}
                               {session.rating && (
-                                <span className="flex items-center justify-center h-4 rounded-full border border-border bg-bg-overlay px-0.5 text-[11px] font-semibold font-sans uppercase tracking-widest text-text-secondary leading-none">
+                                <span className="flex items-center justify-center h-4 rounded-full border border-border bg-bg-overlay px-1 text-[11px] font-semibold font-sans uppercase tracking-widest text-text-secondary leading-none">
                                   {session.rating}
                                 </span>
                               )}
                             </div>
                             <div className="flex items-center gap-1.5 text-xs text-text-secondary">
-                              <span className="uppercase tracking-wider">
+                              <span className="uppercase tracking-wider text-text-tertiary">
                                 {new Date(session.start_time).toLocaleTimeString([], {
                                   hour: '2-digit',
                                   minute: '2-digit',
                                 })}
                               </span>
+
+                              {session.amount !== undefined && session.amount_unit && (
+                                <>
+                                  <span className="text-text-tertiary">•</span>
+                                  <span className="font-semibold text-text-secondary whitespace-nowrap">
+                                    {session.amount_unit === 'mg'
+                                      ? `${parseFloat((session.amount * 1000).toFixed(3))}mg`
+                                      : `${parseFloat(session.amount.toFixed(3))}g`}
+                                  </span>
+                                </>
+                              )}
+
                               {session.custom_name && (
                                 <>
                                   <span className="text-text-tertiary">•</span>
-                                  <span className="font-medium text-text-tertiary truncate max-w-[120px]">
+                                  <span className="font-medium text-text-tertiary truncate max-w-[140px]">
                                     {session.custom_name}
                                   </span>
                                 </>
@@ -568,7 +651,7 @@ export function SecureTimerDashboard() {
           <div className="panel-shell w-full max-w-[320px] p-6 animate-in zoom-in-95 duration-300 shadow-2xl flex flex-col gap-5">
             <div className="text-center">
               <h2 className="text-[11px] font-bold tracking-widest text-text-primary uppercase opacity-90">
-                How was your session?
+                How are you feeling?
               </h2>
             </div>
             <div className="grid grid-cols-2 gap-2.5">
@@ -588,9 +671,9 @@ export function SecureTimerDashboard() {
               <button
                 type="button"
                 onClick={() => setIsRatingDismissed(true)}
-                className={`${PILL_CLASSES} !w-full !max-w-none !min-w-0 !text-[10px] !min-h-[44px] col-span-2 mt-1 border-border-subtle hover:border-border bg-bg-subtle/50 hover:bg-bg-subtle text-text-tertiary hover:text-text-secondary transition-all opacity-80`}
+                className="w-full h-10 rounded-lg border border-error bg-error text-[11px] font-bold text-white hover:brightness-110 active:scale-95 transition-all duration-150 shadow-sm col-span-2 mt-1"
               >
-                SKIP
+                Skip
               </button>
             </div>
           </div>
@@ -598,6 +681,14 @@ export function SecureTimerDashboard() {
       )}
 
       <Footer />
+      <AmountInputModal 
+        isOpen={isAmountModalOpen} 
+        methodName={pendingMethod || ''}
+        initialAmount={amount}
+        initialUnit={amountUnit}
+        onClose={handleAmountClose}
+        onSave={handleAmountSave}
+      />
     </main>
   );
 }

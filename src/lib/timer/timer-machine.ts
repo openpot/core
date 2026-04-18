@@ -108,6 +108,8 @@ export function createSessionRecord(
   endedAt: number,
   customName?: string,
   method?: string,
+  amount?: number,
+  amountUnit?: 'g' | 'mg',
 ): SessionRecord {
   const durationSeconds = Math.max(0, Math.floor((endedAt - startedAt) / 1000));
 
@@ -119,6 +121,8 @@ export function createSessionRecord(
     sync_status: SYNC_STATUS.PENDING,
     custom_name: customName || undefined,
     method: method || undefined,
+    amount: amount !== undefined ? amount : undefined,
+    amount_unit: amountUnit || undefined,
   };
 }
 

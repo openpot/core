@@ -47,6 +47,8 @@ export function useSecureTimer() {
   const [historyError, setHistoryError] = useState<string>();
   const [customName, setCustomName] = useState('');
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
+  const [amount, setAmount] = useState<number | undefined>(undefined);
+  const [amountUnit, setAmountUnit] = useState<'g' | 'mg' | undefined>(undefined);
   const [networkStatus, setNetworkStatus] = useState<'online' | 'offline'>('online');
   const workerRef = useRef<Worker | null>(null);
   const fallbackIntervalRef = useRef<number | undefined>(undefined);
@@ -65,6 +67,8 @@ export function useSecureTimer() {
             if (startedAt <= Date.now()) {
               if (data.customName) setCustomName(String(data.customName));
               if (data.method) setSelectedMethod(String(data.method));
+              if (data.amount !== undefined) setAmount(Number(data.amount));
+              if (data.amountUnit) setAmountUnit(data.amountUnit as 'g' | 'mg');
               dispatch({ type: 'START', startedAt });
               return;
             }
@@ -281,16 +285,20 @@ export function useSecureTimer() {
     };
   }, [state.notice]);
 
-  const startSession = useCallback((name?: string, method?: string) => {
+  const startSession = useCallback((name?: string, method?: string, sessionAmount?: number, sessionAmountUnit?: 'g' | 'mg') => {
     const startedAt = Date.now();
-    const effectiveName = name || customName;
-    const effectiveMethod = method || selectedMethod;
+    const effectiveName = name ?? customName;
+    const effectiveMethod = method ?? selectedMethod;
+    const effectiveAmount = sessionAmount ?? amount;
+    const effectiveAmountUnit = sessionAmountUnit ?? amountUnit;
 
     try {
       window.localStorage.setItem(ACTIVE_SESSION_KEY, JSON.stringify({
         startedAt,
         customName: effectiveName,
-        method: effectiveMethod
+        method: effectiveMethod,
+        amount: effectiveAmount,
+        amountUnit: effectiveAmountUnit
       }));
     } catch {
       // Ignore storage errors safely
@@ -303,14 +311,19 @@ export function useSecureTimer() {
     }
 
     dispatch({ type: 'START', startedAt });
-  }, [customName, selectedMethod]);
+  }, [customName, selectedMethod, amount, amountUnit]);
 
   const removeSession = useCallback(async (sessionId: string) => {
     await deleteSession(sessionId);
     await loadSessions();
   }, [loadSessions]);
 
-  const stopSession = useCallback(async (customName?: string, method?: string) => {
+  const stopSession = useCallback(async (
+    argName?: string,
+    argMethod?: string,
+    argAmount?: number,
+    argAmountUnit?: 'g' | 'mg'
+  ) => {
     if (state.status !== TIMER_STATUS.ACTIVE || state.startedAt === undefined) {
       return;
     }
@@ -321,7 +334,19 @@ export function useSecureTimer() {
       // Ignore storage errors safely
     }
 
-    const session = createSessionRecord(state.startedAt, Date.now(), customName, method);
+    const effectiveName = argName ?? customName;
+    const effectiveMethod = argMethod ?? selectedMethod;
+    const effectiveAmount = argAmount ?? amount;
+    const effectiveAmountUnit = argAmountUnit ?? amountUnit;
+
+    const session = createSessionRecord(
+      state.startedAt,
+      Date.now(),
+      effectiveName || undefined,
+      effectiveMethod || undefined,
+      effectiveAmount,
+      effectiveAmountUnit
+    );
     dispatch({ type: 'STOP', session });
 
     const result = await queueSession(session);
@@ -334,7 +359,7 @@ export function useSecureTimer() {
     dispatch({ type: 'SAVE_SUCCESS', session: result.value });
     await loadSessions();
     requestSync();
-  }, [loadSessions, requestSync, state.startedAt, state.status]);
+  }, [loadSessions, requestSync, state.startedAt, state.status, customName, selectedMethod, amount, amountUnit]);
 
   const removeGhostSuggestion = useCallback(async (name: string) => {
     await deleteGhostName(name);
@@ -355,6 +380,8 @@ export function useSecureTimer() {
   const resetSession = useCallback(() => {
     setCustomName('');
     setSelectedMethod(null);
+    setAmount(undefined);
+    setAmountUnit(undefined);
     dispatch({ type: 'RESET' });
   }, []);
 
@@ -373,6 +400,10 @@ export function useSecureTimer() {
     setCustomName,
     selectedMethod,
     setSelectedMethod,
+    amount,
+    setAmount,
+    amountUnit,
+    setAmountUnit,
     rateSession,
     startSession,
     stopSession,
