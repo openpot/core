@@ -8,45 +8,40 @@ const MIN_G = 0.001; // Allow for small mg amounts
 const MAX_G = 50;
 const RECENTS_MAX = 5;
 
-const METHOD_CONFIGS: Record<string, {
-  initialGrams: number;
-  defaultUnit: Unit;
-  stepGrams: number;
-  defaultRecentsGrams: number[];
-}> = {
+const METHOD_CONFIGS = {
   flower: {
     initialGrams: 0.5,
-    defaultUnit: 'g',
+    defaultUnit: 'g' as Unit,
     stepGrams: 0.1,
     defaultRecentsGrams: [0.1, 0.5, 1.0, 1.5]
   },
   vape: {
     initialGrams: 0.05,
-    defaultUnit: 'g',
+    defaultUnit: 'g' as Unit,
     stepGrams: 0.01,
     defaultRecentsGrams: [0.05, 0.1, 0.15, 0.2]
   },
   extract: {
     initialGrams: 0.05,
-    defaultUnit: 'g',
+    defaultUnit: 'g' as Unit,
     stepGrams: 0.01,
     defaultRecentsGrams: [0.05, 0.1, 0.15, 0.2]
   },
   edible: {
     initialGrams: 0.01, // 10mg
-    defaultUnit: 'mg',
+    defaultUnit: 'mg' as Unit,
     stepGrams: 0.005, // 5mg
     defaultRecentsGrams: [0.01, 0.02, 0.03, 0.05] // 10, 20, 30, 50mg
   },
   drink: {
     initialGrams: 0.01, // 10mg
-    defaultUnit: 'mg',
+    defaultUnit: 'mg' as Unit,
     stepGrams: 0.005, // 5mg
     defaultRecentsGrams: [0.01, 0.02, 0.03, 0.05] // 10, 20, 30, 50mg
   },
   tincture: {
     initialGrams: 0.01, // 10mg
-    defaultUnit: 'mg',
+    defaultUnit: 'mg' as Unit,
     stepGrams: 0.005, // 5mg
     defaultRecentsGrams: [0.005, 0.01, 0.02, 0.025] // 5, 10, 20, 25mg
   }
@@ -54,12 +49,16 @@ const METHOD_CONFIGS: Record<string, {
 
 const DEFAULT_CONFIG = METHOD_CONFIGS.flower;
 
+function getMethodConfig(method: string) {
+  return (METHOD_CONFIGS as Record<string, typeof DEFAULT_CONFIG>)[method.toLowerCase()] || DEFAULT_CONFIG;
+}
+
 function recentsKey(method: string) {
   return `openpot:recents:${method.toLowerCase()}`;
 }
 
 function loadRecents(method: string): number[] {
-  const config = METHOD_CONFIGS[method.toLowerCase()] || DEFAULT_CONFIG;
+  const config = getMethodConfig(method);
   if (typeof window === 'undefined') return config.defaultRecentsGrams;
   try {
     const raw = localStorage.getItem(recentsKey(method));
@@ -110,7 +109,7 @@ export function AmountInputModal({
   onClose: _onClose,
   onSave,
 }: AmountInputModalProps) {
-  const config = METHOD_CONFIGS[methodName.toLowerCase()] || DEFAULT_CONFIG;
+  const config = getMethodConfig(methodName);
   const [grams, setGrams] = useState<number>(initialAmount ?? config.initialGrams);
   const [unit, setUnit] = useState<Unit>(initialUnit ?? config.defaultUnit);
   const [recents, setRecents] = useState<number[]>(config.defaultRecentsGrams);
@@ -118,7 +117,7 @@ export function AmountInputModal({
 
   useEffect(() => {
     if (isOpen) {
-      const localConfig = METHOD_CONFIGS[methodName.toLowerCase()] || DEFAULT_CONFIG;
+      const localConfig = getMethodConfig(methodName);
       setGrams(initialAmount ?? localConfig.initialGrams);
       setUnit(initialUnit ?? localConfig.defaultUnit);
       setRecents(loadRecents(methodName));

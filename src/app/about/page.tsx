@@ -73,8 +73,37 @@ export default function AboutPage() {
             <div className="space-y-6">
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold text-primary uppercase tracking-tighter bg-primary/10 px-1.5 py-0.5 rounded">v0.4.0</span>
-                  <span className="text-xs font-bold text-text-primary">The Experience Release</span>
+                  <span className="text-[10px] font-bold text-primary uppercase tracking-tighter bg-primary/10 px-1.5 py-0.5 rounded">v0.5.0</span>
+                  <span className="text-xs font-bold text-text-primary">The Precision Release</span>
+                </div>
+                <ul className="space-y-1.5 text-[13px] text-text-secondary list-none pl-1">
+                  <li className="flex items-start gap-2">
+                    <span className="text-primary mt-1">•</span>
+                    <span>Method-specific intelligent defaults for amounts, units (g/mg), and step sizes.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-primary mt-1">•</span>
+                    <span>Fixed amount persistence logic ensuring 100% local database consistency.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-primary mt-1">•</span>
+                    <span>Enhanced Secure CSV Export with specialized amount tracking and gram unit conversion.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-primary mt-1">•</span>
+                    <span>Refined dashboard rhythm with precise 3.2px spacing and optimized mobile cards.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-primary mt-1">•</span>
+                    <span>Standardized micro-pill tagging infrastructure for history metadata.</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="space-y-2 opacity-60">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold text-text-tertiary uppercase tracking-tighter bg-bg-overlay border border-border-subtle px-1.5 py-0.5 rounded">v0.4.0</span>
+                  <span className="text-xs font-bold text-text-secondary">The Experience Release</span>
                 </div>
                 <ul className="space-y-1.5 text-[13px] text-text-secondary list-none pl-1">
                   <li className="flex items-start gap-2">
