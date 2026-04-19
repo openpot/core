@@ -154,8 +154,8 @@ a:focus-visible {
   font-family: var(--font-mono);
   font-size: var(--timer-display-size);
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.05em;
-  line-height: 0.92;
+  letter-spacing: -0.11em;
+  line-height: 0.85;
   white-space: nowrap;
 }
 

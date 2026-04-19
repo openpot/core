@@ -70,17 +70,44 @@ function generateSessionId(): string {
 }
 
 /**
- * Formats elapsed seconds into a mobile-safe timer string.
+ * Formats elapsed seconds into a full HH:MM:SS string.
  *
  * @param totalSeconds - Elapsed time in whole seconds.
- * @returns A timer string like `00:00` or `61:09`.
+ * @returns A timer string like `00:00:00`.
  */
-export function formatDuration(totalSeconds: number): string {
+export function formatDurationFull(totalSeconds: number): string {
   const safeSeconds = Math.max(0, Math.floor(totalSeconds));
-  const minutes = Math.floor(safeSeconds / 60);
+  const hours = Math.floor(safeSeconds / 3600);
+  const minutes = Math.floor((safeSeconds % 3600) / 60);
   const seconds = safeSeconds % 60;
 
-  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}
+
+/**
+ * Formats elapsed seconds into a descriptive HMS string (e.g., 00h 00m 00s).
+ *
+ * @param totalSeconds - Elapsed time in whole seconds.
+ * @returns A descriptive string like `00h 00m 00s`.
+ */
+export function formatDurationHMS(totalSeconds: number): string {
+  const safeSeconds = Math.max(0, Math.floor(totalSeconds));
+  const hours = Math.floor(safeSeconds / 3600);
+  const minutes = Math.floor((safeSeconds % 3600) / 60);
+  const seconds = safeSeconds % 60;
+
+  return `${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
+}
+
+/**
+ * Formats elapsed seconds into a mobile-safe timer string.
+ * (Deprecated: use formatDurationFull or formatDurationHMS instead)
+ *
+ * @param totalSeconds - Elapsed time in whole seconds.
+ * @returns A timer string.
+ */
+export function formatDuration(totalSeconds: number): string {
+  return formatDurationHMS(totalSeconds);
 }
 
 /**

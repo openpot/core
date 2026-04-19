@@ -404,6 +404,39 @@ export async function updateSessionRating(
 }
 
 /**
+ * Updates the duration and end_time for a locally stored session.
+ *
+ * @param sessionId - Stable session identifier.
+ * @param durationSeconds - New duration in whole seconds.
+ * @returns A result describing whether the update succeeded.
+ */
+export async function updateSessionDuration(
+  sessionId: string,
+  durationSeconds: number,
+): Promise<Result<void>> {
+  try {
+    await withStore('readwrite', async (store) => {
+      const session = (await requestToPromise(store.get(sessionId))) as SessionRecord | undefined;
+
+      if (!session) {
+        throw new Error('Missing session record.');
+      }
+
+      session.duration_seconds = durationSeconds;
+      session.is_adjusted = true;
+      const startMs = Date.parse(session.start_time);
+      session.end_time = new Date(startMs + durationSeconds * 1000).toISOString();
+      
+      await requestToPromise(store.put(session));
+    });
+
+    return { ok: true, value: undefined };
+  } catch {
+    return { ok: false, error: 'Unable to update the session duration.' };
+  }
+}
+
+/**
  * Summarizes the current IndexedDB queue for UI status messaging.
  *
  * @returns Aggregate counts grouped by sync status.

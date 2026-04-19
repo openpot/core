@@ -1,4 +1,4 @@
-const CACHE_NAME = 'openpot-secure-timer-v12';
+const CACHE_NAME = 'openpot-secure-timer-v13';
 // Version: v0.2.0+7a33993
 const APP_SHELL = [
   '/',

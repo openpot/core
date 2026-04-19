@@ -6,7 +6,8 @@ import { deleteGhostName, deleteSession, flushPendingSessions, getGhostLibrary, 
 import {
   ACTIVE_SESSION_KEY,
   createSessionRecord,
-  formatDuration,
+  formatDurationFull,
+  formatDurationHMS,
   getInitialTimerState,
   timerReducer,
   TIMER_STATUS,
@@ -386,7 +387,7 @@ export function useSecureTimer() {
   }, []);
 
   return {
-    formattedElapsed: formatDuration(state.elapsedMs / 1000),
+    formattedElapsed: formatDurationFull(state.elapsedMs / 1000),
     historyError,
     isLoadingHistory,
     networkStatus,
@@ -408,6 +409,7 @@ export function useSecureTimer() {
     startSession,
     stopSession,
     resetSession,
+    refreshHistory: loadSessions,
     syncWorkerNow: requestSync,
   };
 }

@@ -1,20 +1,15 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Footer } from '@/components/ui/Footer';
 import { Logo, LogoMark } from '@/components/ui/Logo';
-import { listAllSessions } from '@/lib/db/session-db';
+import { listAllSessions, updateSessionDuration } from '@/lib/db/session-db';
 import { useSecureTimer } from '@/hooks/use-secure-timer';
 import { formatDuration, TIMER_STATUS } from '@/lib/timer/timer-machine';
-import { TimeDisplay } from './TimeDisplay';
-
-const DEFAULT_METHODS = ['Flower', 'Vape', 'Extract', 'Edible', 'Drink', 'Tincture'];
-const METHODS_KEY = 'openpot:methods_order';
-import { APP_VERSION } from '@/lib/version';
-import type { SessionRecord } from '@/types/session';
 import { AmountInputModal } from '@/components/features/timer/AmountInputModal';
+import { DurationEditModal } from './DurationEditModal';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -43,6 +38,12 @@ function isStandaloneMode(): boolean {
 
 const PILL_CLASSES = "inline-flex items-center justify-center h-9 min-w-[85px] rounded-full border border-border bg-bg-overlay px-4 text-xs font-semibold font-sans uppercase tracking-widest text-text-secondary transition-all leading-none";
 
+const DEFAULT_METHODS = ['Flower', 'Vape', 'Extract', 'Edible', 'Drink', 'Tincture'];
+const METHODS_KEY = 'openpot:methods_order';
+
+import { APP_VERSION } from '@/lib/version';
+import type { SessionRecord } from '@/types/session';
+
 /**
  * Renders the secure timer dashboard and local sync status UI.
  *
@@ -70,6 +71,7 @@ export function SecureTimerDashboard() {
     startSession,
     stopSession,
     resetSession,
+    refreshHistory,
   } = useSecureTimer();
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
@@ -77,15 +79,26 @@ export function SecureTimerDashboard() {
   const [activeDeleteId, setActiveDeleteId] = useState<string | null>(null);
   const [isEditingStrains, setIsEditingStrains] = useState(false);
   const [isRatingDismissed, setIsRatingDismissed] = useState(false);
-  const [isDismissed, setIsDismissed] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return localStorage.getItem('openpot:install-banner-dismissed') === '1';
-  });
+
   const [isAmountModalOpen, setIsAmountModalOpen] = useState(false);
   const [pendingMethod, setPendingMethod] = useState<string | null>(null);
   const [methods, setMethods] = useState<string[]>(DEFAULT_METHODS);
   const [displayMethods, setDisplayMethods] = useState<string[]>(DEFAULT_METHODS);
   const [displayGhost, setDisplayGhost] = useState<string[]>(ghostLibrary);
+  const [isEditDurationModalOpen, setIsEditDurationModalOpen] = useState(false);
+  const [editingSession, setEditingSession] = useState<SessionRecord | null>(null);
+  const methodsScrollRef = useRef<HTMLDivElement>(null);
+  const strainsScrollRef = useRef<HTMLDivElement>(null);
+  const [isIOSInstallModalOpen, setIsIOSInstallModalOpen] = useState(false);
+
+  const handleDurationSave = async (newSeconds: number) => {
+    if (editingSession) {
+      await updateSessionDuration(editingSession.session_id, newSeconds);
+      await refreshHistory();
+      setIsEditDurationModalOpen(false);
+      setEditingSession(null);
+    }
+  };
 
   const handleMethodClick = (m: string) => {
     if (selectedMethod === m) {
@@ -134,7 +147,7 @@ export function SecureTimerDashboard() {
           setMethods(merged as string[]);
         }
       }
-    } catch {}
+    } catch { }
 
 
     const handleBeforeInstallPrompt = (event: Event) => {
@@ -169,33 +182,77 @@ export function SecureTimerDashboard() {
   }, []);
 
   const installApp = useCallback(async () => {
+    if (isIOS) {
+      setIsIOSInstallModalOpen(true);
+      return;
+    }
+
     if (!installPrompt) {
       return;
     }
 
-    await installPrompt.prompt();
-    const choice = await installPrompt.userChoice;
-
-    setInstallPrompt(null);
-    setIsInstalled(choice.outcome === 'accepted' || isStandaloneMode());
-  }, [installPrompt]);
+    try {
+      await installPrompt.prompt();
+      const choice = await installPrompt.userChoice;
+      setInstallPrompt(null);
+      setIsInstalled(choice.outcome === 'accepted' || isStandaloneMode());
+    } catch (err) {
+      console.error('PWA Install Prompt Failed:', err);
+    }
+  }, [installPrompt, isIOS]);
 
   const handleExportCSV = useCallback(async () => {
     try {
       const allSessions = await listAllSessions();
       if (allSessions.length === 0) return;
 
-      const headers = ['Date', 'Time', 'Item', 'Method', 'Amount (g)', 'Duration (sec)', 'Rating'];
+      const pad = (n: number) => String(n).padStart(2, '0');
+      const formatDate = (d: Date) => `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())}`;
+      const formatTime = (d: Date) => `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+      const formatDur = (s: number) => {
+        const h = Math.floor(s / 3600);
+        const m = Math.floor((s % 3600) / 60);
+        const sec = s % 60;
+        return `${pad(h)}:${pad(m)}:${pad(sec)}`;
+      };
+
+      const headers = [
+        'Start Date',
+        'Start Time',
+        'End Date',
+        'End Time',
+        'Method',
+        'Amount',
+        'Unit',
+        'Strain',
+        'Duration',
+        'Duration Adjusted',
+        'Rating'
+      ];
+
       const rows = allSessions.map(s => {
-        const dateObj = new Date(s.start_time);
+        const startDate = new Date(s.start_time);
+        const endDate = new Date(s.end_time);
+
+        let amountVal = 'N/A';
+        let unitVal = 'N/A';
+        if (s.amount !== undefined) {
+          amountVal = s.amount.toFixed(3);
+          unitVal = s.amount_unit || 'g';
+        }
+
         return [
-          dateObj.toLocaleDateString(),
-          dateObj.toLocaleTimeString(),
-          s.custom_name || 'Unnamed',
+          formatDate(startDate),
+          formatTime(startDate),
+          formatDate(endDate),
+          formatTime(endDate),
           s.method || 'N/A',
-          s.amount !== undefined ? s.amount.toFixed(3) : 'N/A',
-          Math.floor((Date.parse(s.end_time) - Date.parse(s.start_time)) / 1000),
-          s.rating || 'Unrated'
+          amountVal,
+          unitVal,
+          s.custom_name || 'N/A',
+          formatDur(s.duration_seconds),
+          s.is_adjusted ? 'True' : 'False',
+          s.rating || 'N/A'
         ].map(val => `"${String(val).replace(/"/g, '""')}"`).join(',');
       });
 
@@ -220,6 +277,10 @@ export function SecureTimerDashboard() {
   useEffect(() => {
     if (isActive) {
       setIsRatingDismissed(false);
+      setIsEditingStrains(false);
+      // Reset scroll positions of input pill rows
+      if (methodsScrollRef.current) methodsScrollRef.current.scrollLeft = 0;
+      if (strainsScrollRef.current) strainsScrollRef.current.scrollLeft = 0;
     }
   }, [isActive]);
 
@@ -229,7 +290,7 @@ export function SecureTimerDashboard() {
       setMethods(prev => {
         if (prev[0] === selectedMethod) return prev;
         const next = [selectedMethod, ...prev.filter(m => m !== selectedMethod)];
-        try { localStorage.setItem(METHODS_KEY, JSON.stringify(next)); } catch {}
+        try { localStorage.setItem(METHODS_KEY, JSON.stringify(next)); } catch { }
         return next;
       });
     }
@@ -245,22 +306,23 @@ export function SecureTimerDashboard() {
     }
   }, [isIdle, methods, ghostLibrary]);
 
-  const primaryActionLabel = isStopped 
-    ? 'New Session' 
-    : isActive 
-      ? 'Stop Session' 
+  const primaryActionLabel = isStopped
+    ? 'New Session'
+    : isActive
+      ? 'Stop Session'
       : 'Start Session';
-  
-  const showInstallPromotion = !isInstalled && !isDismissed;
+
+  const [isDismissed, setIsDismissed] = useState(false);
+
+  const showInstallPromotion = !isInstalled && !isDismissed && (isIOS || !!installPrompt);
 
   const dismissInstallBanner = useCallback(() => {
-    localStorage.setItem('openpot:install-banner-dismissed', '1');
     setIsDismissed(true);
   }, []);
 
   return (
-    <main className="relative flex min-h-screen flex-col items-center justify-start overflow-hidden px-4 py-6 sm:px-6 sm:py-12">
-      <section className="panel-shell relative mx-auto flex w-full max-w-3xl flex-col justify-between gap-6 overflow-hidden px-5 py-6 sm:px-8 sm:py-8" data-testid="timer-shell">
+    <main className="relative flex min-h-screen flex-col items-center justify-start overflow-hidden px-4 py-6 sm:px-6 sm:py-12 min-w-0">
+      <section className="panel-shell relative mx-auto flex w-full max-w-3xl flex-col justify-between gap-6 overflow-hidden px-4 py-6 sm:px-8 sm:py-8 min-w-0" data-testid="timer-shell">
         <header className="flex flex-row items-center justify-center gap-1.5 border-b border-border-subtle pb-6 pt-2">
           <LogoMark aria-hidden="true" className="h-[38px] w-auto text-text-primary sm:h-[45px]" />
           <div className="flex flex-col items-start gap-1 leading-none">
@@ -284,7 +346,11 @@ export function SecureTimerDashboard() {
                       HOW ARE YOU CONSUMING?
                     </p>
                   </div>
-                  <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide no-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                  <div 
+                    ref={methodsScrollRef}
+                    className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide no-scrollbar" 
+                    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                  >
                     {displayMethods.map((m) => {
                       const hasAmount = selectedMethod === m && amount !== undefined && amountUnit;
                       return (
@@ -293,14 +359,13 @@ export function SecureTimerDashboard() {
                           type="button"
                           disabled={!isIdle}
                           onClick={() => handleMethodClick(m)}
-                          className={`shrink-0 ${PILL_CLASSES} !text-xs ${
-                            selectedMethod === m
+                          className={`shrink-0 ${PILL_CLASSES} !text-xs ${selectedMethod === m
                               ? 'bg-primary/10 border-primary/40 !text-primary'
                               : 'hover:border-text-tertiary text-text-secondary'
-                          } ${!isIdle && selectedMethod !== m ? 'opacity-40 grayscale pointer-events-none' : ''} ${!isIdle && selectedMethod === m ? 'pointer-events-none' : ''}`}
-                          style={{ 
-                            fontSize: '12px', 
-                            transform: 'none', 
+                            } ${!isIdle && selectedMethod !== m ? 'opacity-40 grayscale pointer-events-none' : ''} ${!isIdle && selectedMethod === m ? 'pointer-events-none' : ''}`}
+                          style={{
+                            fontSize: '12px',
+                            transform: 'none',
                             WebkitTransform: 'none'
                           }}
                         >
@@ -309,8 +374,8 @@ export function SecureTimerDashboard() {
                             <>
                               <div className={`mx-2.5 h-4 w-px shrink-0 ${selectedMethod === m ? 'bg-primary/30' : 'bg-border'}`} />
                               <span className="normal-case">
-                                {amountUnit === 'mg' 
-                                  ? parseFloat((amount * 1000).toFixed(3)).toString() 
+                                {amountUnit === 'mg'
+                                  ? parseFloat((amount * 1000).toFixed(3)).toString()
                                   : parseFloat(amount.toFixed(3)).toString()
                                 }
                                 {amountUnit}
@@ -323,25 +388,24 @@ export function SecureTimerDashboard() {
                   </div>
                 </div>
 
-                <div className="space-y-[3.2px] text-left">
-                  <div className="flex items-center gap-1.5">
+                <div className="space-y-[4.8px] text-left">
+                  <div className="flex items-center gap-0">
                     <label htmlFor="custom-name" className="block text-[10px] font-bold uppercase tracking-widest text-text-tertiary">
                       WHAT ARE YOU TRACKING?
                     </label>
 
                     {isIdle && (
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         onClick={() => setIsEditingStrains(!isEditingStrains)}
-                        className={`flex h-5 w-5 items-center justify-center rounded-full transition-all duration-200 ${
-                          isEditingStrains 
-                            ? 'bg-primary text-text-inverse shadow-sm' 
+                        className={`flex h-5 w-5 items-center justify-center rounded-full transition-all duration-200 ${isEditingStrains
+                            ? 'bg-primary text-text-inverse shadow-sm'
                             : 'text-text-tertiary hover:bg-bg-overlay hover:text-text-secondary'
-                        }`}
+                          }`}
                         aria-label={isEditingStrains ? "Disable edit mode" : "Enable edit mode"}
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/>
+                          <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" />
                         </svg>
                       </button>
                     )}
@@ -360,28 +424,29 @@ export function SecureTimerDashboard() {
                     className="w-full rounded-lg border border-border bg-bg-base/50 px-4 py-2.5 text-sm text-text-primary placeholder:text-text-tertiary focus:border-primary focus:outline-none transition-colors disabled:opacity-75 disabled:cursor-not-allowed"
                   />
                   {displayGhost.length > 0 && (
-                    <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide no-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                    <div 
+                      ref={strainsScrollRef}
+                      className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide no-scrollbar" 
+                      style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                    >
                       {displayGhost.map((name) => (
-                        <div 
+                        <div
                           key={name}
-                          className={`shrink-0 flex items-center h-9 min-w-[85px] rounded-full border transition-all overflow-hidden ${
-                            customName === name
+                          className={`shrink-0 flex items-center h-9 min-w-[85px] rounded-full border transition-all overflow-hidden ${customName === name
                               ? 'bg-primary/10 border-primary/40'
                               : 'bg-bg-overlay border-border hover:border-text-tertiary'
-                          } ${!isIdle && customName !== name ? 'opacity-40 grayscale pointer-events-none' : ''} ${!isIdle && customName === name ? 'pointer-events-none' : ''}`}
+                            } ${!isIdle && customName !== name ? 'opacity-40 grayscale pointer-events-none' : ''} ${!isIdle && customName === name ? 'pointer-events-none' : ''}`}
                         >
                           <button
                             type="button"
                             disabled={!isIdle}
                             onClick={() => setCustomName(name)}
-                            className={`flex flex-1 items-center justify-center h-full text-xs font-semibold font-sans uppercase tracking-widest transition-colors leading-none ${
-                               isEditingStrains ? 'pl-4 pr-3' : 'px-4'
-                            } ${
-                              customName === name ? '!text-primary' : 'text-text-secondary'
-                            } ${!isIdle && customName !== name ? 'opacity-40 cursor-not-allowed' : ''}`}
-                            style={{ 
+                            className={`flex flex-1 items-center justify-center h-full text-xs font-semibold font-sans tracking-widest transition-colors leading-none ${isEditingStrains ? 'pl-4 pr-3' : 'px-4'
+                              } ${customName === name ? '!text-primary' : 'text-text-secondary'
+                              } ${!isIdle && customName !== name ? 'opacity-40 cursor-not-allowed' : ''}`}
+                            style={{
                               fontSize: '12px',
-                              transform: 'none', 
+                              transform: 'none',
                               WebkitTransform: 'none'
                             }}
                           >
@@ -397,11 +462,10 @@ export function SecureTimerDashboard() {
                                   e.stopPropagation();
                                   removeGhostSuggestion(name);
                                 }}
-                                className={`px-3 h-full flex items-center justify-center transition-colors animate-in fade-in zoom-in-95 duration-200 ${
-                                  customName === name 
-                                    ? '!text-primary/70 hover:bg-primary/5' 
+                                className={`px-3 h-full flex items-center justify-center transition-colors animate-in fade-in zoom-in-95 duration-200 ${customName === name
+                                    ? '!text-primary/70 hover:bg-primary/5'
                                     : 'text-text-tertiary hover:text-error hover:bg-error/5'
-                                } ${!isIdle ? 'opacity-40 cursor-not-allowed' : ''}`}
+                                  } ${!isIdle ? 'opacity-40 cursor-not-allowed' : ''}`}
                                 aria-label={`Remove ${name} from suggestions`}
                               >
                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -429,13 +493,13 @@ export function SecureTimerDashboard() {
               </div>
             )}
 
-            <div className="space-y-3">
+            <div className="space-y-1">
               <p className="timer-display overflow-hidden text-text-primary" data-testid="timer-display">
                 {formattedElapsed}
               </p>
               <p className="flex items-center justify-center gap-1.5 text-sm text-text-secondary sm:text-base">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary/70 -translate-y-[0.5px]">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                 </svg>
                 Secured locally. Never shared.
               </p>
@@ -475,7 +539,7 @@ export function SecureTimerDashboard() {
                 <div className="flex items-start gap-3">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="3" y2="15"/>
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="3" y2="15" />
                     </svg>
                   </div>
                   <div>
@@ -508,7 +572,7 @@ export function SecureTimerDashboard() {
                 <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-widest text-text-secondary">
                   Recent secured sessions
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-text-tertiary -translate-y-[0.5px]">
-                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
                   </svg>
                 </h2>
                 <p className="mt-1 text-sm text-text-secondary">
@@ -516,7 +580,7 @@ export function SecureTimerDashboard() {
                   {recentSessions.length > 0 && (
                     <>
                       {' '}
-                      <button 
+                      <button
                         onClick={() => void handleExportCSV()}
                         className="text-primary hover:text-primary-hover font-bold transition-colors"
                       >
@@ -528,7 +592,7 @@ export function SecureTimerDashboard() {
               </div>
             </div>
 
-            <div className="mt-4" data-testid="session-list">
+            <div className="mt-4 w-full min-w-0 overflow-hidden" data-testid="session-list">
               {isLoadingHistory ? (
                 <p className="text-sm text-text-secondary">Loading secured sessions…</p>
               ) : historyError ? (
@@ -538,19 +602,19 @@ export function SecureTimerDashboard() {
                   No secured sessions yet. Start the timer when you are ready.
                 </p>
               ) : (
-                <ul className="space-y-3">
-                  {recentSessions.map((session) => (
+                <ul className="space-y-3 w-full min-w-0">
+                  {recentSessions.map((session, index) => (
                     <li
-                      className="flex min-h-[4rem] items-center rounded-md bg-bg-base px-3"
+                      className="group relative grid grid-cols-[1fr_auto] w-full min-w-0 min-h-[62px] items-center rounded-md bg-bg-base overflow-hidden"
                       key={session.session_id}
                     >
                       {activeDeleteId === session.session_id ? (
-                        <div className="flex w-full items-center justify-between gap-2">
-                          <p className="shrink-0 text-sm text-text-secondary">Delete session?</p>
-                          <div className="flex shrink-0 items-center gap-1">
+                        <div className="grid grid-cols-[1fr_auto] w-full items-center gap-2 h-[62px] min-w-0 px-4">
+                          <p className="min-w-0 text-sm text-error tracking-tight truncate">Delete session?</p>
+                          <div className="sticky right-0 z-10 flex shrink-0 items-center gap-1 bg-bg-base pl-2">
                             <button
                               aria-label="Confirm deletion"
-                              className="rounded-full p-2 text-error transition hover:bg-error/10"
+                              className="rounded-full p-2 text-error transition hover:bg-error/10 active:scale-90"
                               onClick={async () => {
                                 setActiveDeleteId(null);
                                 await removeSession(session.session_id);
@@ -563,7 +627,7 @@ export function SecureTimerDashboard() {
                             </button>
                             <button
                               aria-label="Cancel deletion"
-                              className="rounded-full p-2 text-text-tertiary transition hover:bg-bg-overlay hover:text-text-primary"
+                              className="rounded-full p-2 text-text-tertiary transition hover:bg-bg-overlay hover:text-text-primary active:scale-90"
                               onClick={() => setActiveDeleteId(null)}
                               type="button"
                             >
@@ -575,66 +639,113 @@ export function SecureTimerDashboard() {
                           </div>
                         </div>
                       ) : (
-                        <div className="flex w-full items-center justify-between gap-2">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <p className="font-mono text-lg font-semibold text-text-primary">
-                                {formatDuration(session.duration_seconds)}
-                              </p>
-                              {session.method && (
-                                <span className="flex items-center justify-center h-4 rounded-full border border-border bg-bg-overlay px-1 text-[11px] font-semibold font-sans uppercase tracking-widest text-text-secondary leading-none">
-                                  {session.method}
-                                </span>
-                              )}
-                              {session.rating && (
-                                <span className="flex items-center justify-center h-4 rounded-full border border-border bg-bg-overlay px-1 text-[11px] font-semibold font-sans uppercase tracking-widest text-text-secondary leading-none">
-                                  {session.rating}
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-1.5 text-xs text-text-secondary">
-                              <span className="uppercase tracking-wider text-text-tertiary">
-                                {new Date(session.start_time).toLocaleTimeString([], {
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                })}
+                        <div className="grid grid-cols-[1fr_auto] w-full items-center gap-2 px-3 min-w-0 h-[62px]">
+                          <div className="flex-1 min-w-0 flex flex-col justify-center gap-1.5 overflow-hidden">
+                            {/* Row 1: Date Time • Duration + Pencil + [Rating] */}
+                            <div className="flex items-center gap-1 overflow-hidden min-w-0">
+                              <span className="min-w-0 truncate font-sans text-[10px] font-bold uppercase tracking-widest text-text-tertiary leading-none pt-0.5" title={(() => {
+                                const d = new Date(session.start_time);
+                                const dateStr = `${d.getDate().toString().padStart(2, '0')}.${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+                                const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+                                return `[${dateStr} ${timeStr}]`;
+                              })()}>
+                                {(() => {
+                                  const d = new Date(session.start_time);
+                                  const dateStr = `${d.getDate().toString().padStart(2, '0')}.${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+                                  const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+                                  return `[${dateStr} ${timeStr}]`;
+                                })()}
                               </span>
 
-                              {session.amount !== undefined && session.amount_unit && (
-                                <>
-                                  <span className="text-text-tertiary">•</span>
-                                  <span className="font-semibold text-text-secondary whitespace-nowrap">
-                                    {session.amount_unit === 'mg'
-                                      ? `${parseFloat((session.amount * 1000).toFixed(3))}mg`
-                                      : `${parseFloat(session.amount.toFixed(3))}g`}
-                                  </span>
-                                </>
-                              )}
-
-                              {session.custom_name && (
-                                <>
-                                  <span className="text-text-tertiary">•</span>
-                                  <span className="font-medium text-text-tertiary truncate max-w-[140px]">
-                                    {session.custom_name}
-                                  </span>
-                                </>
-                              )}
+                              <div className="shrink-0 flex items-center gap-2 overflow-hidden min-w-0 ml-1.5">
+                                {index === 0 ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setEditingSession(session);
+                                      setIsEditDurationModalOpen(true);
+                                    }}
+                                    className="shrink-0 flex items-center gap-1 rounded-sm transition-all hover:opacity-70 active:scale-[0.98] touch-manipulation"
+                                    aria-label="Edit most recent duration"
+                                  >
+                                    <p className="shrink-0 font-mono text-sm font-bold text-text-primary leading-none pt-0.5">
+                                      {formatDuration(session.duration_seconds)}
+                                    </p>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-text-tertiary">
+                                      <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                                      <path d="m15 5 4 4" />
+                                    </svg>
+                                  </button>
+                                ) : (
+                                  <p className="shrink-0 font-mono text-sm font-bold text-text-primary leading-none pt-0.5">
+                                    {formatDuration(session.duration_seconds)}
+                                  </p>
+                                )}
+                              </div>
                             </div>
+
+                            {/* Row 2: Metadata Pills (Method|Amount, Rating, Strain) */}
+                            {(session.rating || session.method || session.amount !== undefined || session.custom_name) && (
+                              <div 
+                                className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide no-scrollbar min-w-0 h-4.5"
+                                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                              >
+                                {/* 1. Method | Amount Pill */}
+                                {(session.method || session.amount !== undefined) && (
+                                  <div className="shrink-0 flex items-center h-4.5 rounded-full border border-border bg-bg-overlay px-1.5 text-[10px] font-bold font-sans uppercase tracking-widest text-text-secondary leading-none">
+                                    {session.method && (
+                                      <span className={`uppercase ${session.amount !== undefined ? "mr-1" : ""}`}>
+                                        {session.method}
+                                      </span>
+                                    )}
+                                    {session.method && session.amount !== undefined && (
+                                      <span className="mr-1 opacity-30 font-light">|</span>
+                                    )}
+                                    {session.amount !== undefined && (
+                                      <span className="font-mono normal-case">
+                                        {session.amount_unit === 'mg'
+                                          ? `${parseFloat((session.amount * 1000).toFixed(1))}mg`
+                                          : `${parseFloat(session.amount.toFixed(2))}g`}
+                                      </span>
+                                    )}
+                                  </div>
+                                )}
+
+                                {/* 2. Rating Pill */}
+                                {session.rating && (
+                                  <div className="shrink-0 flex items-center h-4.5 rounded-full border border-border bg-bg-overlay px-1.5 text-[10px] font-bold font-sans uppercase tracking-widest text-text-secondary leading-none">
+                                    {session.rating}
+                                  </div>
+                                )}
+
+                                {/* 3. Strain Pill */}
+                                {session.custom_name && (
+                                  <div className="shrink-0 flex items-center h-4.5 rounded-full border border-border bg-bg-overlay px-1.5 text-[10px] font-bold font-sans uppercase tracking-widest text-text-secondary leading-none">
+                                    <span className="whitespace-nowrap" title={session.custom_name}>
+                                      {session.custom_name}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </div>
-                          <button
-                            aria-label="Delete session"
-                            className="shrink-0 rounded p-2 text-text-tertiary transition hover:bg-error/10 hover:text-error"
-                            onClick={() => setActiveDeleteId(session.session_id)}
-                            type="button"
-                          >
-                            <svg aria-hidden="true" fill="none" height="18" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width="18" xmlns="http://www.w3.org/2000/svg">
-                              <polyline points="3 6 5 6 21 6" />
-                              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                              <path d="M10 11v6" />
-                              <path d="M14 11v6" />
-                              <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-                            </svg>
-                          </button>
+
+                          <div className="sticky right-0 z-10 flex items-center shrink-0 bg-bg-base pl-2">
+                            <button
+                              aria-label="Delete session"
+                              className="shrink-0 rounded-full p-2 text-text-tertiary transition hover:bg-error/10 hover:text-error active:scale-95"
+                              onClick={() => setActiveDeleteId(session.session_id)}
+                              type="button"
+                            >
+                              <svg aria-hidden="true" fill="none" height="18" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width="18" xmlns="http://www.w3.org/2000/svg">
+                                <polyline points="3 6 5 6 21 6" />
+                                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                                <path d="M10 11v6" />
+                                <path d="M14 11v6" />
+                                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                              </svg>
+                            </button>
+                          </div>
                         </div>
                       )}
                     </li>
@@ -681,14 +792,83 @@ export function SecureTimerDashboard() {
       )}
 
       <Footer />
-      <AmountInputModal 
-        isOpen={isAmountModalOpen} 
+      <AmountInputModal
+        isOpen={isAmountModalOpen}
         methodName={pendingMethod || ''}
         initialAmount={amount}
         initialUnit={amountUnit}
         onClose={handleAmountClose}
         onSave={handleAmountSave}
       />
+      <DurationEditModal
+        isOpen={isEditDurationModalOpen}
+        currentDurationSeconds={editingSession?.duration_seconds || 0}
+        onClose={() => setIsEditDurationModalOpen(false)}
+        onSave={handleDurationSave}
+      />
+      {/* iOS Install Instructions Modal */}
+      {isIOSInstallModalOpen && (
+        <div className="fixed inset-0 z-[60] flex items-end justify-center bg-bg-base/80 backdrop-blur-md p-4 animate-in fade-in slide-in-from-bottom-full duration-500 sm:items-center">
+          <div className="panel-shell w-full max-w-[360px] p-6 shadow-2xl flex flex-col gap-6">
+            <div className="flex items-start justify-between">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="3" y2="15" />
+                </svg>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsIOSInstallModalOpen(false)}
+                className="flex h-8 w-8 items-center justify-center rounded-full text-text-tertiary transition-colors hover:bg-bg-subtle hover:text-text-primary"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              <h2 className="text-lg font-bold tracking-tight text-text-primary">
+                Install Openpot on iOS
+              </h2>
+              <p className="text-sm text-text-secondary leading-relaxed">
+                To install this app on your iPhone or iPad, follow these simple steps:
+              </p>
+            </div>
+
+            <div className="space-y-4 rounded-xl bg-bg-overlay p-4 border border-border-subtle">
+              <div className="flex items-center gap-4">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-bg-base border border-border">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
+                    <rect width="18" height="18" x="3" y="3" rx="2" /><path d="M12 3v18" /><path d="M3 12h18" />
+                  </svg>
+                </div>
+                <p className="text-sm font-medium text-text-primary">
+                  1. Tap the <span className="font-bold">Share</span> icon in Safari.
+                </p>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-bg-base border border-border">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
+                    <rect width="18" height="18" x="3" y="3" rx="2" /><path d="M12 9v6" /><path d="M9 12h6" />
+                  </svg>
+                </div>
+                <p className="text-sm font-medium text-text-primary">
+                  2. Select <span className="font-bold text-primary">Add to Home Screen</span>.
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsIOSInstallModalOpen(false)}
+              className="mt-2 w-full h-11 rounded-lg bg-primary text-sm font-bold text-text-inverse hover:bg-primary-hover transition-colors shadow-sm"
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

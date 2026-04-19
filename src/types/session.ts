@@ -15,6 +15,7 @@ export const SESSION_RECORD_KEYS = [
   'amount',
   'amount_unit',
   'rating',
+  'is_adjusted',
 ] as const;
 
 export type SyncStatus = (typeof SYNC_STATUS)[keyof typeof SYNC_STATUS];
@@ -30,6 +31,7 @@ export interface SessionRecord {
   amount?: number;
   amount_unit?: 'g' | 'mg';
   rating?: string;
+  is_adjusted?: boolean;
 }
 
 /**

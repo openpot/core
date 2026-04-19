@@ -177,20 +177,30 @@ export function AmountInputModal({
 
 
 
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) _onClose();
+  };
+
   const displayRecents = [...recents.slice(0, 4)].sort((a, b) => a - b);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg-base/80 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center bg-bg-base/80 backdrop-blur-sm p-4 animate-in fade-in duration-300"
+      onClick={handleBackdropClick}
+    >
       <div className="panel-shell w-full max-w-[320px] p-6 animate-in zoom-in-95 duration-300 shadow-2xl flex flex-col gap-5">
         
         {/* Close 'X' — No action */}
         <button 
           type="button"
-          onClick={_onClose}
-          className="absolute top-2.5 right-2.5 h-11 w-11 flex items-center justify-center rounded-full text-text-tertiary hover:bg-bg-overlay transition-all active:scale-95"
+          onClick={(e) => {
+            e.stopPropagation();
+            _onClose();
+          }}
+          className="absolute top-2.5 right-2.5 z-20 h-11 w-11 flex items-center justify-center rounded-full text-text-tertiary hover:bg-bg-overlay transition-all active:scale-95"
           aria-label="Close without saving"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="pointer-events-none">
             <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
           </svg>
         </button>
@@ -273,7 +283,7 @@ export function AmountInputModal({
               onClick={handleCancel}
               className="rounded-lg border border-error bg-error h-10 text-[11px] font-bold text-white transition-all hover:brightness-110 active:scale-95 outline-none shadow-sm"
             >
-              Clear
+              Skip
             </button>
             <button
               onClick={handleSave}
