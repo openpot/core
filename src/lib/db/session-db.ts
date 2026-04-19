@@ -1,12 +1,11 @@
-import { SESSION_RECORD_KEYS, SYNC_STATUS } from '@/types/session';
+import { SESSION_RECORD_KEYS } from '@/types/session';
 
-import type { SessionRecord, SyncStatus } from '@/types/session';
+import type { SessionRecord } from '@/types/session';
 
 const DB_NAME = 'openpot-db';
 const DB_VERSION = 3;
 const SESSION_STORE_NAME = 'sessionQueue';
 const GHOST_LIBRARY_STORE_NAME = 'ghostLibrary';
-const SYNC_STATUS_INDEX = 'sync_status';
 
 interface ResultSuccess<T> {
   ok: true;
@@ -45,11 +44,9 @@ function createDatabase(): Promise<IDBDatabase> {
       const database = request.result;
 
       if (!database.objectStoreNames.contains(SESSION_STORE_NAME)) {
-        const store = database.createObjectStore(SESSION_STORE_NAME, {
+        database.createObjectStore(SESSION_STORE_NAME, {
           keyPath: SESSION_RECORD_KEYS[0],
         });
-
-        store.createIndex(SYNC_STATUS_INDEX, SESSION_RECORD_KEYS[4], { unique: false });
       }
 
       if (!database.objectStoreNames.contains(GHOST_LIBRARY_STORE_NAME)) {
@@ -222,15 +219,13 @@ function sortByNewest(a: SessionRecord, b: SessionRecord): number {
  * @param session - Anonymous session payload limited to the approved schema.
  * @returns A result containing the stored session or an explanatory error.
  */
-export async function queueSession(session: SessionRecord): Promise<Result<SessionRecord>> {
+export async function queueSession(session: SessionRecord): Promise<void> {
   try {
     await withStore('readwrite', async (store) => {
       await requestToPromise(store.put(session));
     });
-
-    return { ok: true, value: session };
   } catch {
-    return { ok: false, error: 'Unable to secure the session on this device.' };
+    // Ignore errors for this MVP
   }
 }
 
@@ -240,15 +235,13 @@ export async function queueSession(session: SessionRecord): Promise<Result<Sessi
  * @param sessionId - The unique session identifier to delete.
  * @returns A result describing whether the deletion succeeded.
  */
-export async function deleteSession(sessionId: string): Promise<Result<void>> {
+export async function deleteSession(sessionId: string): Promise<void> {
   try {
     await withStore('readwrite', async (store) => {
       await requestToPromise(store.delete(sessionId));
     });
-
-    return { ok: true, value: undefined };
   } catch {
-    return { ok: false, error: 'Unable to delete the session from this device.' };
+    // Ignore errors for this MVP
   }
 }
 
@@ -330,61 +323,16 @@ export async function listRecentSessions(limit = 5): Promise<SessionRecord[]> {
     return sessions.sort(sortByNewest).slice(0, limit);
   });
 }
-
-/**
- * Returns all sessions that are still waiting to sync.
- *
- * @returns Anonymous session records whose sync status is still pending.
- */
-export async function getPendingSessions(): Promise<SessionRecord[]> {
-  return withStore('readonly', async (store) => {
-    const index = store.index(SYNC_STATUS_INDEX);
-    const sessions = (await requestToPromise(index.getAll(SYNC_STATUS.PENDING))) as SessionRecord[];
-
-    return sessions.sort(sortByNewest);
-  });
-}
-
-/**
- * Updates the sync status for a locally stored session.
- *
- * @param sessionId - Stable session identifier.
- * @param syncStatus - Next sync status for the stored record.
- * @returns A result describing whether the status update succeeded.
- */
-export async function updateSessionSyncStatus(
-  sessionId: string,
-  syncStatus: SyncStatus,
-): Promise<Result<void>> {
-  try {
-    await withStore('readwrite', async (store) => {
-      const session = (await requestToPromise(store.get(sessionId))) as SessionRecord | undefined;
-
-      if (!session) {
-        throw new Error('Missing session record.');
-      }
-
-      session.sync_status = syncStatus;
-      await requestToPromise(store.put(session));
-    });
-
-    return { ok: true, value: undefined };
-  } catch {
-    return { ok: false, error: 'Unable to update the local sync status.' };
-  }
-}
-
 /**
  * Updates the rating for a locally stored session.
  *
  * @param sessionId - Stable session identifier.
  * @param rating - Qualitative rating string ("Dialed In", "Mellow", etc.).
- * @returns A result describing whether the update succeeded.
  */
 export async function updateSessionRating(
   sessionId: string,
   rating: string,
-): Promise<Result<void>> {
+): Promise<void> {
   try {
     await withStore('readwrite', async (store) => {
       const session = (await requestToPromise(store.get(sessionId))) as SessionRecord | undefined;
@@ -396,10 +344,8 @@ export async function updateSessionRating(
       session.rating = rating;
       await requestToPromise(store.put(session));
     });
-
-    return { ok: true, value: undefined };
   } catch {
-    return { ok: false, error: 'Unable to update the session rating.' };
+    // Ignore errors for this MVP
   }
 }
 
@@ -408,12 +354,11 @@ export async function updateSessionRating(
  *
  * @param sessionId - Stable session identifier.
  * @param durationSeconds - New duration in whole seconds.
- * @returns A result describing whether the update succeeded.
  */
 export async function updateSessionDuration(
   sessionId: string,
   durationSeconds: number,
-): Promise<Result<void>> {
+): Promise<void> {
   try {
     await withStore('readwrite', async (store) => {
       const session = (await requestToPromise(store.get(sessionId))) as SessionRecord | undefined;
@@ -429,97 +374,8 @@ export async function updateSessionDuration(
       
       await requestToPromise(store.put(session));
     });
-
-    return { ok: true, value: undefined };
   } catch {
-    return { ok: false, error: 'Unable to update the session duration.' };
+    // Ignore errors for this MVP
   }
 }
 
-/**
- * Summarizes the current IndexedDB queue for UI status messaging.
- *
- * @returns Aggregate counts grouped by sync status.
- */
-export async function getSessionSummary(): Promise<SessionSummary> {
-  return withStore('readonly', async (store) => {
-    const sessions = (await requestToPromise(store.getAll())) as SessionRecord[];
-
-    return sessions.reduce<SessionSummary>(
-      (summary, session) => {
-        if (session.sync_status === SYNC_STATUS.PENDING) {
-          summary.pendingCount += 1;
-        }
-
-        if (session.sync_status === SYNC_STATUS.SYNCED) {
-          summary.syncedCount += 1;
-        }
-
-        if (session.sync_status === SYNC_STATUS.ERROR) {
-          summary.errorCount += 1;
-        }
-
-        summary.totalCount += 1;
-        return summary;
-      },
-      {
-        totalCount: 0,
-        pendingCount: 0,
-        syncedCount: 0,
-        errorCount: 0,
-      },
-    );
-  });
-}
-
-/**
- * Flushes pending sessions to the local sync API and returns the updated queue summary.
- *
- * @param isOnline - Whether the current runtime can reach the network.
- * @returns Summary data plus whether recent-session UI should refresh.
- */
-export async function flushPendingSessions(isOnline: boolean): Promise<QueueFlushResult> {
-  if (!isOnline) {
-    return {
-      refreshRequired: false,
-      summary: await getSessionSummary(),
-    };
-  }
-
-  const pendingSessions = await getPendingSessions();
-
-  if (pendingSessions.length === 0) {
-    return {
-      refreshRequired: false,
-      summary: await getSessionSummary(),
-    };
-  }
-
-  let refreshRequired = false;
-
-  for (const session of pendingSessions) {
-    try {
-      // Privacy Firewall: Strip custom_name before syncing to the cloud
-      const { custom_name, ...payload } = session;
-
-      const response = await fetch('/api/sync', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const nextStatus = response.ok ? SYNC_STATUS.SYNCED : SYNC_STATUS.ERROR;
-      await updateSessionSyncStatus(session.session_id, nextStatus);
-      refreshRequired = true;
-    } catch {
-      break;
-    }
-  }
-
-  return {
-    refreshRequired,
-    summary: await getSessionSummary(),
-  };
-}
