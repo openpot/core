@@ -73,8 +73,37 @@ export default function AboutPage() {
             <div className="space-y-6">
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold text-primary uppercase tracking-tighter bg-primary/10 px-1.5 py-0.5 rounded">v0.5.0</span>
-                  <span className="text-xs font-bold text-text-primary">The Precision Release</span>
+                  <span className="text-[10px] font-bold text-primary uppercase tracking-tighter bg-primary/10 px-1.5 py-0.5 rounded">v0.6.0</span>
+                  <span className="text-xs font-bold text-text-primary">The Hardening Release</span>
+                </div>
+                <ul className="space-y-1.5 text-[13px] text-text-secondary list-none pl-1">
+                  <li className="flex items-start gap-2">
+                    <span className="text-primary mt-1">•</span>
+                    <span>PWA Reliability v2: Fail-safe installation capture and guided iOS Safari instructional modal.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-primary mt-1">•</span>
+                    <span>Mobile Layout Hardening: Grid-anchored history cards and synchronized typographic rhythm.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-primary mt-1">•</span>
+                    <span>High-Density UX: Optimized input spacing and automatic scroll-reset for newly started sessions.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-primary mt-1">•</span>
+                    <span>Production Stability: Fixed build-blocking accessibility (a11y) and TypeScript inconsistencies.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-primary mt-1">•</span>
+                    <span>Platform Resilience: Versioned manifest logic and cache busting for reliable splash screen coloring.</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="space-y-2 opacity-60">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold text-text-tertiary uppercase tracking-tighter bg-bg-overlay border border-border-subtle px-1.5 py-0.5 rounded">v0.5.0</span>
+                  <span className="text-xs font-bold text-text-secondary">The Precision Release</span>
                 </div>
                 <ul className="space-y-1.5 text-[13px] text-text-secondary list-none pl-1">
                   <li className="flex items-start gap-2">
