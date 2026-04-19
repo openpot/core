@@ -187,6 +187,12 @@ export function AmountInputModal({
     <div 
       className="fixed inset-0 z-50 flex items-center justify-center bg-bg-base/80 backdrop-blur-sm p-4 animate-in fade-in duration-300"
       onClick={handleBackdropClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') _onClose();
+      }}
+      role="button"
+      tabIndex={-1}
+      aria-label="Close modal"
     >
       <div className="panel-shell w-full max-w-[320px] p-6 animate-in zoom-in-95 duration-300 shadow-2xl flex flex-col gap-5">
         
