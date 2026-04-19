@@ -1,5 +1,3 @@
-import { SYNC_STATUS } from '@/types/session';
-
 import type { SessionRecord } from '@/types/session';
 
 export const ACTIVE_SESSION_KEY = 'openpot_active_session_start';
@@ -128,7 +126,7 @@ export function getInitialTimerState(): TimerState {
  *
  * @param startedAt - Session start time in epoch milliseconds.
  * @param endedAt - Session stop time in epoch milliseconds.
- * @returns An anonymous session record ready for IndexedDB and sync.
+ * @returns An anonymous session record ready for IndexedDB.
  */
 export function createSessionRecord(
   startedAt: number,
@@ -145,7 +143,6 @@ export function createSessionRecord(
     start_time: new Date(startedAt).toISOString(),
     end_time: new Date(endedAt).toISOString(),
     duration_seconds: durationSeconds,
-    sync_status: SYNC_STATUS.PENDING,
     custom_name: customName || undefined,
     method: method || undefined,
     amount: amount !== undefined ? amount : undefined,

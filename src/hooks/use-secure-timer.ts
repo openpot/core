@@ -1,59 +1,34 @@
 'use client';
 
-import { startTransition, useCallback, useEffect, useReducer, useRef, useState } from 'react';
+import { startTransition, useCallback, useEffect, useReducer, useState } from 'react';
 
-import { deleteGhostName, deleteSession, flushPendingSessions, getGhostLibrary, getSessionSummary, listRecentSessions, queueSession, saveGhostName, updateSessionRating } from '@/lib/db/session-db';
+import { deleteGhostName, deleteSession, getGhostLibrary, listRecentSessions, queueSession, saveGhostName, updateSessionRating } from '@/lib/db/session-db';
 import {
   ACTIVE_SESSION_KEY,
   createSessionRecord,
   formatDurationFull,
-  formatDurationHMS,
   getInitialTimerState,
   timerReducer,
   TIMER_STATUS,
 } from '@/lib/timer/timer-machine';
 
-import type { SessionSummary } from '@/lib/db/session-db';
 import type { SessionRecord } from '@/types/session';
 
-const EMPTY_SUMMARY: SessionSummary = {
-  totalCount: 0,
-  pendingCount: 0,
-  syncedCount: 0,
-  errorCount: 0,
-};
-
-interface WorkerSummaryMessage {
-  type: 'sync-summary';
-  summary: SessionSummary;
-}
-
-interface WorkerRefreshMessage {
-  type: 'refresh-required';
-}
-
-type WorkerMessage = WorkerSummaryMessage | WorkerRefreshMessage;
-
 /**
- * Coordinates the timer state machine, local persistence, and background sync worker.
+ * Coordinates the timer state machine and local persistence.
  *
- * @returns Timer state, recent sessions, sync metrics, and UI event handlers.
+ * @returns Timer state, recent sessions, and UI event handlers.
  */
 export function useSecureTimer() {
   const [state, dispatch] = useReducer(timerReducer, undefined, getInitialTimerState);
   const [recentSessions, setRecentSessions] = useState<SessionRecord[]>([]);
   const [ghostLibrary, setGhostLibrary] = useState<string[]>([]);
-  const [summary, setSummary] = useState<SessionSummary>(EMPTY_SUMMARY);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [historyError, setHistoryError] = useState<string>();
   const [customName, setCustomName] = useState('');
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
   const [amount, setAmount] = useState<number | undefined>(undefined);
   const [amountUnit, setAmountUnit] = useState<'g' | 'mg' | undefined>(undefined);
-  const [networkStatus, setNetworkStatus] = useState<'online' | 'offline'>('online');
-  const workerRef = useRef<Worker | null>(null);
-  const fallbackIntervalRef = useRef<number | undefined>(undefined);
-  const fallbackSyncInFlightRef = useRef(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -61,7 +36,6 @@ export function useSecureTimer() {
       const activeString = window.localStorage.getItem(ACTIVE_SESSION_KEY);
       if (activeString) {
         try {
-          // Attempt to parse as JSON (new format)
           const data = JSON.parse(activeString);
           if (data && typeof data === 'object' && typeof data.startedAt === 'number') {
             const startedAt = data.startedAt;
@@ -75,33 +49,26 @@ export function useSecureTimer() {
             }
           }
         } catch {
-          // Fallback to legacy format (raw timestamp)
           const startedAt = parseInt(activeString, 10);
           if (!isNaN(startedAt) && startedAt <= Date.now()) {
             dispatch({ type: 'START', startedAt });
             return;
           }
         }
-
-        // If validation fails, clear the stale key
         window.localStorage.removeItem(ACTIVE_SESSION_KEY);
       }
-    } catch {
-      // LocalStorage might be blocked by browser privacy settings
-    }
+    } catch { }
   }, []);
 
   const loadSessions = useCallback(async () => {
     try {
-      const [sessions, nextSummary, nextGhostLibrary] = await Promise.all([
+      const [sessions, nextGhostLibrary] = await Promise.all([
         listRecentSessions(),
-        getSessionSummary(),
         getGhostLibrary(),
       ]);
 
       startTransition(() => {
         setRecentSessions(sessions);
-        setSummary(nextSummary);
         setGhostLibrary(nextGhostLibrary);
         setHistoryError(undefined);
         setIsLoadingHistory(false);
@@ -114,144 +81,9 @@ export function useSecureTimer() {
     }
   }, []);
 
-  const runFallbackSync = useCallback(async () => {
-    if (typeof window === 'undefined' || fallbackSyncInFlightRef.current) {
-      return;
-    }
-
-    fallbackSyncInFlightRef.current = true;
-
-    try {
-      const result = await flushPendingSessions(window.navigator.onLine);
-
-      if (result.refreshRequired) {
-        await loadSessions();
-        return;
-      }
-
-      startTransition(() => {
-        setSummary(result.summary);
-      });
-    } catch {
-      startTransition(() => {
-        setHistoryError('Unable to refresh the secure sync queue right now.');
-      });
-    } finally {
-      fallbackSyncInFlightRef.current = false;
-    }
-  }, [loadSessions]);
-
-  const requestSync = useCallback(() => {
-    if (workerRef.current) {
-      workerRef.current.postMessage({ type: 'sync' });
-      return;
-    }
-
-    void runFallbackSync();
-  }, [runFallbackSync]);
-
   useEffect(() => {
     void loadSessions();
   }, [loadSessions]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-
-    const handleWorkerMessage = (event: MessageEvent<WorkerMessage>) => {
-      const message = event.data;
-
-      switch (message.type) {
-        case 'sync-summary': {
-          const nextSummary = message.summary;
-
-          startTransition(() => {
-            setSummary(nextSummary);
-          });
-          break;
-        }
-        case 'refresh-required':
-          void loadSessions();
-          break;
-      }
-    };
-
-    const startFallbackSyncLoop = () => {
-      if (fallbackIntervalRef.current !== undefined) {
-        return;
-      }
-
-      fallbackIntervalRef.current = window.setInterval(() => {
-        void runFallbackSync();
-      }, 5000);
-    };
-
-    const stopFallbackSyncLoop = () => {
-      if (fallbackIntervalRef.current === undefined) {
-        return;
-      }
-
-      window.clearInterval(fallbackIntervalRef.current);
-      fallbackIntervalRef.current = undefined;
-    };
-
-    const activateFallbackSync = () => {
-      if (workerRef.current) {
-        workerRef.current.terminate();
-        workerRef.current = null;
-      }
-
-      startFallbackSyncLoop();
-    };
-
-    const updateNetworkStatus = () => {
-      const nextStatus = navigator.onLine ? 'online' : 'offline';
-
-      startTransition(() => {
-        setNetworkStatus(nextStatus);
-      });
-
-      if (workerRef.current) {
-        workerRef.current.postMessage({ type: 'sync' });
-        return;
-      }
-
-      void runFallbackSync();
-    };
-
-    try {
-      const worker = new Worker(new URL('../workers/sync.worker.ts', import.meta.url), {
-        type: 'module',
-        name: 'openpot-sync-worker',
-      });
-
-      workerRef.current = worker;
-      stopFallbackSyncLoop();
-
-      worker.addEventListener('message', handleWorkerMessage);
-      worker.addEventListener('error', activateFallbackSync);
-    } catch {
-      activateFallbackSync();
-    }
-
-    updateNetworkStatus();
-
-    window.addEventListener('online', updateNetworkStatus);
-    window.addEventListener('offline', updateNetworkStatus);
-
-    return () => {
-      if (workerRef.current) {
-        workerRef.current.removeEventListener('message', handleWorkerMessage);
-        workerRef.current.terminate();
-        workerRef.current = null;
-      }
-
-      stopFallbackSyncLoop();
-      window.removeEventListener('online', updateNetworkStatus);
-      window.removeEventListener('offline', updateNetworkStatus);
-    };
-  }, [loadSessions, runFallbackSync]);
 
   useEffect(() => {
     if (state.status !== TIMER_STATUS.ACTIVE || state.startedAt === undefined) {
@@ -301,9 +133,7 @@ export function useSecureTimer() {
         amount: effectiveAmount,
         amountUnit: effectiveAmountUnit
       }));
-    } catch {
-      // Ignore storage errors safely
-    }
+    } catch { }
 
     if (effectiveName) {
       void saveGhostName(effectiveName).then(() => {
@@ -331,9 +161,7 @@ export function useSecureTimer() {
 
     try {
       window.localStorage.removeItem(ACTIVE_SESSION_KEY);
-    } catch {
-      // Ignore storage errors safely
-    }
+    } catch { }
 
     const effectiveName = argName ?? customName;
     const effectiveMethod = argMethod ?? selectedMethod;
@@ -350,17 +178,10 @@ export function useSecureTimer() {
     );
     dispatch({ type: 'STOP', session });
 
-    const result = await queueSession(session);
-
-    if (!result.ok) {
-      dispatch({ type: 'SAVE_FAILURE', message: result.error });
-      return;
-    }
-
-    dispatch({ type: 'SAVE_SUCCESS', session: result.value });
+    await queueSession(session);
+    dispatch({ type: 'SAVE_SUCCESS', session });
     await loadSessions();
-    requestSync();
-  }, [loadSessions, requestSync, state.startedAt, state.status, customName, selectedMethod, amount, amountUnit]);
+  }, [loadSessions, state.startedAt, state.status, customName, selectedMethod, amount, amountUnit]);
 
   const removeGhostSuggestion = useCallback(async (name: string) => {
     await deleteGhostName(name);
@@ -390,13 +211,11 @@ export function useSecureTimer() {
     formattedElapsed: formatDurationFull(state.elapsedMs / 1000),
     historyError,
     isLoadingHistory,
-    networkStatus,
     recentSessions,
     ghostLibrary,
     removeSession,
     removeGhostSuggestion,
     state,
-    summary,
     customName,
     setCustomName,
     selectedMethod,
@@ -410,6 +229,5 @@ export function useSecureTimer() {
     stopSession,
     resetSession,
     refreshHistory: loadSessions,
-    syncWorkerNow: requestSync,
   };
 }
