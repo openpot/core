@@ -28,6 +28,13 @@ export function Footer() {
         </Link>
         <span className="opacity-50 text-[8px]" aria-hidden="true">•</span>
         <Link 
+          href="/feedback" 
+          className="hover:text-primary transition-colors"
+        >
+          Feedback
+        </Link>
+        <span className="opacity-50 text-[8px]" aria-hidden="true">•</span>
+        <Link 
           href="/privacy" 
           className="hover:text-primary transition-colors"
         >
