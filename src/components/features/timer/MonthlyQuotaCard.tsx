@@ -50,10 +50,7 @@ export function MonthlyQuotaCard({ sessions }: MonthlyQuotaCardProps) {
       return new Intl.DateTimeFormat('en-US', {
         month: 'long',
         day: 'numeric',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-        hour12: true
+        year: 'numeric'
       }).format(d);
     };
     
