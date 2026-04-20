@@ -161,17 +161,6 @@ export function SecureTimerDashboard() {
       setIsInstalled(true);
     };
 
-    void navigator.serviceWorker.register('/sw.js', { scope: '/' })
-      .then((reg) => {
-        console.log('SecureTimer SW Registered:', reg.scope);
-      })
-      .catch((err) => {
-        console.error('SecureTimer SW Registration Failed:', err);
-        if (err.name === 'SecurityError') {
-          console.error('SecurityError typically indicates an SSL trust issue. Ensure the Root CA is installed on this device.');
-        }
-      });
-
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
 

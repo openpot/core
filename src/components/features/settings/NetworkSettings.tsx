@@ -1,0 +1,256 @@
+'use client';
+
+import { useState, useEffect, useCallback } from 'react';
+
+const AUTO_UPDATE_KEY = 'openpot_auto_update';
+const CURRENT_VERSION = process.env.NEXT_PUBLIC_APP_VERSION || 'v0.0.0-dev';
+
+type UpdateStatus = 'idle' | 'checking' | 'up-to-date' | 'available' | 'pulling' | 'ready' | 'error';
+
+/**
+ * Network Settings Component
+ * Enforces 'Zero-Network Activity' by giving the user explicit control
+ * over service worker update checks.
+ */
+export function NetworkSettings() {
+  const [autoUpdate, setAutoUpdate] = useState(false);
+  const [status, setStatus] = useState<UpdateStatus>('idle');
+  const [serverVersion, setServerVersion] = useState<string | null>(null);
+
+  // Initialize from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem(AUTO_UPDATE_KEY);
+    setAutoUpdate(saved === 'true');
+    
+    // Check for "waiting" worker on mount
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistration().then(reg => {
+        if (reg?.waiting) setStatus('ready');
+      });
+    }
+  }, []);
+
+  const toggleAutoUpdate = (enabled: boolean) => {
+    setAutoUpdate(enabled);
+    localStorage.setItem(AUTO_UPDATE_KEY, String(enabled));
+  };
+
+  /**
+   * Phase 1: Check for Updates
+   * Fetches the build-time version manifest WITHOUT triggering a SW update.
+   */
+  const checkUpdate = async () => {
+    setStatus('checking');
+    try {
+      // Small metadata fetch - strictly for comparison
+      const response = await fetch(`/version.json?t=${Date.now()}`);
+      if (!response.ok) throw new Error('Fetch failed');
+      
+      const data = await response.json();
+      const latestVersion = data.version;
+      setServerVersion(latestVersion);
+
+      if (latestVersion === CURRENT_VERSION) {
+        setStatus('up-to-date');
+      } else {
+        setStatus('available');
+      }
+    } catch (err) {
+      console.error('Check failed:', err);
+      setStatus('error');
+    }
+  };
+
+  /**
+   * Phase 2: Pull Updates
+   * Explicitly triggers the Service Worker update check and download.
+   */
+  const pullUpdate = async () => {
+    if (!('serviceWorker' in navigator)) return;
+    setStatus('pulling');
+    
+    try {
+      const registration = await navigator.serviceWorker.getRegistration();
+      if (registration) {
+        // Trigger the actual worker download
+        await registration.update();
+        
+        // Setup listener for the 'waiting' state
+        const checkWaiting = () => {
+          if (registration.waiting) {
+            setStatus('ready');
+            return true;
+          }
+          return false;
+        };
+
+        if (!checkWaiting()) {
+          const interval = setInterval(() => {
+            if (checkWaiting()) clearInterval(interval);
+          }, 500);
+          setTimeout(() => clearInterval(interval), 10000);
+        }
+      }
+    } catch (err) {
+      console.error('Pull failed:', err);
+      setStatus('error');
+    }
+  };
+
+  /**
+   * Phase 3: Apply Update
+   * Replaces the old worker with the new one and reloads the page.
+   */
+  const applyUpdate = async () => {
+    if (!('serviceWorker' in navigator)) return;
+    const registration = await navigator.serviceWorker.getRegistration();
+    if (registration?.waiting) {
+      registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+      // The SW should trigger a reload, but we'll force it here to be sure
+      window.location.reload();
+    }
+  };
+
+  return (
+    <div className="mt-8 space-y-6 rounded-xl border border-border-subtle bg-bg-overlay/50 p-6">
+      <div className="space-y-1">
+        <h3 className="text-sm font-bold uppercase tracking-widest text-text-primary">
+          Network & Privacy Controls
+        </h3>
+        <p className="text-xs text-text-tertiary">
+          Openpot runs 100% offline. You control when it communicates with the server.
+        </p>
+      </div>
+
+      {/* Background Toggle */}
+      <div className="flex flex-col gap-6 border-b border-border-subtle pb-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold text-text-primary">Background Auto-Updates</span>
+            <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${autoUpdate ? 'bg-success/20 text-success' : 'bg-text-tertiary/10 text-text-tertiary'}`}>
+              {autoUpdate ? 'Active' : 'Disabled'}
+            </span>
+          </div>
+          <p className="max-w-md text-xs text-text-secondary leading-relaxed">
+            Automatic update checks are disabled by default to ensure zero unauthorized network activity.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => toggleAutoUpdate(!autoUpdate)}
+          className={`relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary/20 ${
+            autoUpdate ? 'bg-primary' : 'bg-bg-subtle border border-border'
+          }`}
+          aria-pressed={autoUpdate}
+        >
+          <span
+            aria-hidden="true"
+            className={`pointer-events-none absolute top-1 h-4 w-4 rounded-full bg-white shadow-sm transition-all duration-200 ease-in-out ${
+              autoUpdate ? 'left-6' : 'left-1'
+            }`}
+          />
+        </button>
+      </div>
+
+      {/* Multi-Stage Update UI */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <p className="text-sm font-semibold text-text-primary uppercase tracking-wider">Software Version</p>
+            <div className="flex items-center gap-2">
+              <code className="rounded bg-bg-subtle px-1.5 py-0.5 text-[10px] text-text-secondary">{CURRENT_VERSION}</code>
+              <span className="text-[10px] text-text-tertiary">(Installed)</span>
+            </div>
+          </div>
+          
+          {status === 'idle' && (
+            <button
+              onClick={checkUpdate}
+              className="inline-flex h-9 items-center justify-center rounded-lg bg-bg-overlay border border-border px-4 text-xs font-bold text-text-primary transition-all hover:bg-bg-subtle"
+            >
+              Check for Updates
+            </button>
+          )}
+
+          {status === 'checking' && (
+            <span className="flex items-center gap-2 text-xs text-text-tertiary">
+              <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+              Comparing builds...
+            </span>
+          )}
+
+          {status === 'up-to-date' && (
+            <span className="flex items-center gap-1.5 text-xs font-bold text-success">
+              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+              </svg>
+              Up to Date
+            </span>
+          )}
+
+          {status === 'error' && (
+            <button
+              onClick={checkUpdate}
+              className="text-xs font-bold text-danger hover:underline"
+            >
+              Retry Check
+            </button>
+          )}
+        </div>
+
+        {/* Phase 2: Pull Available Updates */}
+        {status === 'available' && (
+          <div className="rounded-lg bg-primary/5 border border-primary/20 p-4 animate-in fade-in slide-in-from-top-2">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="text-xs font-bold text-primary italic">Update Available!</p>
+                <p className="text-[10px] text-text-secondary leading-tight">
+                  New build version: <code className="text-text-primary">{serverVersion}</code>
+                </p>
+              </div>
+              <button
+                onClick={pullUpdate}
+                className="inline-flex h-9 items-center justify-center rounded-lg bg-primary px-4 text-xs font-bold text-white transition-all hover:opacity-90 shadow-lg shadow-primary/20"
+              >
+                Pull Updates
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Phase 3: Apply Ready Update */}
+        {status === 'pulling' && (
+          <div className="flex items-center justify-center p-4">
+             <div className="flex items-center gap-3 text-xs text-text-secondary">
+               <div className="h-1.5 w-32 overflow-hidden rounded-full bg-bg-subtle">
+                 <div className="h-full w-2/3 animate-pulse bg-primary" />
+               </div>
+               Downloading new assets...
+             </div>
+          </div>
+        )}
+
+        {status === 'ready' && (
+          <div className="rounded-lg bg-success/10 border border-success/30 p-4 animate-bounce-subtle">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="text-xs font-bold text-success uppercase tracking-wider">Ready to Inject</p>
+                <p className="text-[10px] text-text-secondary">New code is downloaded. Apply now to finish.</p>
+              </div>
+              <button
+                onClick={applyUpdate}
+                className="inline-flex h-9 items-center justify-center rounded-lg bg-success px-4 text-xs font-bold text-white transition-all hover:opacity-90"
+              >
+                Apply & Reload
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

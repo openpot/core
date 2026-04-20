@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Logo, LogoMark } from '@/components/ui/Logo';
 import { Footer } from '@/components/ui/Footer';
+import { NetworkSettings } from '@/components/features/settings/NetworkSettings';
 import { APP_VERSION } from '@/lib/version';
 
 export const metadata = {
@@ -53,6 +54,8 @@ export default function AboutPage() {
               of an offline ledger.
             </p>
           </section>
+
+          <NetworkSettings />
 
           <section className="space-y-4">
             <h2 className="text-xl font-bold text-text-primary uppercase tracking-widest text-xs">
