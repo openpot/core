@@ -72,23 +72,42 @@ export function NetworkSettings() {
     try {
       const registration = await navigator.serviceWorker.getRegistration();
       if (registration) {
-        // Trigger the actual worker download
-        await registration.update();
-        
-        // Setup listener for the 'waiting' state
-        const checkWaiting = () => {
-          if (registration.waiting) {
-            setStatus('ready');
-            return true;
+        // 1. If we're already waiting, go straight to ready
+        if (registration.waiting) {
+          setStatus('ready');
+          return;
+        }
+
+        // 2. Setup a listener for the incoming update
+        const onUpdateFound = () => {
+          const newWorker = registration.installing;
+          if (newWorker) {
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed') {
+                setStatus('ready');
+              }
+            });
           }
-          return false;
         };
 
-        if (!checkWaiting()) {
-          const interval = setInterval(() => {
-            if (checkWaiting()) clearInterval(interval);
-          }, 500);
-          setTimeout(() => clearInterval(interval), 10000);
+        registration.addEventListener('updatefound', onUpdateFound);
+
+        // 3. Trigger the update
+        await registration.update();
+        
+        // 4. Fallback: Check if it finished instantly or was already installing
+        if (registration.waiting) {
+          setStatus('ready');
+        } else if (registration.installing) {
+          onUpdateFound();
+        } else {
+          // Safety timeout if registration.update() finishes but no worker is found
+          // (This can happen if the browser determines the hashes match after a deeper check)
+          setTimeout(() => {
+            if (!registration.waiting && !registration.installing) {
+              setStatus('up-to-date');
+            }
+          }, 3000);
         }
       }
     } catch (err) {
