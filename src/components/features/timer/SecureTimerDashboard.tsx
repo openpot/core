@@ -843,7 +843,7 @@ export function SecureTimerDashboard() {
           isOpen={isEditDurationModalOpen}
           onClose={() => setIsEditDurationModalOpen(false)}
           onSave={handleDurationSave}
-          currentSeconds={editingSession.duration_seconds}
+          currentDurationSeconds={editingSession.duration_seconds}
         />
       )}
 
