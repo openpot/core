@@ -10,6 +10,8 @@ import { useSecureTimer } from '@/hooks/use-secure-timer';
 import { formatDuration, TIMER_STATUS } from '@/lib/timer/timer-machine';
 import { AmountInputModal } from '@/components/features/timer/AmountInputModal';
 import { DurationEditModal } from './DurationEditModal';
+import { MonthlyQuotaCard } from './MonthlyQuotaCard';
+import { QuotaWarningModal } from './QuotaWarningModal';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -90,6 +92,22 @@ export function SecureTimerDashboard() {
   const methodsScrollRef = useRef<HTMLDivElement>(null);
   const strainsScrollRef = useRef<HTMLDivElement>(null);
   const [isIOSInstallModalOpen, setIsIOSInstallModalOpen] = useState(false);
+  const [fullSessions, setFullSessions] = useState<SessionRecord[]>([]);
+  const [showQuotaWarning, setShowQuotaWarning] = useState(false);
+
+  // Fetch full sessions for quota tracking
+  const loadFullHistory = useCallback(async () => {
+    try {
+      const all = await listAllSessions();
+      setFullSessions(all);
+    } catch (err) {
+      console.error('Failed to load full history:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadFullHistory();
+  }, [loadFullHistory, recentSessions]);
 
   const handleDurationSave = async (newSeconds: number) => {
     if (editingSession) {
@@ -125,6 +143,29 @@ export function SecureTimerDashboard() {
     setIsAmountModalOpen(false);
     setPendingMethod(null);
   };
+
+  const handleTryStartSession = useCallback(() => {
+    // Calculate current month's total in grams
+    const now = new Date();
+    const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    
+    const currentTotalG = fullSessions.reduce((acc, s) => {
+      const sessionDate = new Date(s.start_time);
+      if (sessionDate >= firstOfMonth) {
+        const grams = s.amount_unit === 'mg' ? (s.amount || 0) / 1000 : (s.amount || 0);
+        return acc + grams;
+      }
+      return acc;
+    }, 0);
+
+    const inputG = amountUnit === 'mg' ? (amount || 0) / 1000 : (amount || 0);
+    
+    if (currentTotalG + inputG > 50.0) {
+      setShowQuotaWarning(true);
+    } else {
+      startSession(customName);
+    }
+  }, [fullSessions, amount, amountUnit, customName, startSession]);
 
   const ratings = ["Dialed In", "Mellow", "Mid", "Too Heavy"];
 
@@ -549,7 +590,7 @@ export function SecureTimerDashboard() {
                 className="w-full min-h-12 rounded-lg bg-primary px-5 py-4 text-sm font-semibold text-text-inverse transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-primary"
                 data-testid="primary-timer-button"
                 disabled={isStopDisabled}
-                onClick={isStopped ? () => resetSession() : isActive ? () => stopSession(customName, selectedMethod || undefined) : () => startSession(customName)}
+                onClick={isStopped ? () => resetSession() : isActive ? () => stopSession(customName, selectedMethod || undefined) : () => handleTryStartSession()}
                 type="button"
               >
                 {primaryActionLabel}
@@ -557,7 +598,7 @@ export function SecureTimerDashboard() {
             </div>
           </div>
 
-
+          <MonthlyQuotaCard sessions={fullSessions} />
 
         </div>
 
@@ -797,12 +838,24 @@ export function SecureTimerDashboard() {
         onClose={handleAmountClose}
         onSave={handleAmountSave}
       />
-      <DurationEditModal
-        isOpen={isEditDurationModalOpen}
-        currentDurationSeconds={editingSession?.duration_seconds || 0}
-        onClose={() => setIsEditDurationModalOpen(false)}
-        onSave={handleDurationSave}
+      {editingSession && (
+        <DurationEditModal
+          isOpen={isEditDurationModalOpen}
+          onClose={() => setIsEditDurationModalOpen(false)}
+          onSave={handleDurationSave}
+          currentSeconds={editingSession.duration_seconds}
+        />
+      )}
+
+      <QuotaWarningModal 
+        isOpen={showQuotaWarning}
+        onClose={() => setShowQuotaWarning(false)}
+        onConfirm={() => {
+          setShowQuotaWarning(false);
+          startSession(customName);
+        }}
       />
+
       {/* iOS Install Instructions Modal */}
       {isIOSInstallModalOpen && (
         <div className="fixed inset-0 z-[60] flex items-end justify-center bg-bg-base/80 backdrop-blur-md p-4 animate-in fade-in slide-in-from-bottom-full duration-500 sm:items-center">
