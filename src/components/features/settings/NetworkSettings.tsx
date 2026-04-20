@@ -186,9 +186,9 @@ export function NetworkSettings() {
           {status === 'idle' && (
             <button
               onClick={checkUpdate}
-              className="inline-flex h-9 w-[170px] items-center justify-center whitespace-nowrap rounded-lg bg-bg-overlay border border-border px-3 text-[10px] font-bold text-text-primary transition-all hover:bg-bg-subtle"
+              className="inline-flex h-9 w-24 items-center justify-center whitespace-nowrap rounded-lg bg-bg-overlay border border-border px-3 text-[10px] font-bold text-text-primary transition-all hover:bg-bg-subtle"
             >
-              Check for Updates
+              Check
             </button>
           )}
 

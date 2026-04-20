@@ -18,12 +18,22 @@ const getPackageVersion = () => {
 };
 
 const getCommitHash = () => {
+  // 1. Priority: Explicit BUILD_HASH from deployment script
+  if (process.env.BUILD_HASH) {
+    return process.env.BUILD_HASH.slice(0, 7);
+  }
+
+  // 2. Secondary: Vercel standard metadata
   if (process.env.VERCEL_GIT_COMMIT_SHA) {
     return process.env.VERCEL_GIT_COMMIT_SHA.slice(0, 7);
   }
+
+  // 3. Tertiary: Local Git lookup
   try {
     return execSync('git rev-parse --short HEAD 2>/dev/null').toString().trim();
-  } catch {
+  } catch (error) {
+    // Final fallback should be rare with local git installed
+    console.warn('⚠️  Warning: Build hash retrieval failed. Defaulting to "prod".');
     return 'prod';
   }
 };
