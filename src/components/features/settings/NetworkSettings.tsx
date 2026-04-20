@@ -224,8 +224,8 @@ export function NetworkSettings() {
         {/* Phase 2: Pull Available Updates */}
         {status === 'available' && (
           <div className="rounded-lg bg-primary/5 border border-primary/20 p-4 animate-in fade-in slide-in-from-top-2">
-            <div className="flex items-center justify-between gap-4">
-              <div className="space-y-1">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="min-w-[180px] flex-1 space-y-1">
                 <p className="text-xs font-bold text-primary italic">Update Available!</p>
                 <p className="text-[10px] text-text-secondary leading-tight">
                   New build version: <code className="text-text-primary">{serverVersion}</code>
@@ -255,8 +255,8 @@ export function NetworkSettings() {
 
         {status === 'ready' && (
           <div className="rounded-lg bg-success/10 border border-success/30 p-4 animate-bounce-subtle">
-            <div className="flex items-center justify-between gap-4">
-              <div className="space-y-1">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="min-w-[180px] flex-1 space-y-1">
                 <p className="text-xs font-bold text-success uppercase tracking-wider">Ready to Inject</p>
                 <p className="text-[10px] text-text-secondary">New code is downloaded. Apply now to finish.</p>
               </div>
