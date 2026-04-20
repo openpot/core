@@ -34,7 +34,7 @@ export default function FeedbackPage() {
 
   return (
     <main className="relative flex min-h-screen flex-col items-center justify-start overflow-hidden px-4 py-6 sm:px-6 sm:py-12">
-      <section className="panel-shell relative mx-auto flex w-full max-w-2xl flex-col gap-6 overflow-hidden px-5 py-6 sm:px-8 sm:py-8">
+      <section className="panel-shell relative mx-auto flex w-full max-w-3xl flex-col gap-6 overflow-hidden px-5 py-6 sm:px-8 sm:py-8">
         <header className="border-b border-border-subtle pb-6 pt-2">
           <Link href="/" className="flex flex-row items-center justify-center gap-1.5 transition-transform hover:scale-[1.02] active:scale-[0.98]">
             <LogoMark aria-hidden="true" className="h-[38px] w-auto text-text-primary sm:h-[45px]" />
@@ -84,8 +84,12 @@ export default function FeedbackPage() {
 
           {isRevealed && (
             <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 text-center animate-in fade-in slide-in-from-top-2 duration-500">
-              <p className="text-[11px] font-bold text-primary uppercase tracking-widest">
-                Support Endpoint: {fullEmail}
+              <p className="flex items-center justify-center gap-1 text-[11px] font-bold text-primary uppercase tracking-widest">
+                Support: <span>feedback</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="opacity-80">
+                  <circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"/>
+                </svg>
+                <span>openpot.co</span>
               </p>
             </div>
           )}
