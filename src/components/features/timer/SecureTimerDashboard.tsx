@@ -501,65 +501,67 @@ export function SecureTimerDashboard() {
                     onChange={(e) => setCustomName(e.target.value.slice(0, 20))}
                     className="w-full rounded-lg border border-border bg-bg-base/50 px-4 py-2.5 text-sm text-text-primary placeholder:text-text-tertiary focus:border-primary focus:outline-none transition-colors disabled:opacity-75 disabled:cursor-not-allowed"
                   />
-                  {displayGhost.length > 0 && (
-                    <div 
-                      ref={strainsScrollRef}
-                      className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide no-scrollbar" 
-                      style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                    >
-                      {displayGhost.map((name) => (
-                        <div
-                          key={name}
-                          className={`shrink-0 flex items-center h-9 min-w-[85px] rounded-full border transition-all overflow-hidden ${customName === name
-                              ? 'bg-primary/10 border-primary/40'
-                              : 'bg-bg-overlay border-border hover:border-text-tertiary'
-                            } ${!isIdle && customName !== name ? 'opacity-40 grayscale pointer-events-none' : ''} ${!isIdle && customName === name ? 'pointer-events-none' : ''}`}
-                        >
-                          <button
-                            type="button"
-                            disabled={!isIdle}
-                            onClick={() => setCustomName(name)}
-                            className={`flex flex-1 items-center justify-center h-full text-xs font-semibold font-sans tracking-widest transition-colors leading-none ${isEditingStrains ? 'pl-4 pr-3' : 'px-4'
-                              } ${customName === name ? '!text-primary' : 'text-text-secondary'
-                              } ${!isIdle && customName !== name ? 'opacity-40 cursor-not-allowed' : ''}`}
-                            style={{
-                              fontSize: '12px',
-                              transform: 'none',
-                              WebkitTransform: 'none'
-                            }}
+                  <div className="h-10">
+                    {displayGhost.length > 0 && (
+                      <div 
+                        ref={strainsScrollRef}
+                        className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide no-scrollbar" 
+                        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                      >
+                        {displayGhost.map((name) => (
+                          <div
+                            key={name}
+                            className={`shrink-0 flex items-center h-9 min-w-[85px] rounded-full border transition-all overflow-hidden ${customName === name
+                                ? 'bg-primary/10 border-primary/40'
+                                : 'bg-bg-overlay border-border hover:border-text-tertiary'
+                              } ${!isIdle && customName !== name ? 'opacity-40 grayscale pointer-events-none' : ''} ${!isIdle && customName === name ? 'pointer-events-none' : ''}`}
                           >
-                            {name}
-                          </button>
-                          {isEditingStrains && (
-                            <>
-                              <div className={`h-4 w-px shrink-0 ${customName === name ? 'bg-primary/20' : 'bg-border'}`} />
-                              <button
-                                type="button"
-                                disabled={!isIdle}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  removeGhostSuggestion(name);
-                                }}
-                                className={`px-3 h-full flex items-center justify-center transition-colors animate-in fade-in zoom-in-95 duration-200 ${customName === name
-                                    ? '!text-primary/70 hover:bg-primary/5'
-                                    : 'text-text-tertiary hover:text-error hover:bg-error/5'
-                                  } ${!isIdle ? 'opacity-40 cursor-not-allowed' : ''}`}
-                                aria-label={`Remove ${name} from suggestions`}
-                              >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                  <polyline points="3 6 5 6 21 6" />
-                                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                                  <path d="M10 11v6" />
-                                  <path d="M14 11v6" />
-                                  <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-                                </svg>
-                              </button>
-                            </>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                            <button
+                              type="button"
+                              disabled={!isIdle}
+                              onClick={() => setCustomName(name)}
+                              className={`flex flex-1 items-center justify-center h-full text-xs font-semibold font-sans tracking-widest transition-colors leading-none ${isEditingStrains ? 'pl-4 pr-3' : 'px-4'
+                                } ${customName === name ? '!text-primary' : 'text-text-secondary'
+                                } ${!isIdle && customName !== name ? 'opacity-40 cursor-not-allowed' : ''}`}
+                              style={{
+                                fontSize: '12px',
+                                transform: 'none',
+                                WebkitTransform: 'none'
+                              }}
+                            >
+                              {name}
+                            </button>
+                            {isEditingStrains && (
+                              <>
+                                <div className={`h-4 w-px shrink-0 ${customName === name ? 'bg-primary/20' : 'bg-border'}`} />
+                                <button
+                                  type="button"
+                                  disabled={!isIdle}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    removeGhostSuggestion(name);
+                                  }}
+                                  className={`px-3 h-full flex items-center justify-center transition-colors animate-in fade-in zoom-in-95 duration-200 ${customName === name
+                                      ? '!text-primary/70 hover:bg-primary/5'
+                                      : 'text-text-tertiary hover:text-error hover:bg-error/5'
+                                    } ${!isIdle ? 'opacity-40 cursor-not-allowed' : ''}`}
+                                  aria-label={`Remove ${name} from suggestions`}
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <polyline points="3 6 5 6 21 6" />
+                                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                                    <path d="M10 11v6" />
+                                    <path d="M14 11v6" />
+                                    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                                  </svg>
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
 
