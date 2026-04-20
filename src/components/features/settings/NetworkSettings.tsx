@@ -186,14 +186,14 @@ export function NetworkSettings() {
           {status === 'idle' && (
             <button
               onClick={checkUpdate}
-              className="inline-flex h-9 items-center justify-center rounded-lg bg-bg-overlay border border-border px-4 text-xs font-bold text-text-primary transition-all hover:bg-bg-subtle"
+              className="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-lg bg-bg-overlay border border-border px-4 text-xs font-bold text-text-primary transition-all hover:bg-bg-subtle"
             >
               Check for Updates
             </button>
           )}
 
           {status === 'checking' && (
-            <span className="flex items-center gap-2 text-xs text-text-tertiary">
+            <span className="flex items-center gap-2 text-xs text-text-tertiary whitespace-nowrap">
               <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
@@ -203,7 +203,7 @@ export function NetworkSettings() {
           )}
 
           {status === 'up-to-date' && (
-            <span className="flex items-center gap-1.5 text-xs font-bold text-success">
+            <span className="flex items-center gap-1.5 text-xs font-bold text-success whitespace-nowrap">
               <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
               </svg>
@@ -214,7 +214,7 @@ export function NetworkSettings() {
           {status === 'error' && (
             <button
               onClick={checkUpdate}
-              className="text-xs font-bold text-danger hover:underline"
+              className="text-xs font-bold text-danger whitespace-nowrap hover:underline"
             >
               Retry Check
             </button>
@@ -224,7 +224,7 @@ export function NetworkSettings() {
         {/* Phase 2: Pull Available Updates */}
         {status === 'available' && (
           <div className="rounded-lg bg-primary/5 border border-primary/20 p-4 animate-in fade-in slide-in-from-top-2">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-4">
               <div className="space-y-1">
                 <p className="text-xs font-bold text-primary italic">Update Available!</p>
                 <p className="text-[10px] text-text-secondary leading-tight">
@@ -233,7 +233,7 @@ export function NetworkSettings() {
               </div>
               <button
                 onClick={pullUpdate}
-                className="inline-flex h-9 items-center justify-center rounded-lg bg-primary px-4 text-xs font-bold text-white transition-all hover:opacity-90 shadow-lg shadow-primary/20"
+                className="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-lg bg-primary px-4 text-xs font-bold text-white transition-all hover:opacity-90 shadow-lg shadow-primary/20"
               >
                 Pull Updates
               </button>
@@ -248,21 +248,21 @@ export function NetworkSettings() {
                <div className="h-1.5 w-32 overflow-hidden rounded-full bg-bg-subtle">
                  <div className="h-full w-2/3 animate-pulse bg-primary" />
                </div>
-               Downloading new assets...
+               <span className="whitespace-nowrap">Downloading new assets...</span>
              </div>
           </div>
         )}
 
         {status === 'ready' && (
           <div className="rounded-lg bg-success/10 border border-success/30 p-4 animate-bounce-subtle">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-4">
               <div className="space-y-1">
                 <p className="text-xs font-bold text-success uppercase tracking-wider">Ready to Inject</p>
                 <p className="text-[10px] text-text-secondary">New code is downloaded. Apply now to finish.</p>
               </div>
               <button
                 onClick={applyUpdate}
-                className="inline-flex h-9 items-center justify-center rounded-lg bg-success px-4 text-xs font-bold text-white transition-all hover:opacity-90"
+                className="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-lg bg-success px-4 text-xs font-bold text-white transition-all hover:opacity-90"
               >
                 Apply & Reload
               </button>

@@ -8,6 +8,15 @@ import withPWAInit from '@ducanh2912/next-pwa';
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
 // Versioning for Cache Control
+const getPackageVersion = () => {
+  try {
+    const pkg = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf8'));
+    return pkg.version;
+  } catch {
+    return '0.7.0';
+  }
+};
+
 const getCommitHash = () => {
   if (process.env.VERCEL_GIT_COMMIT_SHA) {
     return process.env.VERCEL_GIT_COMMIT_SHA.slice(0, 7);
@@ -15,12 +24,12 @@ const getCommitHash = () => {
   try {
     return execSync('git rev-parse --short HEAD 2>/dev/null').toString().trim();
   } catch {
-    return 'dev';
+    return 'prod';
   }
 };
 
+const packageVersion = getPackageVersion();
 const commitHash = getCommitHash();
-const packageVersion = process.env.npm_package_version || '0.6.0';
 const APP_VERSION = `v${packageVersion}-${commitHash}`;
 
 /**
