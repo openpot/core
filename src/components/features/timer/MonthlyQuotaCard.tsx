@@ -47,11 +47,10 @@ export function MonthlyQuotaCard({ sessions }: MonthlyQuotaCardProps) {
     const pad = (n: number) => n.toString().padStart(2, '0');
     const fmtMarker = (d: Date) => `${pad(d.getDate())}.${pad(d.getMonth() + 1)}`;
     const fmtTimestamp = (d: Date) => {
-      return new Intl.DateTimeFormat('en-US', {
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric'
-      }).format(d);
+      const day = d.getDate().toString().padStart(2, '0');
+      const month = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(d);
+      const year = d.getFullYear();
+      return `${day}.${month} ${year}`;
     };
     
     const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
@@ -73,15 +72,11 @@ export function MonthlyQuotaCard({ sessions }: MonthlyQuotaCardProps) {
   return (
     <section className="panel-shell bg-bg-base/40 border border-border-subtle p-5 animate-in fade-in slide-in-from-top-2 duration-500">
       <div className="space-y-4">
-        {/* Header */}
-        <div className="flex flex-col gap-1">
-          <h3 className="text-sm font-semibold uppercase tracking-widest text-text-secondary">
-            Monthly Quota Status
-          </h3>
-          <p className="text-sm text-text-secondary">
-            As of <span className="text-text-primary font-medium">{stats.timestamp}</span>
-          </p>
-        </div>
+        <h3 className="text-sm font-semibold uppercase tracking-widest text-text-secondary flex items-baseline gap-1.5">
+          <span>MONTHLY QUOTA</span>
+          <span className="text-xs lowercase tracking-normal font-normal">as of</span>
+          <span className="text-xs text-text-primary font-medium tracking-normal">{stats.timestamp}</span>
+        </h3>
 
         {/* Main Stats */}
         <div className="flex items-baseline justify-between mb-1">
@@ -119,7 +114,7 @@ export function MonthlyQuotaCard({ sessions }: MonthlyQuotaCardProps) {
             <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
           </svg>
           <p className="text-sm text-text-secondary leading-normal">
-            You have <span className="text-text-primary font-bold">{stats.remaining.toFixed(2)}g</span> available for the remaining <span className="text-text-primary font-bold">{stats.remainingDays}</span> day(s).
+            <span className="text-text-primary font-bold">{stats.remaining.toFixed(2)}g</span> available for the next <span className="text-text-primary font-bold">{stats.remainingDays}</span> {stats.remainingDays === 1 ? 'day' : 'days'}
           </p>
         </div>
       </div>
