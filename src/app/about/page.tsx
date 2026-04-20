@@ -73,11 +73,36 @@ export default function AboutPage() {
               Release Log
             </h2>
             
-            <div className="space-y-6">
+           <div className="space-y-6">
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold text-primary uppercase tracking-tighter bg-primary/10 px-1.5 py-0.5 rounded">v0.6.0</span>
-                  <span className="text-xs font-bold text-text-primary">The Hardening Release</span>
+                  <span className="text-[10px] font-bold text-primary uppercase tracking-tighter bg-primary/10 px-1.5 py-0.5 rounded">v0.7.0</span>
+                  <span className="text-xs font-bold text-text-primary">The Privacy Overhaul</span>
+                </div>
+                <ul className="space-y-1.5 text-[13px] text-text-secondary list-none pl-1">
+                  <li className="flex items-start gap-2">
+                    <span className="text-primary mt-1">•</span>
+                    <span>Zero-Network Architecture: Implemented manual PWA registration to eliminate unauthorized background pings.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-primary mt-1">•</span>
+                    <span>Multi-Stage Update Flow: Added Check &gt; Pull &gt; Apply dashboard for absolute transparency on software updates.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-primary mt-1">•</span>
+                    <span>Aggressive Shell Precaching: pro-actively caches core routes (Home, About, Privacy) for instant offline availability.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-primary mt-1">•</span>
+                    <span>Stale Build Guard: Integrated an &quot;Atomic Sync&quot; engine to prevent broken UIs when build hashes change.</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="space-y-2 opacity-60">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold text-text-tertiary uppercase tracking-tighter bg-bg-overlay border border-border-subtle px-1.5 py-0.5 rounded">v0.6.0</span>
+                  <span className="text-xs font-bold text-text-secondary">The Hardening Release</span>
                 </div>
                 <ul className="space-y-1.5 text-[13px] text-text-secondary list-none pl-1">
                   <li className="flex items-start gap-2">
