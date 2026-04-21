@@ -18,6 +18,16 @@ const getPackageVersion = () => {
 };
 
 const getCommitHash = () => {
+  // 0. Priority: Persistent .build_version from deploy script
+  const buildVersionPath = path.join(process.cwd(), '.build_version');
+  if (fs.existsSync(buildVersionPath)) {
+    try {
+      return fs.readFileSync(buildVersionPath, 'utf8').trim().slice(0, 7);
+    } catch (e) {
+      console.warn('⚠️  Warning: Failed to read .build_version file.');
+    }
+  }
+
   // 1. Priority: Explicit BUILD_HASH from deployment script
   if (process.env.BUILD_HASH) {
     return process.env.BUILD_HASH.slice(0, 7);

@@ -13,6 +13,9 @@ else
   echo "✅ Detected Build Hash: $GIT_HASH"
 fi
 
+# 1.5. Freeze hash for build engine
+echo "$GIT_HASH" > .build_version
+
 # 2. Run the clean build with explicit environment variable
 echo "🚀 Starting clean production build..."
 rm -rf .next out
