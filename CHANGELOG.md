@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.8.0] - 2026-04-21
+
+### Added
+- **Zero-Commit Master Sync**: Re-engineered versioning architecture using real-time Git/Vercel metadata for 1:1 parity between local and production environments.
+- **PWA Update Hardening**: Implemented `controllerchange` event synchronization for the "Apply & Reload" workflow, eliminating "zombie" cache reloads.
+- **Enhanced Quota Precision**: Upgraded the Monthly Quota card to 3-decimal precision for granular weight tracking.
+- **Master Deployment Pipeline**: Automated GitHub propagation in `deploy.sh` for seamless local-to-production releases.
+
+### Fixed
+- **Weight Scaling Bug**: Resolved the double-conversion error where milligram doses were incorrectly down-scaled during monthly aggregation.
+- **Versioning Lag**: Eliminated the "one version behind" gap by prioritizing real-time repository state over static build files.
+
+## [0.7.0] - 2026-04-20
+
+### Added
+- **Persistent Build Identification**: Introduced the `.build_version` Source of Truth to bridge Git-less environments (Vercel) with the local repository state.
+- **Manual Network Controls**: Multi-stage release lifecycle giving users explicit control over network pings (Compare -> Pull -> Apply).
+
 ## [0.6.0] - 2026-04-19
 
 ### Added
@@ -23,4 +41,6 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+[0.8.0]: https://github.com/openpot/openpot-secure-timer/compare/v0.7.0...v0.8.0
+[0.7.0]: https://github.com/openpot/openpot-secure-timer/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/openpot/openpot-secure-timer/compare/v0.5.0...v0.6.0
