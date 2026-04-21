@@ -21,10 +21,19 @@ echo "🚀 Starting clean production build..."
 rm -rf .next out
 BUILD_HASH=$GIT_HASH npm run build
 
-# 3. Completion message
+# 3. Propagate to production
+echo "📡 Propagating to production (GitHub push)..."
+# Stage any changes to version tracking files
+git add .build_version
+# Commit with the build hash (use -am to catch any other pending UI/logic tweaks)
+git commit -am "chore: production release [$GIT_HASH]"
+# Push to trigger Vercel build
+git push origin main
+
 echo ""
-echo "✨ Build Complete!"
-echo "📍 Location: ./out"
+echo "✨ Build Complete & Propagated!"
+echo "📍 Local Build Location: ./out"
 echo "🔖 Version Tag: $GIT_HASH"
+echo "🌍 Production tracking link: https://openpot.co/version.json"
 echo ""
-echo "To serve this build locally, run: node scripts/serve-https.js"
+echo "To serve locally: node scripts/serve-https.js"

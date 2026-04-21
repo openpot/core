@@ -30,6 +30,40 @@ export function NetworkSettings() {
     }
   }, []);
 
+  // Background Auto-Update Sequence
+  useEffect(() => {
+    if (!autoUpdate) return;
+
+    // Check once on mount/enable
+    const initialTimer = setTimeout(() => {
+      if (status === 'idle') checkUpdate();
+    }, 5000);
+
+    // Poll every 30 minutes
+    const intervalId = setInterval(() => {
+      // Only start a sequence if we are idle or already partially through one
+      if (status === 'idle' || status === 'up-to-date' || status === 'error') {
+        checkUpdate();
+      }
+    }, 1800000);
+
+    return () => {
+      clearTimeout(initialTimer);
+      clearInterval(intervalId);
+    };
+  }, [autoUpdate, status]);
+
+  // Handle automatic progression through update stages
+  useEffect(() => {
+    if (!autoUpdate) return;
+
+    if (status === 'available') {
+      pullUpdate();
+    } else if (status === 'ready') {
+      applyUpdate();
+    }
+  }, [status, autoUpdate]);
+
   const toggleAutoUpdate = (enabled: boolean) => {
     setAutoUpdate(enabled);
     localStorage.setItem(AUTO_UPDATE_KEY, String(enabled));
