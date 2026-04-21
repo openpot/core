@@ -168,3 +168,4 @@ memory-core.md
 
 .vercel
 .build_version
+scripts/deploy-prod.sh
