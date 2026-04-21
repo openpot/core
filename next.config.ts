@@ -18,32 +18,31 @@ const getPackageVersion = () => {
 };
 
 const getCommitHash = () => {
-  // 0. Priority: Persistent .build_version from deploy script
-  const buildVersionPath = path.join(process.cwd(), '.build_version');
-  if (fs.existsSync(buildVersionPath)) {
-    try {
-      return fs.readFileSync(buildVersionPath, 'utf8').trim().slice(0, 7);
-    } catch (e) {
-      console.warn('⚠️  Warning: Failed to read .build_version file.');
-    }
-  }
-
   // 1. Priority: Explicit BUILD_HASH from deployment script
   if (process.env.BUILD_HASH) {
     return process.env.BUILD_HASH.slice(0, 7);
   }
 
-  // 2. Secondary: Vercel standard metadata
+  // 2. Secondary: Vercel standard metadata (Absolute Source of Truth in Prod)
   if (process.env.VERCEL_GIT_COMMIT_SHA) {
     return process.env.VERCEL_GIT_COMMIT_SHA.slice(0, 7);
   }
 
-  // 3. Tertiary: Local Git lookup
+  // 3. Tertiary: Local Git lookup (Absolute Source of Truth in Dev)
   try {
     return execSync('git rev-parse --short HEAD 2>/dev/null').toString().trim();
   } catch (error) {
-    // Final fallback should be rare with local git installed
-    console.warn('⚠️  Warning: Build hash retrieval failed. Defaulting to "prod".');
+    // 4. Fallback: Persistent .build_version file (Fallback for git-less CI/CD)
+    const buildVersionPath = path.join(process.cwd(), '.build_version');
+    if (fs.existsSync(buildVersionPath)) {
+      try {
+        return fs.readFileSync(buildVersionPath, 'utf8').trim().slice(0, 7);
+      } catch (e) {
+        console.warn('⚠️  Warning: Failed to read .build_version file.');
+      }
+    }
+    
+    console.warn('⚠️  Warning: All build hash retrieval methods failed. Defaulting to "prod".');
     return 'prod';
   }
 };
