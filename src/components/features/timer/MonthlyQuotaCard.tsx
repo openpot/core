@@ -37,7 +37,7 @@ export function MonthlyQuotaCard({ sessions }: MonthlyQuotaCardProps) {
     // Aggregate consumption in grams
     const totalGrams = monthlySessions.reduce((acc, s) => {
       if (s.amount === undefined) return acc;
-      const grams = s.amount_unit === 'mg' ? s.amount / 1000 : s.amount;
+      const grams = s.amount;
       return acc + grams;
     }, 0);
 
@@ -82,9 +82,9 @@ export function MonthlyQuotaCard({ sessions }: MonthlyQuotaCardProps) {
         <div className="flex items-baseline justify-between mb-1">
           <div className="flex items-baseline gap-1.5">
             <span className="text-2xl font-bold tracking-tight text-text-primary">
-              {stats.totalGrams.toFixed(2)}g
+              {stats.totalGrams.toFixed(3)}g
             </span>
-            <span className="text-xs font-medium text-text-tertiary">/ {MONTHLY_LIMIT_G.toFixed(2)}g</span>
+            <span className="text-xs font-medium text-text-tertiary">/ {MONTHLY_LIMIT_G.toFixed(3)}g</span>
           </div>
           <div className="text-[10px] font-bold text-primary uppercase tracking-tighter bg-primary/10 px-1.5 py-0.5 rounded">
             {stats.percent.toFixed(0)}% Used
@@ -114,7 +114,7 @@ export function MonthlyQuotaCard({ sessions }: MonthlyQuotaCardProps) {
             <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
           </svg>
           <p className="text-sm text-text-secondary leading-normal">
-            <span className="text-text-primary font-bold">{stats.remaining.toFixed(2)}g</span> available for the next <span className="text-text-primary font-bold">{stats.remainingDays}</span> {stats.remainingDays === 1 ? 'day' : 'days'}
+            <span className="text-text-primary font-bold">{stats.remaining.toFixed(3)}g</span> available for the next <span className="text-text-primary font-bold">{stats.remainingDays}</span> {stats.remainingDays === 1 ? 'day' : 'days'}
           </p>
         </div>
       </div>

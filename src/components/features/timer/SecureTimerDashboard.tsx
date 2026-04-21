@@ -152,20 +152,20 @@ export function SecureTimerDashboard() {
     const currentTotalG = fullSessions.reduce((acc, s) => {
       const sessionDate = new Date(s.start_time);
       if (sessionDate >= firstOfMonth) {
-        const grams = s.amount_unit === 'mg' ? (s.amount || 0) / 1000 : (s.amount || 0);
+        const grams = s.amount || 0;
         return acc + grams;
       }
       return acc;
     }, 0);
 
-    const inputG = amountUnit === 'mg' ? (amount || 0) / 1000 : (amount || 0);
+    const inputG = amount || 0;
     
     if (currentTotalG + inputG > 50.0) {
       setShowQuotaWarning(true);
     } else {
       startSession(customName);
     }
-  }, [fullSessions, amount, amountUnit, customName, startSession]);
+  }, [fullSessions, amount, customName, startSession]);
 
   const ratings = ["Dialed In", "Mellow", "Mid", "Too Heavy"];
 
