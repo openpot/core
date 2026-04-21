@@ -122,11 +122,16 @@ export function NetworkSettings() {
    */
   const applyUpdate = async () => {
     if (!('serviceWorker' in navigator)) return;
+    
     const registration = await navigator.serviceWorker.getRegistration();
     if (registration?.waiting) {
+      // 1. Setup a one-time listener for the new worker taking control
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        window.location.reload();
+      }, { once: true });
+
+      // 2. Tell the waiting worker to skip waiting
       registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-      // The SW should trigger a reload, but we'll force it here to be sure
-      window.location.reload();
     }
   };
 
