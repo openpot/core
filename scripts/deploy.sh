@@ -21,13 +21,8 @@ echo "🚀 Starting clean production build..."
 rm -rf .next out
 BUILD_HASH=$GIT_HASH npm run build
 
-# 3. Propagate to production
-echo "📡 Propagating to production (GitHub push)..."
-# We only push here. You must commit your code manually before running deploy.
-git push origin main
-
 echo ""
-echo "✨ Build Complete & Propagated!"
+echo "✨ Build Complete!"
 echo "📍 Local Build Location: ./out"
 echo "🔖 Version Tag: $GIT_HASH"
 echo "🌍 Production tracking link: https://openpot.co/version.json"
