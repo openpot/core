@@ -167,3 +167,4 @@ memory-core.md
 .certs/
 
 .vercel
+.build_version

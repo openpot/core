@@ -23,11 +23,7 @@ BUILD_HASH=$GIT_HASH npm run build
 
 # 3. Propagate to production
 echo "📡 Propagating to production (GitHub push)..."
-# Stage any changes to version tracking files
-git add .build_version
-# Commit with the build hash (use -am to catch any other pending UI/logic tweaks)
-git commit -am "chore: production release [$GIT_HASH]"
-# Push to trigger Vercel build
+# We only push here. You must commit your code manually before running deploy.
 git push origin main
 
 echo ""
