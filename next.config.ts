@@ -41,11 +41,7 @@ const getCommitHash = () => {
 const packageVersion = getPackageVersion();
 const commitHash = getCommitHash();
 const APP_VERSION = `v${packageVersion}-${commitHash}`;
-
-/**
- * Directive 0: Version Manifest Generation
- * This allows the client to "Check" for updates without triggering a full SW pull.
- */
+console.log(`\n📦 Building Openpot [${APP_VERSION}]\n`);
 if (!isDevelopment) {
   const publicDir = path.join(process.cwd(), 'public');
   if (fs.existsSync(publicDir)) {
