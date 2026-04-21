@@ -15,14 +15,26 @@ export const metadata: Metadata = {
   manifest: '/manifest.webmanifest',
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'black-translucent',
+    statusBarStyle: 'default',
     title: 'Openpot',
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/icon.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/apple-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
   },
   referrer: 'no-referrer',
 };
 
 export const viewport: Viewport = {
-  themeColor: '#338f66',
+  themeColor: '#0d1117',
   colorScheme: 'dark light',
 };
 
@@ -40,16 +52,6 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en">
       <head>
-        <meta name="application-name" content="Openpot" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Openpot" />
-        <meta name="format-detection" content="telephone=no" />
-        <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="theme-color" content="#0d1117" />
-        <link rel="manifest" href="/manifest.webmanifest" />
-        <link rel="apple-touch-icon" href="/apple-icon-180.png" />
-        
         {/* Stale Build Guard: Prevents UI breakage when hashes change during zero-network state */}
         <script
           dangerouslySetInnerHTML={{
