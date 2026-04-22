@@ -3,7 +3,22 @@
 import { useState, useEffect, useCallback } from 'react';
 
 const AUTO_UPDATE_KEY = 'openpot_auto_update';
+const INSTALL_DATE_KEY = 'openpot_install_date';
 const CURRENT_VERSION = process.env.NEXT_PUBLIC_APP_VERSION || 'v0.0.0-dev';
+
+const formatDate = (dateStr: string) => {
+  try {
+    const date = new Date(dateStr);
+    const d = date.getDate().toString().padStart(2, '0');
+    const m = (date.getMonth() + 1).toString().padStart(2, '0');
+    const y = date.getFullYear();
+    const h = date.getHours().toString().padStart(2, '0');
+    const min = date.getMinutes().toString().padStart(2, '0');
+    return `${d}.${m}.${y} ${h}:${min}`;
+  } catch (e) {
+    return 'Unknown';
+  }
+};
 
 type UpdateStatus = 'idle' | 'checking' | 'up-to-date' | 'available' | 'pulling' | 'ready' | 'error';
 
@@ -16,12 +31,22 @@ export function NetworkSettings() {
   const [autoUpdate, setAutoUpdate] = useState(false);
   const [status, setStatus] = useState<UpdateStatus>('idle');
   const [serverVersion, setServerVersion] = useState<string | null>(null);
+  const [installDate, setInstallDate] = useState<string | null>(null);
 
   // Initialize from localStorage
   useEffect(() => {
     const saved = localStorage.getItem(AUTO_UPDATE_KEY);
     setAutoUpdate(saved === 'true');
     
+    // Installation Date Logic
+    let savedDate = localStorage.getItem(INSTALL_DATE_KEY);
+    if (!savedDate && 'serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      // If controlled but no date, this is likely an existing user's first time on this version
+      savedDate = new Date().toISOString();
+      localStorage.setItem(INSTALL_DATE_KEY, savedDate);
+    }
+    if (savedDate) setInstallDate(savedDate);
+
     // Check for "waiting" worker on mount
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistration().then(reg => {
@@ -216,9 +241,11 @@ export function NetworkSettings() {
         <div className="flex items-center justify-between">
           <div className="space-y-1">
             <p className="text-sm font-semibold text-text-primary uppercase tracking-wider">Software Version</p>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col items-start gap-1">
               <code className="rounded bg-bg-subtle px-1.5 py-0.5 text-[10px] text-text-secondary">{CURRENT_VERSION}</code>
-              <span className="text-[10px] text-text-tertiary">(Installed)</span>
+              <span className="text-[10px] text-text-tertiary">
+                (Installed{installDate ? ` on ${formatDate(installDate)}` : ''})
+              </span>
             </div>
           </div>
           
