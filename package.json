@@ -1,6 +1,6 @@
 {
   "name": "openpot-secure-session-tracker",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "A premium, privacy-first session tracker designed for sovereignty and anonymity.",
   "private": true,
   "packageManager": "pnpm@10.10.0",
