@@ -72,10 +72,11 @@ export function MonthlyQuotaCard({ sessions }: MonthlyQuotaCardProps) {
   return (
     <section className="relative rounded-lg border border-border-subtle bg-bg-overlay/50 p-4 animate-in fade-in slide-in-from-top-2 duration-500">
       <div className="space-y-4">
-        <h2 className="text-sm font-semibold uppercase tracking-widest text-text-secondary flex items-baseline gap-1.5">
-          <span>MONTHLY QUOTA</span>
-          <span className="text-xs lowercase tracking-normal font-normal">as of</span>
-          <span className="text-xs text-text-primary font-medium tracking-normal normal-case">{stats.timestamp}</span>
+        <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-secondary flex items-center gap-1.5 leading-none">
+          <span className="shrink-0">CanG COMPLIANCE</span>
+          <span className="text-[8px] opacity-30 font-normal">•</span>
+          <span className="text-[9px] lowercase tracking-normal font-medium opacity-70">as of</span>
+          <span className="text-[10px] text-text-primary font-bold tracking-normal normal-case">{stats.timestamp}</span>
         </h2>
 
         {/* Main Stats */}

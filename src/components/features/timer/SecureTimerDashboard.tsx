@@ -519,7 +519,7 @@ export function SecureTimerDashboard() {
                     type="text"
                     disabled={!isIdle}
                     maxLength={20}
-                    placeholder="E.g. OG Kush, Blue Dream"
+                    placeholder="E.g. Purple Rain, OG Kush"
                     value={customName}
                     onChange={(e) => setCustomName(e.target.value.slice(0, 20))}
                     className="w-full rounded-lg border border-border bg-bg-base/50 px-4 py-2.5 text-sm text-text-primary placeholder:text-text-tertiary focus:border-primary focus:outline-none transition-colors disabled:opacity-75 disabled:cursor-not-allowed"
