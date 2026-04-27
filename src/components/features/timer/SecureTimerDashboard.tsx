@@ -328,13 +328,25 @@ export function SecureTimerDashboard() {
 
   const isStopDisabled = isActive && state.elapsedMs < 1000;
 
-  // Sync display states only when totally idle (so lists don't jump during a flow)
+  // Sync display states and handle Smart Strain Filtering
   useEffect(() => {
     if (isIdle) {
       setDisplayMethods(methods);
-      setDisplayGhost(ghostLibrary);
+      
+      // Smart Filtering:
+      // 1. If input is empty, show Top 3 most recently used
+      if (!customName.trim()) {
+        setDisplayGhost(ghostLibrary.slice(0, 3));
+      } else {
+        // 2. While typing, show up to 10 matching strains from the whole library
+        const searchTerm = customName.toLowerCase().trim();
+        const filtered = ghostLibrary
+          .filter(name => name.toLowerCase().includes(searchTerm))
+          .slice(0, 10);
+        setDisplayGhost(filtered);
+      }
     }
-  }, [isIdle, methods, ghostLibrary]);
+  }, [isIdle, methods, ghostLibrary, customName]);
 
   const primaryActionLabel = isStopped
     ? 'New Session'
