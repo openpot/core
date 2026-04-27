@@ -288,7 +288,6 @@ export async function getGhostLibrary(): Promise<string[]> {
       const all = (await requestToPromise(store.getAll())) as { name: string; last_used: number }[];
       return all
         .sort((a, b) => b.last_used - a.last_used)
-        .slice(0, 3)
         .map((entry) => entry.name);
     });
   } catch {
