@@ -4,7 +4,7 @@
 
 Openpot is a premium, privacy-first session tracker designed for sovereignty and anonymity. Built specifically to help users navigate the legal requirements of the **German Cannabis Act (CanG)**, Openpot provides a mathematically invisible way to track consumption while keeping all data strictly on-device.
 
-![Openpot Banner](public/icon-512.png)
+![Openpot Banner](public/favicon.png)
 
 ## 🌟 Vision & Mission
 
