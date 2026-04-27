@@ -6,15 +6,15 @@
   "scripts": {
     "dev": "next dev",
     "dev:https": "bash ./scripts/dev-https.sh",
-    "serve:pwa": "npm run build && node scripts/serve-https.js",
     "build": "next build",
+    "build:local": "bash ./scripts/build.sh",
+    "serve": "node scripts/serve.js",
     "start": "next start",
-    "start:e2e": "next build && next start",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "e2e": "playwright test -c .workspace/playwright.config.ts"
+    "e2e": "playwright test"
   },
   "dependencies": {
     "@serwist/next": "^9.5.7",

@@ -22,4 +22,5 @@ export interface SessionRecord {
   amount_unit?: 'g' | 'mg';
   rating?: string;
   is_adjusted?: boolean;
+  sync_status?: 'PENDING' | 'SYNCED' | 'ERROR';
 }

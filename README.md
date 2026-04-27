@@ -48,6 +48,21 @@ A premium, privacy-first, zero-knowledge session tracker built for sovereignty a
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+### 🏗️ Production Build & Verification
+
+To verify the production-parity static export locally:
+
+1. Generate the static build:
+   ```bash
+   pnpm build:local
+   ```
+
+2. Serve the production output over local HTTPS:
+   ```bash
+   pnpm serve
+   ```
+The app will be available at `https://localhost:3005`.
+
 ### 📱 Testing on Mobile (Local HTTPS)
 
 To test the PWA installation experience on a mobile device, you must serve the application over HTTPS. Openpot includes a custom launcher for this:

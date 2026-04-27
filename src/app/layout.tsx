@@ -11,7 +11,7 @@ import './globals.css';
 export const metadata: Metadata = {
   applicationName: 'Openpot',
   title: 'Openpot',
-  description: 'A zero-knowledge session timer secured locally and synced anonymously.',
+  description: 'A zero-knowledge session timer secured locally and never shared.',
   manifest: '/manifest.webmanifest',
   appleWebApp: {
     capable: true,

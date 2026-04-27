@@ -428,6 +428,17 @@ export function SecureTimerDashboard() {
               </section>
             ) : null}
 
+            {state.notice && (
+              <div 
+                className="rounded-lg bg-primary/10 border border-primary/20 p-4 text-center animate-in fade-in slide-in-from-top-2"
+                data-testid="secure-notice"
+              >
+                <p className="text-xs font-bold text-primary uppercase tracking-widest">
+                  {state.notice}
+                </p>
+              </div>
+            )}
+
             {(
               <div className="mx-0 w-full space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
                 <div className="space-y-[3.84px] text-left">
@@ -586,6 +597,9 @@ export function SecureTimerDashboard() {
             )}
 
             <div className="space-y-1">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary/60" data-testid="timer-state">
+                {isIdle ? 'Ready' : isActive ? 'Active' : 'Stopped'}
+              </p>
               <p className="timer-display overflow-hidden text-text-primary" data-testid="timer-display">
                 {formattedElapsed}
               </p>
@@ -642,6 +656,20 @@ export function SecureTimerDashboard() {
                   )}
                 </p>
               </div>
+            </div>
+
+            {/* Sync Status Bar (Top Placement) */}
+            <div className="mt-4 flex items-center justify-between border-y border-border-subtle/50 py-3 px-1 text-[10px] font-bold uppercase tracking-widest">
+              <div className="flex items-center gap-2 text-text-tertiary" data-testid="sync-state">
+                <div className={`h-1.5 w-1.5 rounded-full ${typeof navigator !== 'undefined' && navigator.onLine ? 'bg-success shadow-[0_0_8px_rgba(34,197,94,0.4)]' : 'bg-text-tertiary'}`} />
+                {typeof navigator !== 'undefined' && navigator.onLine ? 'Cloud Synced' : 'Offline Mode'}
+              </div>
+              {recentSessions.filter(s => s.sync_status === 'PENDING').length > 0 && (
+                <div className="flex items-center gap-1.5 text-primary animate-pulse" data-testid="pending-count">
+                  <span className="h-1 w-1 rounded-full bg-primary" />
+                  {recentSessions.filter(s => s.sync_status === 'PENDING').length} Pending
+                </div>
+              )}
             </div>
 
             <div className="mt-4 w-full min-w-0 overflow-hidden" data-testid="session-list">
@@ -806,6 +834,7 @@ export function SecureTimerDashboard() {
               )}
             </div>
           </section>
+
         </div>
       </section>
 

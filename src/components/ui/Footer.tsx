@@ -11,7 +11,7 @@ export function Footer() {
     <footer className="mb-2 pt-8 flex w-full flex-col items-center gap-2 justify-center">
       <nav 
         aria-label="Secondary Navigation"
-        className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-text-tertiary"
+        className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-text-secondary"
       >
         <Link 
           href="/" 

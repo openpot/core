@@ -147,6 +147,7 @@ export function createSessionRecord(
     method: method || undefined,
     amount: amount !== undefined ? amount : undefined,
     amount_unit: amountUnit || undefined,
+    sync_status: 'PENDING',
   };
 }
 

@@ -3,6 +3,11 @@ const fs = require('fs');
 const path = require('path');
 const url = require('url');
 
+/**
+ * Openpot Static Production Server
+ * Serves the 'out/' directory over HTTPS with production-parity headers.
+ */
+
 const PORT = 3005;
 const OUT_DIR = path.join(__dirname, '..', 'out');
 const certDir = path.join(__dirname, '..', '.certs');
@@ -32,14 +37,17 @@ const server = https.createServer(options, (req, res) => {
   
   let filePath = path.join(OUT_DIR, pathname === '/' ? 'index.html' : pathname);
   
-  // Handle Next.js trailingSlash: true and directories
+  // 1. Directory requests -> index.html
   if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
     filePath = path.join(filePath, 'index.html');
   }
   
-  // Handle missing extensions (try .html)
-  if (!fs.existsSync(filePath) && !path.extname(filePath) && fs.existsSync(filePath + '.html')) {
-    filePath += '.html';
+  // 2. Handle clean URLs (Next.js trailingSlash: true)
+  if (!path.extname(filePath) && !fs.existsSync(filePath)) {
+    const dirPath = filePath.endsWith('/') ? filePath : filePath + '/';
+    if (fs.existsSync(dirPath + 'index.html')) {
+       filePath = dirPath + 'index.html';
+    }
   }
 
   const extname = String(path.extname(filePath)).toLowerCase();
@@ -54,21 +62,18 @@ const server = https.createServer(options, (req, res) => {
         });
       } else {
         res.writeHead(500);
-        res.end('Sorry, check with the site admin for error: '+error.code+' ..\n');
+        res.end(`Internal Server Error: ${error.code}`);
       }
     } else {
-      // PROMPT: Ensure the entry point (HTML) is NEVER cached to prevent "Zombie App" states
+      // Production Headers
       if (extname === '.html') {
         res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-        res.setHeader('Pragma', 'no-cache');
-        res.setHeader('Expires', '0');
-      } else if (pathname.startsWith('/_next/static/') || pathname.match(/\.(png|jpg|jpeg|gif|svg|ico|webmanifest|txt)$/)) {
+      } else if (pathname.startsWith('/_next/static/') || pathname.match(/\.(png|jpg|jpeg|gif|svg|ico|webmanifest)$/)) {
         res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
       } else {
         res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
       }
       
-      // Standard Security Headers
       res.setHeader('X-Content-Type-Options', 'nosniff');
       res.setHeader('X-Frame-Options', 'DENY');
       res.setHeader('Referrer-Policy', 'no-referrer');
@@ -81,7 +86,6 @@ const server = https.createServer(options, (req, res) => {
 });
 
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`\n🚀 Openpot Strictly-Privacy PWA Server (HTTPS)`);
-  console.log(`Listening on: https://localhost:${PORT}`);
-  console.log(`Serving from: ${OUT_DIR}\n`);
+  console.log(`🚀 Openpot Static Server: https://localhost:${PORT}`);
+  console.log(`📍 Serving from: ${OUT_DIR}`);
 });

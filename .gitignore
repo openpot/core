@@ -152,6 +152,7 @@ vite.config.ts.timestamp-*
 .gemini/
 .brain/
 .agents_backup/
+.codex
 
 # Internal Development Artifacts
 IMPLEMENTATION_PLAN.md
@@ -165,7 +166,20 @@ memory-core.md
 .env.local
 .env.*.local
 .certs/
-
 .vercel
 .build_version
 scripts/deploy-prod.sh
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Temporary & Debug Artifacts
+root.html
+server.log
+server_debug.log
+debug-script.js
+scratch/
