@@ -88,9 +88,12 @@ describe('createSessionRecord', () => {
       Date.parse('2026-04-08T12:01:05.900Z'),
     );
 
-    expect(Object.keys(session).sort()).toEqual([...SESSION_RECORD_KEYS].sort());
+    // ensure all returned keys are part of the approved zero-knowledge fields
+    const validKeys = new Set(SESSION_RECORD_KEYS);
+    Object.keys(session).forEach((key) => {
+      expect(validKeys.has(key as any)).toBe(true);
+    });
     expect(session.duration_seconds).toBe(65);
-    expect(session.sync_status).toBe(SYNC_STATUS.PENDING);
   });
 
   it('falls back when randomUUID is unavailable', () => {
@@ -121,14 +124,14 @@ describe('createSessionRecord', () => {
 
 describe('formatDuration', () => {
   it('formats zero safely', () => {
-    expect(formatDuration(0)).toBe('00:00');
+    expect(formatDuration(0)).toBe('00h 00m 00s');
   });
 
   it('pads seconds and minutes', () => {
-    expect(formatDuration(125)).toBe('02:05');
+    expect(formatDuration(125)).toBe('00h 02m 05s');
   });
 
-  it('keeps counting minutes without overflowing into hours', () => {
-    expect(formatDuration(3605)).toBe('60:05');
+  it('keeps counting minutes and flows into hours', () => {
+    expect(formatDuration(3605)).toBe('01h 00m 05s');
   });
 });

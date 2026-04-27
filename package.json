@@ -9,7 +9,7 @@
     "serve:pwa": "npm run build && node scripts/serve-https.js",
     "build": "next build",
     "start": "next start",
-    "start:e2e": "next build && next start",
+    "start:e2e": "next build && npx serve -l ${PORT:-3000} out",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",

@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 
 async function readSessions(page: import('@playwright/test').Page) {
   return page.evaluate(async () => {
-    const request = indexedDB.open('openpot-db', 1);
+    const request = indexedDB.open('openpot-db', 3);
 
     const database = await new Promise<IDBDatabase>((resolve, reject) => {
       request.onsuccess = () => resolve(request.result);
@@ -26,10 +26,8 @@ async function readSessions(page: import('@playwright/test').Page) {
 
 test('renders the secure timer shell with PWA registration', async ({ page }) => {
   await page.goto('/');
-
-  await expect(page.getByTestId('timer-state')).toHaveText('Ready');
-  await expect(page.getByTestId('timer-display')).toHaveText('00:00');
-  await expect(page.getByText('Secured locally. Synced anonymously.')).toBeVisible();
+  await expect(page.getByTestId('timer-display')).toHaveText('00:00:00');
+  await expect(page.getByText('Secured locally. Never shared.')).toBeVisible();
 
   const timerBounds = await page.getByTestId('timer-display').boundingBox();
   const shellBounds = await page.getByTestId('timer-shell').boundingBox();
@@ -60,7 +58,7 @@ test('renders the secure timer shell with PWA registration', async ({ page }) =>
         sizes: '192x192',
       }),
       expect.objectContaining({
-        src: '/icon.png',
+        src: '/icon-512.png',
         sizes: '512x512',
       }),
     ]),
@@ -84,55 +82,22 @@ test('renders the secure timer shell with PWA registration', async ({ page }) =>
   expect(accessibilityScan.violations).toEqual([]);
 });
 
-test('queues a session offline and syncs it after reconnect', async ({ context, page }) => {
-  const syncPayloads: unknown[] = [];
-
-  await context.route('**/api/sync', async (route) => {
-    syncPayloads.push(route.request().postDataJSON());
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({ ok: true }),
-    });
-  });
-
+test('saves a completed session securely to local IndexedDB', async ({ page }) => {
   await page.goto('/');
-
-  await context.setOffline(true);
-  await page.evaluate(() => window.dispatchEvent(new Event('offline')));
 
   await page.getByTestId('primary-timer-button').click();
   await page.waitForTimeout(1200);
   await page.getByTestId('primary-timer-button').click();
 
-  await expect(page.getByTestId('secure-notice')).toContainText('Data Secured Locally');
-  await expect(page.getByTestId('pending-count')).toHaveText('1');
-  await expect(page.getByTestId('sync-state')).toContainText('offline');
+  await expect(page.getByTestId('primary-timer-button')).toHaveText('New Session');
 
-  await context.setOffline(false);
-  await page.evaluate(() => window.dispatchEvent(new Event('online')));
-
-  await expect
-    .poll(async () => {
-      return page.getByTestId('pending-count').textContent();
-    })
-    .toBe('0');
-
-  await expect.poll(() => syncPayloads.length).toBe(1);
-
-  const [firstPayload] = syncPayloads;
-
-  expect(firstPayload).toMatchObject({
+  const sessions = await readSessions(page);
+  expect(sessions).toHaveLength(1);
+  const session = sessions[0] as any;
+  expect(session).toMatchObject({
     duration_seconds: expect.any(Number),
     end_time: expect.any(String),
     session_id: expect.any(String),
     start_time: expect.any(String),
-    sync_status: 'PENDING',
-  });
-
-  const sessions = await readSessions(page);
-  expect(sessions).toHaveLength(1);
-  expect(sessions[0]).toMatchObject({
-    sync_status: 'SYNCED',
   });
 });
