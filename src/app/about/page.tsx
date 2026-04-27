@@ -82,7 +82,7 @@ export default function AboutPage() {
                 <ul className="space-y-1.5 text-[13px] text-text-secondary list-none pl-1">
                   <li className="flex items-start gap-2">
                     <span className="text-primary mt-1">•</span>
-                    <span>Zero-Commit Master Sync: Re-engineered versioning architecture using real-time Git/Vercel metadata for parity.</span>
+                    <span>Zero-Commit Master Sync: Re-engineered versioning architecture using real-time Git metadata for parity.</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-primary mt-1">•</span>
@@ -264,7 +264,7 @@ export default function AboutPage() {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="opacity-50 mt-1">•</span>
-                    <span>Vercel-optimized deployment engine and build hardening.</span>
+                    <span>Advanced deployment engine and build hardening.</span>
                   </li>
                 </ul>
               </div>

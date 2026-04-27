@@ -23,28 +23,15 @@ const getCommitHash = () => {
     return process.env.BUILD_HASH.slice(0, 7);
   }
 
-  // 2. Secondary: Koyeb/Vercel standard metadata (Absolute Source of Truth in Prod)
+  // 2. Secondary: CI/CD standard metadata (e.g., KOYEB_GIT_SHA)
   if (process.env.KOYEB_GIT_SHA) {
     return process.env.KOYEB_GIT_SHA.slice(0, 7);
-  }
-  if (process.env.VERCEL_GIT_COMMIT_SHA) {
-    return process.env.VERCEL_GIT_COMMIT_SHA.slice(0, 7);
   }
 
   // 3. Tertiary: Local Git lookup (Absolute Source of Truth in Dev)
   try {
     return execSync('git rev-parse --short HEAD 2>/dev/null').toString().trim();
   } catch (error) {
-    // 4. Fallback: Persistent .build_version file (Manual Override/Fallback)
-    const buildVersionPath = path.join(process.cwd(), '.build_version');
-    if (fs.existsSync(buildVersionPath)) {
-      try {
-        return fs.readFileSync(buildVersionPath, 'utf8').trim().slice(0, 7);
-      } catch (e) {
-        console.warn('⚠️  Warning: Failed to read .build_version file.');
-      }
-    }
-    
     console.warn('⚠️  Warning: All build hash retrieval methods failed. Defaulting to "prod".');
     return 'prod';
   }
@@ -109,7 +96,7 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_APP_VERSION: APP_VERSION,
   },
   allowedDevOrigins: isDevelopment ? localDevOrigins : undefined,
-  // Headers are disabled in 'export' mode, moved to vercel.json for production
+  // Headers are managed by the web server (e.g., Nginx) in 'export' mode
 };
 
 export default withSerwist(nextConfig);
