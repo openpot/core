@@ -1,4 +1,4 @@
-# ![Openpot Banner](public/favicon.png) Openpot Session Tracker
+# ![Openpot Banner](public/favicon.png) Openpot Secure Session Tracker
 
 **Free. Private. Secure.** 🛡️
 
