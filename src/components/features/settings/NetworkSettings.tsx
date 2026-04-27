@@ -129,7 +129,7 @@ export function NetworkSettings() {
   };
 
   /**
-   * Phase 2: Pull Updates
+   * Phase 2: Download Updates
    * Explicitly triggers the Service Worker update check and download.
    */
   const pullUpdate = async () => {
@@ -309,7 +309,7 @@ export function NetworkSettings() {
                 onClick={pullUpdate}
                 className="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-lg bg-primary px-4 text-xs font-bold text-white transition-all hover:opacity-90 shadow-lg shadow-primary/20"
               >
-                Pull Updates
+                Download Updates
               </button>
             </div>
           </div>
