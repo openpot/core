@@ -1,6 +1,6 @@
-# Development Guide — Openpot Secure Session Tracker
+# Technical Development Guide
 
-This guide covers the technical setup and architecture for developers looking to modify or extend the **Openpot Secure Session Tracker**.
+This guide covers the technical setup and architecture for developers looking to modify or extend the Openpot Secure Timer.
 
 ## 🛠 Prerequisites
 

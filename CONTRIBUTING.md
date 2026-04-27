@@ -1,24 +1,14 @@
-# Contributing to Openpot Secure Session Tracker
+# Contributing to Openpot
 
-We welcome contributions from the community! **Openpot Secure Session Tracker** is built on the principles of software freedom, digital sovereignty, and absolute privacy.
+We welcome contributions from the community! Openpot is built on the principles of software freedom and privacy.
 
 ## How to Get Involved
 
-We welcome all types of contributions, from bug fixes and feature enhancements to documentation improvements and accessibility audits.
-
-### 1. The Pull Request Process
-1. **Fork & Clone**: Create a personal fork and clone it to your local machine.
-2. **Branching**: Use a descriptive branch name (e.g., `feat/secure-session-validation` or `fix/pwa-ios-splash`).
-3. **Drafting**: Implement your changes. Ensure your code is clean, documented, and follows our [Security Principles](./DEVELOPMENT.md#security-principles).
-4. **Validation**: Run the [Quality Gates](#quality-gates) locally. All tests must pass.
-5. **PR Submission**: Open a Pull Request against our `main` branch. 
-    - Provide a clear, concise title.
-    - Use our PR template (if available) or describe **what** changed and **why**.
-    - Link any related issues.
-
-### 2. Community Engagement
-- **Issues**: Open an issue for bugs or feature requests before starting work to avoid redundant efforts.
-- **Discussions**: Join our community discussions to help shape the future of Openpot.
+1. **Fork the Repository**: Create your own copy of the repository.
+2. **Create a Branch**: Work on a descriptive feature branch (e.g., `feat/secure-session-validation`).
+3. **Draft Your Code**: Implement your changes with clear, documented code.
+4. **Write Tests**: Ensure your changes are covered by unit or E2E tests.
+5. **Submit a Pull Request**: Provide a detailed description of your contribution.
 
 ## Code Standards
 

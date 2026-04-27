@@ -1,45 +1,17 @@
-# ![Openpot Banner](public/favicon.png) Openpot Secure Session Tracker
+# Openpot Secure Timer 🛡️
 
-**Free. Private. Secure.** 🛡️
+A premium, privacy-first, zero-knowledge session tracker built for sovereignty and anonymity. Openpot is designed to stay mathematically invisible and legally sovereign by keeping all user data strictly on-device.
 
-Openpot is a premium, privacy-first session tracker designed for sovereignty and anonymity. Built specifically to help users navigate the legal requirements of the **German Cannabis Act (CanG)**, Openpot provides a mathematically invisible way to track consumption while keeping all data strictly on-device.
+![Openpot Banner](public/icon-512.png)
 
-## 🌟 Vision & Mission
+## ✨ Features
 
-Our mission is to provide a simple, intuitive, and 100% private tool for tracking monthly consumption. We believe that legal compliance should not come at the cost of your digital privacy. Openpot is designed to be your local-first companion, ensuring you stay within legal limits (e.g., the 50g monthly quota) without ever sharing your behavioral metadata with the cloud.
-
-## ✨ Core Features
-
-### 1. 100% Offline Sovereignty
-From the moment you first load the application, Openpot downloads everything required to operate locally.
-- **No Cloud Required**: After the initial load, the app works 100% offline.
-- **Data Sovereignty**: Your data stays on your device and never leaves. Period.
-- **User-Controlled Updates**: Future updates are fetched only when you explicitly initiate them.
-
-### 2. Sophisticated Session Tracking
-Log your sessions with precision and ease:
-- **Methods \u0026 Amounts**: Quickly select your method and weight (e.g., *Flower | 0.8g*).
-- **Product Identification**: Name your sessions (e.g., *"Purple Rain"*) for personal reference.
-- **Interactive Timer**: Start, stop, and rate your sessions manually.
-- **Detailed Logs**: Every entry captures a timestamp, method, amount, product name, rating, and duration.
-
-### 3. Intuitive Quota Management (CanG Ready)
-Stay informed and compliant without the math:
-- **Automatic Aggregation**: All consumption is automatically summed for the current month.
-- **50g Limit Tracking**: Visualize your progress against the 50g statutory limit.
-- **Real-time Insights**: View your total consumption to date and exactly how much allowance remains until the end of the month.
-
-### 4. Local Data Portability
-Since everything is stored in your browser's IndexedDB, you have full control over your records:
-- **CSV Export**: Download your entire history as a CSV file whenever you need a physical or external backup.
-
----
-
-## 🙋‍♂️ Personal Note from the Author
-
-I am incredibly proud of what Openpot has become, and I intend to continue refining it in my spare time. My goal is to build a tool that people genuinely enjoy using and find value in.
-
-**Your feedback is essential.** If you find Openpot useful, or if you have ideas on how to make it better, please reach out or contribute!
+- **Privacy by Design**: No account creation, no tracking, and no remote data storage.
+- **Zero-Knowledge State**: All session histories are stored locally in your browser's IndexedDB.
+- **Progressive Web App (PWA)**: Install directly on your iOS/Android home screen or desktop for a native look and feel.
+- **Offline-First**: Full functionality without an internet connection, powered by robust Service Workers.
+- **Premium UI**: Sleek, minimalist interface with curated typographic hierarchy and seamless Light/Dark mode support.
+- **Sovereign Sync**: Optional anonymous syncing via secure schema that avoids sharing behavioral metadata.
 
 ## 🛠️ Tech Stack
 
@@ -75,31 +47,6 @@ I am incredibly proud of what Openpot has become, and I intend to continue refin
    ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-## 📸 Screenshots
-
-| Dashboard & Installation | Quota Tracking (CanG) |
-| :---: | :---: |
-| ![Install Banner](public/screenshots/install_banner.jpg) | ![Quota Tracking](public/screenshots/quota_tracking.jpg) |
-
-| Session History | Privacy & Sovereignty |
-| :---: | :---: |
-| ![Session History](public/screenshots/session_history.jpg) | ![About Us](public/screenshots/about.jpg) |
-
-### 🏗️ Production Build & Verification
-
-To verify the production-parity static export locally:
-
-1. Generate the static build:
-   ```bash
-   pnpm build:local
-   ```
-
-2. Serve the production output over local HTTPS:
-   ```bash
-   pnpm serve
-   ```
-The app will be available at `https://localhost:3005`.
 
 ### 📱 Testing on Mobile (Local HTTPS)
 

@@ -4,11 +4,11 @@ import { defineConfig, devices } from '@playwright/test';
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
-  testDir: './tests/e2e',
+  testDir: '../tests/e2e',
   /* Maximum time one test can run for. */
-  timeout: 60 * 1000,
+  timeout: 30 * 1000,
   expect: {
-    timeout: 10000
+    timeout: 5000
   },
   /* Run tests in files in parallel */
   fullyParallel: true,
@@ -23,7 +23,7 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: process.env.PLAYWRIGHT_TEST_BASE_URL || 'https://localhost:3005',
+    baseURL: 'https://localhost:3005',
     ignoreHTTPSErrors: true,
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
@@ -45,12 +45,11 @@ export default defineConfig({
     },
   ],
 
-  /* Run the production-parity static server before starting the tests */
-  webServer: {
-    command: 'npm run serve',
-    url: 'https://localhost:3005',
-    reuseExistingServer: true,
-    ignoreHTTPSErrors: true,
-    timeout: 30 * 1000,
-  },
+  /* Run a production server before starting the tests */
+  /* webServer: {
+    command: 'pnpm start:e2e',
+    url: 'http://localhost:3000',
+    reuseExistingServer: false,
+    timeout: 240 * 1000,
+  }, */
 });

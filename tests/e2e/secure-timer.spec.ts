@@ -1,7 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
-
 async function readSessions(page: import('@playwright/test').Page) {
   return page.evaluate(async () => {
     const request = indexedDB.open('openpot-db', 1);
@@ -26,31 +25,11 @@ async function readSessions(page: import('@playwright/test').Page) {
 }
 
 test('renders the secure timer shell with PWA registration', async ({ page }) => {
-  // Clear SW and cache to avoid stale 404s from previous failed runs
   await page.goto('/');
-  await page.evaluate(async () => {
-    if ('serviceWorker' in navigator) {
-      const registrations = await navigator.serviceWorker.getRegistrations();
-      for (const registration of registrations) {
-        await registration.unregister();
-      }
-    }
-    if ('caches' in window) {
-      const keys = await caches.keys();
-      for (const key of keys) {
-        await caches.delete(key);
-      }
-    }
-  });
 
-  await page.goto('/');
-  // Wait a bit and reload to ensure SW is registered and detected
-  await page.waitForTimeout(2000);
-  await page.reload();
-
-  await expect(page.getByTestId('timer-state')).toContainText('Ready');
-  await expect(page.getByTestId('timer-display')).toHaveText('00:00:00');
-  await expect(page.getByText('Secured locally. Never shared.')).toBeVisible();
+  await expect(page.getByTestId('timer-state')).toHaveText('Ready');
+  await expect(page.getByTestId('timer-display')).toHaveText('00:00');
+  await expect(page.getByText('Secured locally. Synced anonymously.')).toBeVisible();
 
   const timerBounds = await page.getByTestId('timer-display').boundingBox();
   const shellBounds = await page.getByTestId('timer-shell').boundingBox();
@@ -81,13 +60,12 @@ test('renders the secure timer shell with PWA registration', async ({ page }) =>
         sizes: '192x192',
       }),
       expect.objectContaining({
-        src: '/icon-512.png',
+        src: '/icon.png',
         sizes: '512x512',
       }),
     ]),
   );
 
-  /* 
   await expect
     .poll(async () => {
       return page.evaluate(async () => {
@@ -96,73 +74,65 @@ test('renders the secure timer shell with PWA registration', async ({ page }) =>
           registration?.active?.scriptURL ??
           registration?.installing?.scriptURL ??
           registration?.waiting?.scriptURL ??
-          ''
+          null
         );
       });
-    }, { timeout: 15000 })
+    })
     .toContain('/sw.js');
-  */
 
   const accessibilityScan = await new AxeBuilder({ page }).analyze();
   expect(accessibilityScan.violations).toEqual([]);
 });
 
-test('secures a session locally while offline', async ({ context, page }) => {
+test('queues a session offline and syncs it after reconnect', async ({ context, page }) => {
+  const syncPayloads: unknown[] = [];
+
+  await context.route('**/api/sync', async (route) => {
+    syncPayloads.push(route.request().postDataJSON());
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ ok: true }),
+    });
+  });
+
   await page.goto('/');
 
-  // Force offline state
   await context.setOffline(true);
   await page.evaluate(() => window.dispatchEvent(new Event('offline')));
 
-  // Start and stop a session
   await page.getByTestId('primary-timer-button').click();
   await page.waitForTimeout(1200);
   await page.getByTestId('primary-timer-button').click();
 
-  // Dismiss the rating modal
-  await page.getByRole('button', { name: 'Skip' }).click();
-
-  // Verify the "Secured Locally" notice appears
   await expect(page.getByTestId('secure-notice')).toContainText('Data Secured Locally');
-  
-  // Verify the session appears in the history list
-  await expect(page.getByTestId('session-list')).toContainText('00h 00m 01s');
-  
-  // Verify the "Offline Mode" indicator
-  await expect(page.getByTestId('sync-state')).toContainText('Offline Mode');
-});
+  await expect(page.getByTestId('pending-count')).toHaveText('1');
+  await expect(page.getByTestId('sync-state')).toContainText('offline');
 
-test('About page: hard reload serves HTML, soft navigation renders UI', async ({ page }) => {
-  // Clear SW to ensure we test the server routing directly without cache interference
-  await page.goto('/');
-  await page.evaluate(async () => {
-    const registrations = await navigator.serviceWorker.getRegistrations();
-    for (const registration of registrations) {
-      await registration.unregister();
-    }
-    // Clear caches too
-    const keys = await caches.keys();
-    for (const key of keys) {
-      await caches.delete(key);
-    }
+  await context.setOffline(false);
+  await page.evaluate(() => window.dispatchEvent(new Event('online')));
+
+  await expect
+    .poll(async () => {
+      return page.getByTestId('pending-count').textContent();
+    })
+    .toBe('0');
+
+  await expect.poll(() => syncPayloads.length).toBe(1);
+
+  const [firstPayload] = syncPayloads;
+
+  expect(firstPayload).toMatchObject({
+    duration_seconds: expect.any(Number),
+    end_time: expect.any(String),
+    session_id: expect.any(String),
+    start_time: expect.any(String),
+    sync_status: 'PENDING',
   });
 
-  // 1. HARD RELOAD TEST (Verifies the serve-https.js fix)
-  const response = await page.goto('/about/');
-  expect(response?.headers()['content-type']).toContain('text/html');
-  await expect(page.getByRole('heading', { name: 'About Us' })).toBeVisible();
-
-  // 2. SOFT NAVIGATION TEST (Verifies Next.js Router)
-  await page.goto('/');
-  await page.locator('footer').getByRole('link', { name: 'About' }).click();
-  
-  // URL should update
-  await expect(page).toHaveURL(/\/about\//);
-  
-  // Heading should be visible (proving it didn't just crash or show raw text)
-  await expect(page.getByRole('heading', { name: 'About Us' })).toBeVisible();
-  
-  // Final check: Body should NOT be raw RSC text
-  const isRawText = await page.evaluate(() => document.body.innerText.trim().startsWith('1:"$Sreact.fragment"'));
-  expect(isRawText).toBe(false);
+  const sessions = await readSessions(page);
+  expect(sessions).toHaveLength(1);
+  expect(sessions[0]).toMatchObject({
+    sync_status: 'SYNCED',
+  });
 });

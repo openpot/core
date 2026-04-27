@@ -2,25 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.9.0] - 2026-04-27
-
-### Added
-- **Unified Branding**: Standardized all project identity under "Openpot Secure Session Tracker" across all documentation and metadata.
-- **Professional Documentation**: Elevated `CONTRIBUTING.md`, `DEVELOPMENT.md`, and `NOTICE.md` to the highest open-source standards.
-- **Visual README**: Integrated high-fidelity screenshots of the "Stuttgart-Safe" experience directly into the main documentation.
-- **CanG Compliance Header**: Added explicit "CanG COMPLIANCE" context to the Monthly Quota card.
-
-### Changed
-- **Vercel Decoupling**: Completely removed all hosting-specific configuration files and logic to ensure 100% independence and sovereignty.
-- **Hosting-Agnostic Metadata**: Re-engineered build hash retrieval to prioritize local Git and generic CI/CD environment variables.
-
-### Fixed
-- **Placeholder Alignment**: Updated dashboard examples (e.g., "Purple Rain") to perfectly align with the mission statement.
-
 ## [0.8.0] - 2026-04-21
 
 ### Added
-- **Zero-Commit Master Sync**: Re-engineered versioning architecture using real-time Git metadata for 1:1 parity between local and production environments.
+- **Zero-Commit Master Sync**: Re-engineered versioning architecture using real-time Git/Vercel metadata for 1:1 parity between local and production environments.
 - **PWA Update Hardening**: Implemented `controllerchange` event synchronization for the "Apply & Reload" workflow, eliminating "zombie" cache reloads.
 - **Enhanced Quota Precision**: Upgraded the Monthly Quota card to 3-decimal precision for granular weight tracking.
 - **Master Deployment Pipeline**: Automated GitHub propagation in `deploy.sh` for seamless local-to-production releases.
@@ -56,7 +41,6 @@ All notable changes to this project will be documented in this file.
 
 ---
 
-[0.9.0]: https://github.com/openpot/openpot-secure-session-tracker/compare/v0.8.0...v0.9.0
-[0.8.0]: https://github.com/openpot/openpot-secure-session-tracker/compare/v0.7.0...v0.8.0
-[0.7.0]: https://github.com/openpot/openpot-secure-session-tracker/compare/v0.6.0...v0.7.0
-[0.6.0]: https://github.com/openpot/openpot-secure-session-tracker/compare/v0.5.0...v0.6.0
+[0.8.0]: https://github.com/openpot/openpot-secure-timer/compare/v0.7.0...v0.8.0
+[0.7.0]: https://github.com/openpot/openpot-secure-timer/compare/v0.6.0...v0.7.0
+[0.6.0]: https://github.com/openpot/openpot-secure-timer/compare/v0.5.0...v0.6.0

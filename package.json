@@ -1,21 +1,20 @@
 {
-  "name": "openpot-secure-session-tracker",
-  "version": "0.9.0",
-  "description": "A premium, privacy-first session tracker designed for sovereignty and anonymity.",
+  "name": "openpot-secure-timer",
+  "version": "0.8.0",
   "private": true,
   "packageManager": "pnpm@10.10.0",
   "scripts": {
     "dev": "next dev",
     "dev:https": "bash ./scripts/dev-https.sh",
+    "serve:pwa": "npm run build && node scripts/serve-https.js",
     "build": "next build",
-    "build:local": "bash ./scripts/build.sh",
-    "serve": "node scripts/serve.js",
     "start": "next start",
+    "start:e2e": "next build && next start",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "e2e": "playwright test"
+    "e2e": "playwright test -c .workspace/playwright.config.ts"
   },
   "dependencies": {
     "@serwist/next": "^9.5.7",

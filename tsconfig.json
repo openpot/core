@@ -4,8 +4,7 @@
     "lib": [
       "dom",
       "dom.iterable",
-      "es2022",
-      "webworker"
+      "es2022"
     ],
     "allowJs": false,
     "skipLibCheck": true,
@@ -20,8 +19,7 @@
     "jsx": "preserve",
     "incremental": true,
     "types": [
-      "vitest/globals",
-      "@serwist/next/typings"
+      "vitest/globals"
     ],
     "baseUrl": ".",
     "paths": {

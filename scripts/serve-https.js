@@ -32,18 +32,14 @@ const server = https.createServer(options, (req, res) => {
   
   let filePath = path.join(OUT_DIR, pathname === '/' ? 'index.html' : pathname);
   
-  // 1. Force directory requests to index.html
+  // Handle Next.js trailingSlash: true and directories
   if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
     filePath = path.join(filePath, 'index.html');
   }
   
-  // 2. Handle Next.js 'trailingSlash: true' cleaner: if a path doesn't have an extension
-  // and isn't a directory, it might be a clean URL that needs /index.html
-  if (!path.extname(filePath) && !fs.existsSync(filePath)) {
-    const dirPath = filePath.endsWith('/') ? filePath : filePath + '/';
-    if (fs.existsSync(dirPath + 'index.html')) {
-       filePath = dirPath + 'index.html';
-    }
+  // Handle missing extensions (try .html)
+  if (!fs.existsSync(filePath) && !path.extname(filePath) && fs.existsSync(filePath + '.html')) {
+    filePath += '.html';
   }
 
   const extname = String(path.extname(filePath)).toLowerCase();

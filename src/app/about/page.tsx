@@ -76,38 +76,13 @@ export default function AboutPage() {
            <div className="space-y-6">
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold text-primary uppercase tracking-tighter bg-primary/10 px-1.5 py-0.5 rounded">v0.9.0</span>
-                  <span className="text-xs font-bold text-text-primary">The Hardened Open Source Release</span>
+                  <span className="text-[10px] font-bold text-primary uppercase tracking-tighter bg-primary/10 px-1.5 py-0.5 rounded">v0.8.0</span>
+                  <span className="text-xs font-bold text-text-primary">The Master Sync Release</span>
                 </div>
                 <ul className="space-y-1.5 text-[13px] text-text-secondary list-none pl-1">
                   <li className="flex items-start gap-2">
                     <span className="text-primary mt-1">•</span>
-                    <span>Unified Branding: Standardized all project identity under &quot;Openpot Secure Session Tracker&quot; for professional clarity.</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary mt-1">•</span>
-                    <span>Documentation Overhaul: Elevated CONTRIBUTING and DEVELOPMENT guides to the highest open-source standards.</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary mt-1">•</span>
-                    <span>Vercel Decoupling: Completely removed all hosting-specific ties to ensure 100% independence and sovereignty.</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary mt-1">•</span>
-                    <span>CanG Compliance Refinement: Hardened monthly quota context and integrated visual dashboard screenshots in docs.</span>
-                  </li>
-                </ul>
-              </div>
-
-              <div className="space-y-2 opacity-60">
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold text-text-tertiary uppercase tracking-tighter bg-bg-overlay border border-border-subtle px-1.5 py-0.5 rounded">v0.8.0</span>
-                  <span className="text-xs font-bold text-text-secondary">The Master Sync Release</span>
-                </div>
-                <ul className="space-y-1.5 text-[13px] text-text-secondary list-none pl-1">
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary mt-1">•</span>
-                    <span>Zero-Commit Master Sync: Re-engineered versioning architecture using real-time Git metadata for parity.</span>
+                    <span>Zero-Commit Master Sync: Re-engineered versioning architecture using real-time Git/Vercel metadata for parity.</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-primary mt-1">•</span>
@@ -289,7 +264,7 @@ export default function AboutPage() {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="opacity-50 mt-1">•</span>
-                    <span>Advanced deployment engine and build hardening.</span>
+                    <span>Vercel-optimized deployment engine and build hardening.</span>
                   </li>
                 </ul>
               </div>

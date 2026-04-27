@@ -3,7 +3,7 @@ import { networkInterfaces } from 'node:os';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { NextConfig } from 'next';
-import withSerwistInit from "@serwist/next";
+import withPWAInit from '@ducanh2912/next-pwa';
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
@@ -23,15 +23,28 @@ const getCommitHash = () => {
     return process.env.BUILD_HASH.slice(0, 7);
   }
 
-  // 2. Secondary: CI/CD standard metadata (e.g., KOYEB_GIT_SHA)
+  // 2. Secondary: Koyeb/Vercel standard metadata (Absolute Source of Truth in Prod)
   if (process.env.KOYEB_GIT_SHA) {
     return process.env.KOYEB_GIT_SHA.slice(0, 7);
+  }
+  if (process.env.VERCEL_GIT_COMMIT_SHA) {
+    return process.env.VERCEL_GIT_COMMIT_SHA.slice(0, 7);
   }
 
   // 3. Tertiary: Local Git lookup (Absolute Source of Truth in Dev)
   try {
     return execSync('git rev-parse --short HEAD 2>/dev/null').toString().trim();
   } catch (error) {
+    // 4. Fallback: Persistent .build_version file (Manual Override/Fallback)
+    const buildVersionPath = path.join(process.cwd(), '.build_version');
+    if (fs.existsSync(buildVersionPath)) {
+      try {
+        return fs.readFileSync(buildVersionPath, 'utf8').trim().slice(0, 7);
+      } catch (e) {
+        console.warn('⚠️  Warning: Failed to read .build_version file.');
+      }
+    }
+    
     console.warn('⚠️  Warning: All build hash retrieval methods failed. Defaulting to "prod".');
     return 'prod';
   }
@@ -51,18 +64,30 @@ if (!isDevelopment) {
   }
 }
 
-const withSerwist = withSerwistInit({
-  swSrc: "src/sw.ts",
-  swDest: "public/sw.js",
+/**
+ * PWA Configuration: Strict Privacy Directives
+ * 1. register: false -> Disables automatic background updates.
+ * 2. buildExcludes -> Only bundles necessary files.
+ * 3. cacheOnFrontEndNav -> Ensures zero-ping navigation.
+ */
+const withPWA = withPWAInit({
+  dest: 'public',
   register: false, // MANDATORY: Manual update control only
+  cacheOnFrontEndNav: true,
+  aggressiveFrontEndNavCaching: true,
+  reloadOnOnline: false, // Privacy: No autonomous state changes when network returns
   disable: isDevelopment, // Disable in dev to prevent cache collisions
-  additionalPrecacheEntries: [
-    { url: "/", revision: APP_VERSION },
-    { url: "/about/", revision: APP_VERSION },
-    { url: "/privacy/", revision: APP_VERSION },
-    { url: "/terms/", revision: APP_VERSION },
-    { url: "/feedback/", revision: APP_VERSION },
-  ],
+  workboxOptions: {
+    skipWaiting: false, // MANDATORY: User must explicitly click "Apply" to reload
+    cleanupOutdatedCaches: true, // Automatically purge stale build assets
+    additionalManifestEntries: [
+      { url: '/', revision: APP_VERSION },
+      { url: '/about/', revision: APP_VERSION },
+      { url: '/privacy/', revision: APP_VERSION },
+      { url: '/terms/', revision: APP_VERSION },
+      { url: '/feedback/', revision: APP_VERSION },
+    ],
+  },
 });
 
 const scriptSources = ["'self'", "'unsafe-inline'"];
@@ -103,7 +128,7 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_APP_VERSION: APP_VERSION,
   },
   allowedDevOrigins: isDevelopment ? localDevOrigins : undefined,
-  // Headers are managed by the web server (e.g., Nginx) in 'export' mode
+  // Headers are disabled in 'export' mode, moved to vercel.json for production
 };
 
-export default withSerwist(nextConfig);
+export default withPWA(nextConfig);
