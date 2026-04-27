@@ -237,7 +237,7 @@ export function NetworkSettings() {
         >
           <span
             aria-hidden="true"
-            className={`pointer-events-none absolute top-1 h-4 w-4 rounded-full bg-white shadow-sm transition-all duration-200 ease-in-out ${
+            className={`pointer-events-none absolute top-1/2 -translate-y-1/2 h-4 w-4 rounded-full bg-white shadow-sm transition-all duration-200 ease-in-out ${
               autoUpdate ? 'left-6' : 'left-1'
             }`}
           />
