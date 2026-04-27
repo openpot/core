@@ -60,6 +60,20 @@ To test the PWA installation experience on a mobile device, you must serve the a
 3. Trust the generated CA found at `.certs/openpot-local-dev-ca.crt` on your mobile device.
 4. Access the app via `https://192.168.1.5:3000`.
 
+### 🚢 Production Deployment
+
+Openpot uses a "Git-Lite" containerized deployment workflow. It builds a secure, hardened Nginx Docker image locally and pushes it to the GitHub Container Registry (GHCR), which can then be automatically deployed by platforms like Koyeb.
+
+1. Ensure you have Docker installed and are authenticated with GHCR:
+   ```bash
+   echo "YOUR_GITHUB_TOKEN" | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password-stdin
+   ```
+2. Run the deployment script:
+   ```bash
+   ./scripts/deploy-prod.sh
+   ```
+3. Your chosen hosting platform (e.g., Koyeb) will detect the updated `:latest` tag and redeploy automatically.
+
 ## 🛡️ Security & Privacy
 
 Openpot follows the **Stuttgart-Safe** standard:

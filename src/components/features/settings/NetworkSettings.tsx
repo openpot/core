@@ -55,6 +55,14 @@ export function NetworkSettings() {
     }
   }, []);
 
+  // Revert 'up-to-date' back to 'idle' after 5 seconds
+  useEffect(() => {
+    if (status === 'up-to-date') {
+      const timer = setTimeout(() => setStatus('idle'), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [status]);
+
   // Background Auto-Update Sequence
   useEffect(() => {
     if (!autoUpdate) return;
@@ -323,14 +331,14 @@ export function NetworkSettings() {
           <div className="rounded-lg bg-success/10 border border-success/30 p-4 animate-bounce-subtle">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="min-w-[180px] flex-1 space-y-1">
-                <p className="text-xs font-bold text-success uppercase tracking-wider">Ready to Inject</p>
+                <p className="text-xs font-bold text-success uppercase tracking-wider">Updates downloaded</p>
                 <p className="text-[10px] text-text-secondary">New code is downloaded. Apply now to finish.</p>
               </div>
               <button
                 onClick={applyUpdate}
                 className="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-lg bg-success px-4 text-xs font-bold text-white transition-all hover:opacity-90"
               >
-                Apply & Reload
+                Install & Reload
               </button>
             </div>
           </div>

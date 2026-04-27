@@ -8,3 +8,19 @@ out
 *.log
 docker-compose.yml
 scripts/deploy-prod.sh
+
+# AI Workspace Multi-Agent Core & Metadata (local-only)
+.agents/
+.product/
+.cursor/
+.gemini/
+.brain/
+.codex
+.agents_backup/
+
+# Internal Development Artifacts
+IMPLEMENTATION_PLAN.md
+TASK.md
+WALKTHROUGH.md
+STAKEHOLDER_BOARD.md
+memory-core.md
