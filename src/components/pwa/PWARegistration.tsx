@@ -19,9 +19,13 @@ export function PWARegistration() {
 
     const handleRegistration = async () => {
       try {
-        const registration = await navigator.serviceWorker.register(`/sw.js?v=${process.env.NEXT_PUBLIC_APP_VERSION}`);
+        // Directive 3: Force browser to use CACHED service worker script.
+        // This prevents the browser from auto-checking sw.js on every reload.
+        const registration = await navigator.serviceWorker.register('/sw.js', {
+          updateViaCache: 'all'
+        });
 
-        console.log('Openpot SW Registered (Manual Mode)');
+        console.log('Openpot SW Registered (Static Cache Mode)');
 
         // Check user update preference
         const autoUpdateEnabled = localStorage.getItem(AUTO_UPDATE_KEY) === 'true';

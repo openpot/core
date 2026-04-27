@@ -9,7 +9,7 @@ const serwist = new Serwist({
   precacheEntries: self.__SW_MANIFEST,
   skipWaiting: false, // MANDATORY: User must explicitly click "Apply" to reload
   clientsClaim: true,
-  navigationPreload: true,
+  navigationPreload: false, // MANDATORY: Prevent network ping on every navigation
   runtimeCaching: defaultCache,
 });
 
