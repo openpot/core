@@ -23,7 +23,10 @@ const getCommitHash = () => {
     return process.env.BUILD_HASH.slice(0, 7);
   }
 
-  // 2. Secondary: Vercel standard metadata (Absolute Source of Truth in Prod)
+  // 2. Secondary: Koyeb/Vercel standard metadata (Absolute Source of Truth in Prod)
+  if (process.env.KOYEB_GIT_SHA) {
+    return process.env.KOYEB_GIT_SHA.slice(0, 7);
+  }
   if (process.env.VERCEL_GIT_COMMIT_SHA) {
     return process.env.VERCEL_GIT_COMMIT_SHA.slice(0, 7);
   }
