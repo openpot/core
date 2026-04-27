@@ -3,7 +3,7 @@ import { networkInterfaces } from 'node:os';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { NextConfig } from 'next';
-import withPWAInit from '@ducanh2912/next-pwa';
+import withSerwistInit from "@serwist/next";
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
@@ -64,30 +64,11 @@ if (!isDevelopment) {
   }
 }
 
-/**
- * PWA Configuration: Strict Privacy Directives
- * 1. register: false -> Disables automatic background updates.
- * 2. buildExcludes -> Only bundles necessary files.
- * 3. cacheOnFrontEndNav -> Ensures zero-ping navigation.
- */
-const withPWA = withPWAInit({
-  dest: 'public',
+const withSerwist = withSerwistInit({
+  swSrc: "src/sw.ts",
+  swDest: "public/sw.js",
   register: false, // MANDATORY: Manual update control only
-  cacheOnFrontEndNav: true,
-  aggressiveFrontEndNavCaching: true,
-  reloadOnOnline: false, // Privacy: No autonomous state changes when network returns
   disable: isDevelopment, // Disable in dev to prevent cache collisions
-  workboxOptions: {
-    skipWaiting: false, // MANDATORY: User must explicitly click "Apply" to reload
-    cleanupOutdatedCaches: true, // Automatically purge stale build assets
-    additionalManifestEntries: [
-      { url: '/', revision: APP_VERSION },
-      { url: '/about/', revision: APP_VERSION },
-      { url: '/privacy/', revision: APP_VERSION },
-      { url: '/terms/', revision: APP_VERSION },
-      { url: '/feedback/', revision: APP_VERSION },
-    ],
-  },
 });
 
 const scriptSources = ["'self'", "'unsafe-inline'"];
@@ -131,4 +112,4 @@ const nextConfig: NextConfig = {
   // Headers are disabled in 'export' mode, moved to vercel.json for production
 };
 
-export default withPWA(nextConfig);
+export default withSerwist(nextConfig);

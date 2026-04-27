@@ -1,10 +1,46 @@
+# Dependency & Build Artifacts
 node_modules
 .next
 out
 .workspace
-.git
+.pnpm-store
+package-lock.json
+
+# AI Team & Agents
+.agents
+.codex
+.product
+.devcontainer
+
+# Environment & Secrets
 .env
 .env.local
+.git
+.github
+.certs
+.vercel
+.vercelignore
+
+# Documentation & Project Metadata
+*.md
+LICENSE
+NOTICE
+STAKEHOLDER_BOARD.md
+TECHNICAL_DEBT.md
+PRODUCT_BACKLOG.md
+
+# Logs & Temporary Files
 *.log
+scratch
+coverage
+test-results
+tests
+playwright-report
+debug-script.js
+server.log
+tsconfig.tsbuildinfo
+
+# Docker Configs
 docker-compose.yml
+compose.yaml
 scripts/deploy-prod.sh
