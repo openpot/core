@@ -56,6 +56,13 @@ const withSerwist = withSerwistInit({
   swDest: "public/sw.js",
   register: false, // MANDATORY: Manual update control only
   disable: isDevelopment, // Disable in dev to prevent cache collisions
+  additionalPrecacheEntries: [
+    { url: "/", revision: APP_VERSION },
+    { url: "/about/", revision: APP_VERSION },
+    { url: "/privacy/", revision: APP_VERSION },
+    { url: "/terms/", revision: APP_VERSION },
+    { url: "/feedback/", revision: APP_VERSION },
+  ],
 });
 
 const scriptSources = ["'self'", "'unsafe-inline'"];
