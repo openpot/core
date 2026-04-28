@@ -118,6 +118,14 @@ export function useSecureTimer() {
     };
   }, [state.notice]);
 
+  /**
+   * Starts a new session or resumes an existing one, persisting the state to localStorage.
+   * 
+   * @param name - Optional strain/custom name.
+   * @param method - Optional consumption method.
+   * @param sessionAmount - Optional amount consumed.
+   * @param sessionAmountUnit - Optional unit ('g' or 'mg').
+   */
   const startSession = useCallback((name?: string, method?: string, sessionAmount?: number, sessionAmountUnit?: 'g' | 'mg') => {
     const startedAt = Date.now();
     const effectiveName = name ?? customName;
@@ -144,11 +152,24 @@ export function useSecureTimer() {
     dispatch({ type: 'START', startedAt });
   }, [customName, selectedMethod, amount, amountUnit]);
 
+  /**
+   * Permanently deletes a session from history.
+   * 
+   * @param sessionId - The ID of the session to delete.
+   */
   const removeSession = useCallback(async (sessionId: string) => {
     await deleteSession(sessionId);
     await loadSessions();
   }, [loadSessions]);
 
+  /**
+   * Stops the active session, calculates final duration, and persists it securely to IndexedDB.
+   * 
+   * @param argName - Final custom name.
+   * @param argMethod - Final method.
+   * @param argAmount - Final amount.
+   * @param argAmountUnit - Final unit.
+   */
   const stopSession = useCallback(async (
     argName?: string,
     argMethod?: string,
@@ -183,12 +204,22 @@ export function useSecureTimer() {
     await loadSessions();
   }, [loadSessions, state.startedAt, state.status, customName, selectedMethod, amount, amountUnit]);
 
+  /**
+   * Removes a suggested custom name from the ghost library dropdown.
+   * 
+   * @param name - The name to remove.
+   */
   const removeGhostSuggestion = useCallback(async (name: string) => {
     await deleteGhostName(name);
     const nextGhostLibrary = await getGhostLibrary();
     setGhostLibrary(nextGhostLibrary);
   }, []);
 
+  /**
+   * Rates the most recently completed session.
+   * 
+   * @param rating - Qualitative rating string.
+   */
   const rateSession = useCallback(async (rating: string) => {
     if (!state.pendingSession) {
       return;
@@ -199,6 +230,9 @@ export function useSecureTimer() {
     await loadSessions();
   }, [loadSessions, state.pendingSession]);
 
+  /**
+   * Fully resets the active timer state and clears all active inputs.
+   */
   const resetSession = useCallback(() => {
     setCustomName('');
     setSelectedMethod(null);

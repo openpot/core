@@ -7,30 +7,6 @@ const DB_VERSION = 3;
 const SESSION_STORE_NAME = 'sessionQueue';
 const GHOST_LIBRARY_STORE_NAME = 'ghostLibrary';
 
-interface ResultSuccess<T> {
-  ok: true;
-  value: T;
-}
-
-interface ResultFailure {
-  ok: false;
-  error: string;
-}
-
-type Result<T> = ResultSuccess<T> | ResultFailure;
-
-export interface SessionSummary {
-  totalCount: number;
-  pendingCount: number;
-  syncedCount: number;
-  errorCount: number;
-}
-
-export interface QueueFlushResult {
-  refreshRequired: boolean;
-  summary: SessionSummary;
-}
-
 function createDatabase(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     if (typeof indexedDB === 'undefined') {
@@ -66,15 +42,24 @@ function createDatabase(): Promise<IDBDatabase> {
   });
 }
 
+/**
+ * Universal IndexedDB store transaction wrapper.
+ * Handles transaction lifecycle, promise resolution, and error handling.
+ *
+ * @param storeName - Name of the object store to transact against.
+ * @param mode - 'readonly' or 'readwrite' transaction mode.
+ * @param callback - Logic to execute with the store.
+ */
 async function withStore<T>(
+  storeName: string,
   mode: IDBTransactionMode,
   callback: (store: IDBObjectStore) => Promise<T> | T,
 ): Promise<T> {
   const database = await createDatabase();
 
   return new Promise((resolve, reject) => {
-    const transaction = database.transaction(SESSION_STORE_NAME, mode);
-    const store = transaction.objectStore(SESSION_STORE_NAME);
+    const transaction = database.transaction(storeName, mode);
+    const store = transaction.objectStore(storeName);
     let callbackResult!: T;
     let callbackFinished = false;
     let transactionFinished = false;
@@ -108,79 +93,11 @@ async function withStore<T>(
     };
 
     transaction.onabort = () => {
-      rejectOnce(transaction.error ?? new Error('A secure session transaction was aborted.'));
+      rejectOnce(transaction.error ?? new Error(`A ${storeName} transaction was aborted.`));
     };
 
     transaction.onerror = () => {
-      rejectOnce(transaction.error ?? new Error('A secure session transaction failed.'));
-    };
-
-    Promise.resolve(callback(store))
-      .then((value) => {
-        callbackResult = value;
-        callbackFinished = true;
-        resolveWhenReady();
-      })
-      .catch((error) => {
-        try {
-          transaction.abort();
-        } catch {
-          rejectOnce(error);
-          return;
-        }
-
-        rejectOnce(error);
-      });
-  });
-}
-
-async function withGhostStore<T>(
-  mode: IDBTransactionMode,
-  callback: (store: IDBObjectStore) => Promise<T> | T,
-): Promise<T> {
-  const database = await createDatabase();
-
-  return new Promise((resolve, reject) => {
-    const transaction = database.transaction(GHOST_LIBRARY_STORE_NAME, mode);
-    const store = transaction.objectStore(GHOST_LIBRARY_STORE_NAME);
-    let callbackResult!: T;
-    let callbackFinished = false;
-    let transactionFinished = false;
-    let settled = false;
-
-    const closeDatabase = () => {
-      database.close();
-    };
-
-    const rejectOnce = (error: unknown) => {
-      if (settled) {
-        return;
-      }
-
-      settled = true;
-      closeDatabase();
-      reject(error);
-    };
-
-    const resolveWhenReady = () => {
-      if (!settled && callbackFinished && transactionFinished) {
-        settled = true;
-        closeDatabase();
-        resolve(callbackResult);
-      }
-    };
-
-    transaction.oncomplete = () => {
-      transactionFinished = true;
-      resolveWhenReady();
-    };
-
-    transaction.onabort = () => {
-      rejectOnce(transaction.error ?? new Error('A ghost library transaction was aborted.'));
-    };
-
-    transaction.onerror = () => {
-      rejectOnce(transaction.error ?? new Error('A ghost library transaction failed.'));
+      rejectOnce(transaction.error ?? new Error(`A ${storeName} transaction failed.`));
     };
 
     Promise.resolve(callback(store))
@@ -221,7 +138,7 @@ function sortByNewest(a: SessionRecord, b: SessionRecord): number {
  */
 export async function queueSession(session: SessionRecord): Promise<void> {
   try {
-    await withStore('readwrite', async (store) => {
+    await withStore(SESSION_STORE_NAME, 'readwrite', async (store) => {
       await requestToPromise(store.put(session));
     });
   } catch {
@@ -237,7 +154,7 @@ export async function queueSession(session: SessionRecord): Promise<void> {
  */
 export async function deleteSession(sessionId: string): Promise<void> {
   try {
-    await withStore('readwrite', async (store) => {
+    await withStore(SESSION_STORE_NAME, 'readwrite', async (store) => {
       await requestToPromise(store.delete(sessionId));
     });
   } catch {
@@ -252,7 +169,7 @@ export async function deleteSession(sessionId: string): Promise<void> {
  */
 export async function deleteGhostName(name: string): Promise<void> {
   try {
-    await withGhostStore('readwrite', async (store) => {
+    await withStore(GHOST_LIBRARY_STORE_NAME, 'readwrite', async (store) => {
       await requestToPromise(store.delete(name));
     });
   } catch {
@@ -269,7 +186,7 @@ export async function saveGhostName(name: string): Promise<void> {
   if (!name.trim()) return;
 
   try {
-    await withGhostStore('readwrite', async (store) => {
+    await withStore(GHOST_LIBRARY_STORE_NAME, 'readwrite', async (store) => {
       await requestToPromise(store.put({ name: name.trim(), last_used: Date.now() }));
     });
   } catch {
@@ -284,7 +201,7 @@ export async function saveGhostName(name: string): Promise<void> {
  */
 export async function getGhostLibrary(): Promise<string[]> {
   try {
-    return await withGhostStore('readonly', async (store) => {
+    return await withStore(GHOST_LIBRARY_STORE_NAME, 'readonly', async (store) => {
       const all = (await requestToPromise(store.getAll())) as { name: string; last_used: number }[];
       return all
         .sort((a, b) => b.last_used - a.last_used)
@@ -301,7 +218,7 @@ export async function getGhostLibrary(): Promise<string[]> {
  * @returns An array of all secure session records in IndexedDB.
  */
 export async function listAllSessions(): Promise<SessionRecord[]> {
-  return withStore('readonly', async (store) => {
+  return withStore(SESSION_STORE_NAME, 'readonly', async (store) => {
     const sessions = (await requestToPromise(store.getAll())) as SessionRecord[];
 
     return sessions.sort(sortByNewest);
@@ -316,7 +233,7 @@ export async function listAllSessions(): Promise<SessionRecord[]> {
  * @returns A sorted array of recent secure session records.
  */
 export async function listRecentSessions(limit = 5): Promise<SessionRecord[]> {
-  return withStore('readonly', async (store) => {
+  return withStore(SESSION_STORE_NAME, 'readonly', async (store) => {
     const sessions = (await requestToPromise(store.getAll())) as SessionRecord[];
 
     return sessions.sort(sortByNewest).slice(0, limit);
@@ -333,7 +250,7 @@ export async function updateSessionRating(
   rating: string,
 ): Promise<void> {
   try {
-    await withStore('readwrite', async (store) => {
+    await withStore(SESSION_STORE_NAME, 'readwrite', async (store) => {
       const session = (await requestToPromise(store.get(sessionId))) as SessionRecord | undefined;
 
       if (!session) {
@@ -359,7 +276,7 @@ export async function updateSessionDuration(
   durationSeconds: number,
 ): Promise<void> {
   try {
-    await withStore('readwrite', async (store) => {
+    await withStore(SESSION_STORE_NAME, 'readwrite', async (store) => {
       const session = (await requestToPromise(store.get(sessionId))) as SessionRecord | undefined;
 
       if (!session) {

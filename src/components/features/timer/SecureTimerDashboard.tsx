@@ -12,30 +12,10 @@ import { AmountInputModal } from '@/components/features/timer/AmountInputModal';
 import { DurationEditModal } from './DurationEditModal';
 import { MonthlyQuotaCard } from './MonthlyQuotaCard';
 import { QuotaWarningModal } from './QuotaWarningModal';
-
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{
-    outcome: 'accepted' | 'dismissed';
-    platform: string;
-  }>;
-}
-
-function isStandaloneMode(): boolean {
-  if (typeof window === 'undefined') {
-    return false;
-  }
-
-  const navigatorWithStandalone = window.navigator as Navigator & {
-    standalone?: boolean;
-  };
-
-  return (
-    window.matchMedia('(display-mode: standalone)').matches ||
-    window.matchMedia('(display-mode: window-controls-overlay)').matches ||
-    navigatorWithStandalone.standalone === true
-  );
-}
+import { InstallPromotionBanner } from './InstallPromotionBanner';
+import { SessionHistoryList } from './SessionHistoryList';
+import { exportSessionsToCSV } from '@/lib/utils/export-csv';
+import { usePwaInstall } from '@/hooks/use-pwa-install';
 
 
 const PILL_CLASSES = "inline-flex items-center justify-center h-9 min-w-[85px] rounded-full border border-border bg-bg-overlay px-4 text-xs font-semibold font-sans uppercase tracking-widest text-text-secondary transition-all leading-none";
@@ -75,10 +55,15 @@ export function SecureTimerDashboard() {
     resetSession,
     refreshHistory,
   } = useSecureTimer();
-  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [isInstalled, setIsInstalled] = useState(false);
-  const [isIOS, setIsIOS] = useState(false);
-  const [activeDeleteId, setActiveDeleteId] = useState<string | null>(null);
+  
+  const {
+    installApp,
+    dismissInstallBanner,
+    showInstallPromotion,
+    isIOSInstallModalOpen,
+    setIsIOSInstallModalOpen,
+  } = usePwaInstall();
+
   const [isEditingStrains, setIsEditingStrains] = useState(false);
   const [isRatingDismissed, setIsRatingDismissed] = useState(false);
 
@@ -91,7 +76,6 @@ export function SecureTimerDashboard() {
   const [editingSession, setEditingSession] = useState<SessionRecord | null>(null);
   const methodsScrollRef = useRef<HTMLDivElement>(null);
   const strainsScrollRef = useRef<HTMLDivElement>(null);
-  const [isIOSInstallModalOpen, setIsIOSInstallModalOpen] = useState(false);
   const [fullSessions, setFullSessions] = useState<SessionRecord[]>([]);
   const [showQuotaWarning, setShowQuotaWarning] = useState(false);
 
@@ -171,13 +155,6 @@ export function SecureTimerDashboard() {
 
 
   useEffect(() => {
-    if (!('serviceWorker' in navigator)) {
-      return;
-    }
-
-    setIsInstalled(isStandaloneMode());
-    setIsIOS(/iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream);
-
     try {
       const saved = localStorage.getItem(METHODS_KEY);
       if (saved) {
@@ -189,112 +166,12 @@ export function SecureTimerDashboard() {
         }
       }
     } catch { }
-
-
-    const handleBeforeInstallPrompt = (event: Event) => {
-      const installEvent = event as BeforeInstallPromptEvent;
-      installEvent.preventDefault();
-      setInstallPrompt(installEvent);
-    };
-
-    const handleAppInstalled = () => {
-      setInstallPrompt(null);
-      setIsInstalled(true);
-    };
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    window.addEventListener('appinstalled', handleAppInstalled);
-
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      window.removeEventListener('appinstalled', handleAppInstalled);
-    };
   }, []);
-
-  const installApp = useCallback(async () => {
-    if (isIOS) {
-      setIsIOSInstallModalOpen(true);
-      return;
-    }
-
-    if (!installPrompt) {
-      return;
-    }
-
-    try {
-      await installPrompt.prompt();
-      const choice = await installPrompt.userChoice;
-      setInstallPrompt(null);
-      setIsInstalled(choice.outcome === 'accepted' || isStandaloneMode());
-    } catch (err) {
-      console.error('PWA Install Prompt Failed:', err);
-    }
-  }, [installPrompt, isIOS]);
 
   const handleExportCSV = useCallback(async () => {
     try {
       const allSessions = await listAllSessions();
-      if (allSessions.length === 0) return;
-
-      const pad = (n: number) => String(n).padStart(2, '0');
-      const formatDate = (d: Date) => `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())}`;
-      const formatTime = (d: Date) => `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-      const formatDur = (s: number) => {
-        const h = Math.floor(s / 3600);
-        const m = Math.floor((s % 3600) / 60);
-        const sec = s % 60;
-        return `${pad(h)}:${pad(m)}:${pad(sec)}`;
-      };
-
-      const headers = [
-        'Start Date',
-        'Start Time',
-        'End Date',
-        'End Time',
-        'Method',
-        'Amount',
-        'Unit',
-        'Strain',
-        'Duration',
-        'Duration Adjusted',
-        'Rating'
-      ];
-
-      const rows = allSessions.map(s => {
-        const startDate = new Date(s.start_time);
-        const endDate = new Date(s.end_time);
-
-        let amountVal = 'N/A';
-        let unitVal = 'N/A';
-        if (s.amount !== undefined) {
-          amountVal = s.amount.toFixed(3);
-          unitVal = s.amount_unit || 'g';
-        }
-
-        return [
-          formatDate(startDate),
-          formatTime(startDate),
-          formatDate(endDate),
-          formatTime(endDate),
-          s.method || 'N/A',
-          amountVal,
-          unitVal,
-          s.custom_name || 'N/A',
-          formatDur(s.duration_seconds),
-          s.is_adjusted ? 'True' : 'False',
-          s.rating || 'N/A'
-        ].map(val => `"${String(val).replace(/"/g, '""')}"`).join(',');
-      });
-
-      const csvContent = [headers.join(','), ...rows].join('\n');
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.setAttribute('href', url);
-      link.setAttribute('download', `openpot_full_log_${new Date().toISOString().split('T')[0]}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      await exportSessionsToCSV(allSessions);
     } catch (err) {
       console.error('Failed to export sessions:', err);
     }
@@ -354,20 +231,6 @@ export function SecureTimerDashboard() {
       ? 'Stop Session'
       : 'Start Session';
 
-  const [isDismissed, setIsDismissed] = useState(true); // Default to true to prevent flash
-
-  // Load dismissal state from localStorage
-  useEffect(() => {
-    const dismissed = localStorage.getItem('openpot_install_dismissed') === 'true';
-    setIsDismissed(dismissed);
-  }, []);
-
-  const showInstallPromotion = !isInstalled && !isDismissed && (isIOS || !!installPrompt);
-
-  const dismissInstallBanner = useCallback(() => {
-    setIsDismissed(true);
-    localStorage.setItem('openpot_install_dismissed', 'true');
-  }, []);
 
   return (
     <main className="relative flex min-h-screen flex-col items-center justify-start overflow-hidden px-4 py-6 sm:px-6 sm:py-12 min-w-0">
@@ -386,47 +249,11 @@ export function SecureTimerDashboard() {
 
         <div className="flex flex-1 flex-col justify-center gap-8">
           <div className="space-y-8 text-center">
-            {showInstallPromotion ? (
-              <section className="relative rounded-lg border border-border-subtle bg-bg-overlay/50 px-4 py-4 animate-in fade-in slide-in-from-top-2 duration-500">
-                {/* Dismiss button */}
-                <button
-                  type="button"
-                  aria-label="Dismiss install banner"
-                  onClick={dismissInstallBanner}
-                  className="absolute top-3 right-3 flex h-6 w-6 items-center justify-center rounded-full text-text-tertiary transition-colors hover:bg-bg-subtle hover:text-text-primary active:scale-90"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
-                </button>
-
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pr-6">
-                  <div className="flex items-start gap-3 text-left">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="3" y2="15" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-bold uppercase tracking-widest text-text-primary">
-                        Install Openpot
-                      </h3>
-                      <p className="mt-1 text-[11px] text-text-secondary leading-normal text-left">
-                        Add to home screen for the best experience and native-style tracking.
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    className="min-h-11 shrink-0 rounded-full bg-primary px-5 py-2 text-xs font-bold text-text-inverse shadow-sm transition-all hover:bg-primary-hover active:scale-95"
-                    onClick={() => void installApp()}
-                    type="button"
-                  >
-                    Install Now
-                  </button>
-                </div>
-              </section>
-            ) : null}
+            <InstallPromotionBanner 
+              showInstallPromotion={showInstallPromotion} 
+              dismissInstallBanner={dismissInstallBanner} 
+              installApp={installApp} 
+            />
 
             {(
               <div className="mx-0 w-full space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
@@ -645,165 +472,16 @@ export function SecureTimerDashboard() {
             </div>
 
             <div className="mt-4 w-full min-w-0 overflow-hidden" data-testid="session-list">
-              {isLoadingHistory ? (
-                <p className="text-sm text-text-secondary">Loading secured sessions…</p>
-              ) : historyError ? (
-                <p className="text-sm text-error">{historyError}</p>
-              ) : recentSessions.length === 0 ? (
-                <p className="text-sm text-text-secondary">
-                  No secured sessions yet. Start the timer when you are ready.
-                </p>
-              ) : (
-                <ul className="space-y-3 w-full min-w-0">
-                  {recentSessions.map((session, index) => (
-                    <li
-                      className="group relative grid grid-cols-[1fr_auto] w-full min-w-0 min-h-[62px] items-center rounded-md bg-bg-base overflow-hidden"
-                      key={session.session_id}
-                    >
-                      {activeDeleteId === session.session_id ? (
-                        <div className="grid grid-cols-[1fr_auto] w-full items-center gap-2 h-[62px] min-w-0 px-4">
-                          <p className="min-w-0 text-sm text-error tracking-tight truncate">Delete session?</p>
-                          <div className="sticky right-0 z-10 flex shrink-0 items-center gap-1 bg-bg-base pl-2">
-                            <button
-                              aria-label="Confirm deletion"
-                              className="rounded-full p-2 text-error transition hover:bg-error/10 active:scale-90"
-                              onClick={async () => {
-                                setActiveDeleteId(null);
-                                await removeSession(session.session_id);
-                              }}
-                              type="button"
-                            >
-                              <svg aria-hidden="true" fill="none" height="18" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" viewBox="0 0 24 24" width="18" xmlns="http://www.w3.org/2000/svg">
-                                <polyline points="20 6 9 17 4 12" />
-                              </svg>
-                            </button>
-                            <button
-                              aria-label="Cancel deletion"
-                              className="rounded-full p-2 text-text-tertiary transition hover:bg-bg-overlay hover:text-text-primary active:scale-90"
-                              onClick={() => setActiveDeleteId(null)}
-                              type="button"
-                            >
-                              <svg aria-hidden="true" fill="none" height="18" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" viewBox="0 0 24 24" width="18" xmlns="http://www.w3.org/2000/svg">
-                                <line x1="18" x2="6" y1="6" y2="18" />
-                                <line x1="6" x2="18" y1="6" y2="18" />
-                              </svg>
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="grid grid-cols-[1fr_auto] w-full items-center gap-2 px-3 min-w-0 h-[62px]">
-                          <div className="flex-1 min-w-0 flex flex-col justify-center gap-1.5 overflow-hidden">
-                            {/* Row 1: Date Time • Duration + Pencil + [Rating] */}
-                            <div className="flex items-center gap-1 overflow-hidden min-w-0">
-                              <span className="min-w-0 truncate font-sans text-[10px] font-bold uppercase tracking-widest text-text-tertiary leading-none pt-0.5" title={(() => {
-                                const d = new Date(session.start_time);
-                                const dateStr = `${d.getDate().toString().padStart(2, '0')}.${(d.getMonth() + 1).toString().padStart(2, '0')}`;
-                                const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
-                                return `[${dateStr} ${timeStr}]`;
-                              })()}>
-                                {(() => {
-                                  const d = new Date(session.start_time);
-                                  const dateStr = `${d.getDate().toString().padStart(2, '0')}.${(d.getMonth() + 1).toString().padStart(2, '0')}`;
-                                  const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
-                                  return `[${dateStr} ${timeStr}]`;
-                                })()}
-                              </span>
-
-                              <div className="shrink-0 flex items-center gap-2 overflow-hidden min-w-0 ml-1.5">
-                                {index === 0 ? (
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setEditingSession(session);
-                                      setIsEditDurationModalOpen(true);
-                                    }}
-                                    className="shrink-0 flex items-center gap-1 rounded-sm transition-all hover:opacity-70 active:scale-[0.98] touch-manipulation"
-                                    aria-label="Edit most recent duration"
-                                  >
-                                    <p className="shrink-0 font-mono text-sm font-bold text-text-primary leading-none pt-0.5">
-                                      {formatDuration(session.duration_seconds)}
-                                    </p>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-text-tertiary">
-                                      <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                                      <path d="m15 5 4 4" />
-                                    </svg>
-                                  </button>
-                                ) : (
-                                  <p className="shrink-0 font-mono text-sm font-bold text-text-primary leading-none pt-0.5">
-                                    {formatDuration(session.duration_seconds)}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Row 2: Metadata Pills (Method|Amount, Rating, Strain) */}
-                            {(session.rating || session.method || session.amount !== undefined || session.custom_name) && (
-                              <div 
-                                className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide no-scrollbar min-w-0 h-4.5"
-                                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                              >
-                                {/* 1. Method | Amount Pill */}
-                                {(session.method || session.amount !== undefined) && (
-                                  <div className="shrink-0 flex items-center h-4.5 rounded-full border border-border bg-bg-overlay px-1.5 text-[10px] font-bold font-sans uppercase tracking-widest text-text-secondary leading-none">
-                                    {session.method && (
-                                      <span className={`uppercase ${session.amount !== undefined ? "mr-1" : ""}`}>
-                                        {session.method}
-                                      </span>
-                                    )}
-                                    {session.method && session.amount !== undefined && (
-                                      <span className="mr-1 opacity-30 font-light">|</span>
-                                    )}
-                                    {session.amount !== undefined && (
-                                      <span className="font-mono normal-case">
-                                        {session.amount_unit === 'mg'
-                                          ? `${parseFloat((session.amount * 1000).toFixed(1))}mg`
-                                          : `${parseFloat(session.amount.toFixed(2))}g`}
-                                      </span>
-                                    )}
-                                  </div>
-                                )}
-
-                                {/* 2. Rating Pill */}
-                                {session.rating && (
-                                  <div className="shrink-0 flex items-center h-4.5 rounded-full border border-border bg-bg-overlay px-1.5 text-[10px] font-bold font-sans uppercase tracking-widest text-text-secondary leading-none">
-                                    {session.rating}
-                                  </div>
-                                )}
-
-                                {/* 3. Strain Pill */}
-                                {session.custom_name && (
-                                  <div className="shrink-0 flex items-center h-4.5 rounded-full border border-border bg-bg-overlay px-1.5 text-[10px] font-bold font-sans uppercase tracking-widest text-text-secondary leading-none">
-                                    <span className="whitespace-nowrap" title={session.custom_name}>
-                                      {session.custom_name}
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="sticky right-0 z-10 flex items-center shrink-0 bg-bg-base pl-2">
-                            <button
-                              aria-label="Delete session"
-                              className="shrink-0 rounded-full p-2 text-text-tertiary transition hover:bg-error/10 hover:text-error active:scale-95"
-                              onClick={() => setActiveDeleteId(session.session_id)}
-                              type="button"
-                            >
-                              <svg aria-hidden="true" fill="none" height="18" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width="18" xmlns="http://www.w3.org/2000/svg">
-                                <polyline points="3 6 5 6 21 6" />
-                                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                                <path d="M10 11v6" />
-                                <path d="M14 11v6" />
-                                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-                              </svg>
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              )}
+              <SessionHistoryList
+                isLoadingHistory={isLoadingHistory}
+                historyError={historyError}
+                recentSessions={recentSessions}
+                removeSession={removeSession}
+                onEditDuration={(session) => {
+                  setEditingSession(session);
+                  setIsEditDurationModalOpen(true);
+                }}
+              />
             </div>
           </section>
         </div>
