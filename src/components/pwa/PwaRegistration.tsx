@@ -11,7 +11,7 @@ const AUTO_UPDATE_KEY = 'openpot_auto_update';
  * 2. This hook manually registers the worker ONLY to establish the cache.
  * 3. Background updates are STRICTLY blocked unless AUTO_UPDATE_KEY is true.
  */
-export function PWARegistration() {
+export function PwaRegistration() {
   useEffect(() => {
     if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
       return;

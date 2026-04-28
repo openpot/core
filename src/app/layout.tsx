@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
-import { PWARegistration } from '@/components/pwa/PWARegistration';
+import { PwaRegistration } from '@/components/pwa/PwaRegistration';
 
 import './globals.css';
 
@@ -45,7 +45,7 @@ interface RootLayoutProps {
 /**
  * Root Layout
  * Enforces 'Zero-Network' architecture by:
- * 1. Mounting PWARegistration for manual SW control.
+ * 1. Mounting PwaRegistration for manual SW control.
  * 2. Providing a stable document structure.
  */
 export default function RootLayout({ children }: RootLayoutProps) {
@@ -87,7 +87,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         />
       </head>
       <body className="antialiased">
-        <PWARegistration />
+        <PwaRegistration />
         {children}
       </body>
     </html>

@@ -6,7 +6,7 @@ import {
   timerReducer,
   TIMER_STATUS,
 } from '@/lib/timer/timer-machine';
-import { SESSION_RECORD_KEYS, SYNC_STATUS } from '@/types/session';
+import { SESSION_RECORD_KEYS } from '@/types/session';
 import { afterEach, vi } from 'vitest';
 
 const originalCrypto = globalThis.crypto;
