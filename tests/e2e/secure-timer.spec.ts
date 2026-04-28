@@ -101,3 +101,51 @@ test('saves a completed session securely to local IndexedDB', async ({ page }) =
     start_time: expect.any(String),
   });
 });
+
+test('starts and completes a session with full telemetry metadata', async ({ page }) => {
+  await page.goto('/');
+
+  // 1. Input custom name (Strain)
+  await page.locator('#custom-name').fill('Blue Dream');
+
+  // 2. Select Method
+  await page.getByText('Flower').click();
+
+  // 3. Input Amount
+  const amountInput = page.locator('#input-amount-stepper');
+  await amountInput.fill('1.5');
+  await page.getByRole('button', { name: 'g', exact: true }).click();
+  await page.getByRole('button', { name: 'Save' }).click();
+
+  // 4. Start session and wait
+  await page.getByTestId('primary-timer-button').click();
+  await page.waitForTimeout(2000);
+
+  // 5. Stop session
+  await page.getByTestId('primary-timer-button').click();
+
+  // 6. Rate session
+  await expect(page.getByText('How are you feeling?')).toBeVisible();
+  await page.getByText('Dialed In').click();
+
+  // 7. Verify History List Rendering
+  const sessionList = page.getByTestId('session-list');
+  await expect(sessionList).toContainText('Blue Dream');
+  await expect(sessionList).toContainText('Flower');
+  await expect(sessionList).toContainText('1.5g');
+  await expect(sessionList).toContainText('Dialed In');
+
+  // 8. Verify IndexedDB Payload
+  const sessions = await readSessions(page);
+  const session = sessions.find((s: any) => s.custom_name === 'Blue Dream') as any;
+  expect(session).toBeDefined();
+  expect(session).toMatchObject({
+    custom_name: 'Blue Dream',
+    method: 'Flower',
+    amount: 1.5,
+    amount_unit: 'g',
+    rating: 'Dialed In',
+    duration_seconds: expect.any(Number),
+  });
+  expect(session.duration_seconds).toBeGreaterThanOrEqual(1);
+});
