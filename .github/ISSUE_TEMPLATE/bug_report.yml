@@ -1,0 +1,45 @@
+name: 🐛 Bug Report
+description: Report a bug to help us improve Openpot
+title: "[BUG]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Also tell us what you expected to happen.
+      placeholder: Describe the bug...
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: How to reproduce?
+      description: List the steps to reproduce the behavior.
+      placeholder: |
+        1. Open the App
+        2. Click on...
+        3. See error
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser & OS
+      description: e.g. Chrome 120 on macOS Sonoma
+      placeholder: Chrome 120 / macOS
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I have checked that this issue does not already exist.
+          required: true
+        - label: I am using the latest version of Openpot.
+          required: true
