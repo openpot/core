@@ -169,3 +169,10 @@ memory-core.md
 .vercel
 .build_version
 scripts/deploy-prod.sh
+
+# PWA Service Workers (Generated)
+public/sw.js
+public/sw.js.map
+public/workbox-*.js
+public/swe-worker-*.js
+public/version.json
