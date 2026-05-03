@@ -31,6 +31,22 @@ export const metadata: Metadata = {
     ],
   },
   referrer: 'no-referrer',
+  openGraph: {
+    type: 'website',
+    url: 'https://openpot.co',
+    title: 'Openpot',
+    description: 'A zero-knowledge session timer secured locally and synced anonymously.',
+    siteName: 'Openpot',
+    images: [{
+      url: '/og-image.png',
+    }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Openpot',
+    description: 'A zero-knowledge session timer secured locally and synced anonymously.',
+    images: ['/og-image.png'],
+  },
 };
 
 export const viewport: Viewport = {
