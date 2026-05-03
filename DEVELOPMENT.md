@@ -5,8 +5,8 @@ This guide covers the technical setup and architecture for developers looking to
 ## 🛠 Prerequisites
 
 Ensure you have the following installed:
-- **Node.js**: v18.0.0 or higher
-- **pnpm**: v9.0.0 or higher (highly recommended)
+- **Node.js**: v20.0.0 or higher
+- **pnpm**: v10.10.0 or higher (required)
 - **Local IP**: For mobile PWA testing, you'll need your machine's LAN IP.
 
 ## 🏗 Base Setup
@@ -53,7 +53,7 @@ pnpm test
 ```bash
 pnpm e2e
 ```
-*Note: Ensure the dev server is running before executing E2E tests.*
+*Note: The test runner will automatically start a production build of the server. No manual server start is required.*
 
 ## 🔒 Security Principles
 
