@@ -1,4 +1,4 @@
-# Openpot Secure Timer 🛡️
+# ![Openpot Banner](public/favicon.png) Openpot Secure Timer 🛡️
 
 [![CI](https://github.com/openpot/core/actions/workflows/ci.yml/badge.svg)](https://github.com/openpot/core/actions/workflows/ci.yml)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
@@ -6,8 +6,6 @@
 [![Standard: Stuttgart-Safe](https://img.shields.io/badge/Standard-Stuttgart--Safe-success)](SECURITY.md)
 
 A premium, privacy-first, zero-knowledge session tracker built for sovereignty and anonymity. Openpot is designed to stay mathematically invisible and legally sovereign by keeping all user data strictly on-device.
-
-![Openpot Banner](public/icon-512.png)
 
 ## ✨ Features
 
