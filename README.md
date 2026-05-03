@@ -6,6 +6,7 @@
 [![Standard: Stuttgart-Safe](https://img.shields.io/badge/Standard-Stuttgart--Safe-success)](SECURITY.md)
 
 A premium, privacy-first, zero-knowledge session tracker built for sovereignty and anonymity. Openpot is designed to stay mathematically invisible and legally sovereign by keeping all user data strictly on-device.
+Visit our official site at [openpot.co](https://openpot.co).
 
 ## ✨ Features
 
@@ -28,8 +29,8 @@ A premium, privacy-first, zero-knowledge session tracker built for sovereignty a
 
 ### Prerequisites
 
-- Node.js 18+
-- pnpm
+- **Node.js**: v20.0.0 or higher
+- **pnpm**: v10.10.0 or higher (required)
 
 ### Installation
 
