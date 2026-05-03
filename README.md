@@ -1,4 +1,4 @@
-# ![Openpot Banner](public/og-image.png) Openpot Secure Timer 🛡️
+# ![Openpot Banner](public/favicon.png) Openpot Secure Timer 🛡️
 
 [![CI](https://github.com/openpot/core/actions/workflows/ci.yml/badge.svg)](https://github.com/openpot/core/actions/workflows/ci.yml)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
