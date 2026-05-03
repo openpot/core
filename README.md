@@ -1,5 +1,10 @@
 # Openpot Secure Timer 🛡️
 
+[![CI](https://github.com/openpot/core/actions/workflows/ci.yml/badge.svg)](https://github.com/openpot/core/actions/workflows/ci.yml)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/openpot/core/pulls)
+[![Standard: Stuttgart-Safe](https://img.shields.io/badge/Standard-Stuttgart--Safe-success)](SECURITY.md)
+
 A premium, privacy-first, zero-knowledge session tracker built for sovereignty and anonymity. Openpot is designed to stay mathematically invisible and legally sovereign by keeping all user data strictly on-device.
 
 ![Openpot Banner](public/icon-512.png)
@@ -32,8 +37,8 @@ A premium, privacy-first, zero-knowledge session tracker built for sovereignty a
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/openpot/openpot.git
-   cd openpot/core
+   git clone https://github.com/openpot/core.git
+   cd core
    ```
 
 2. Install dependencies:
