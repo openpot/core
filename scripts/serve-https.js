@@ -26,24 +26,50 @@ const mimeTypes = {
   '.wasm': 'application/wasm',
 };
 
+const isPathWithinRoot = (root, targetPath) => {
+  const relative = path.relative(root, targetPath);
+  return relative === '' || (relative && !relative.startsWith('..') && !path.isAbsolute(relative));
+};
+
 const server = https.createServer(options, (req, res) => {
   const parsedUrl = url.parse(req.url);
-  let pathname = parsedUrl.pathname;
+  const pathname = parsedUrl.pathname || '/';
   
-  let filePath = path.join(OUT_DIR, pathname === '/' ? 'index.html' : pathname);
+  let filePath = path.resolve(OUT_DIR, pathname === '/' ? 'index.html' : pathname.substring(1));
   
-  // 1. Force directory requests to index.html
-  if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
-    filePath = path.join(filePath, 'index.html');
+  if (!isPathWithinRoot(OUT_DIR, filePath)) {
+    res.writeHead(403);
+    res.end('403 Forbidden');
+    return;
+  }
+
+  let fileStat = null;
+  try {
+    fileStat = fs.statSync(filePath);
+  } catch (_) {
+    fileStat = null;
   }
   
-  // 2. Handle Next.js 'trailingSlash: true' cleaner: if a path doesn't have an extension
-  // and isn't a directory, it might be a clean URL that needs /index.html
-  if (!path.extname(filePath) && !fs.existsSync(filePath)) {
-    const dirPath = filePath.endsWith('/') ? filePath : filePath + '/';
-    if (fs.existsSync(dirPath + 'index.html')) {
-       filePath = dirPath + 'index.html';
+  // 1. Force directory requests to index.html
+  if (fileStat && fileStat.isDirectory()) {
+    filePath = path.join(filePath, 'index.html');
+    try {
+      fileStat = fs.statSync(filePath);
+    } catch (_) {
+      fileStat = null;
     }
+  }
+  
+  // 2. Handle Next.js 'trailingSlash: true' cleaner
+  if (!fileStat && !path.extname(filePath)) {
+    const dirPath = filePath.endsWith('/') ? filePath : filePath + '/';
+    const indexHtml = path.join(dirPath, 'index.html');
+    try {
+      if (fs.statSync(indexHtml).isFile()) {
+        filePath = indexHtml;
+        fileStat = { isFile: () => true };
+      }
+    } catch (_) {}
   }
 
   const extname = String(path.extname(filePath)).toLowerCase();
@@ -51,14 +77,15 @@ const server = https.createServer(options, (req, res) => {
 
   fs.readFile(filePath, (error, content) => {
     if (error) {
-      if(error.code == 'ENOENT') {
+      if (error.code === 'ENOENT') {
         fs.readFile(path.join(OUT_DIR, '404.html'), (err404, content404) => {
           res.writeHead(404, { 'Content-Type': 'text/html' });
           res.end(content404 || '404 Not Found', 'utf-8');
         });
       } else {
-        res.writeHead(500);
-        res.end('Sorry, check with the site admin for error: '+error.code+' ..\n');
+        console.error('Static file read error:', error.code, error);
+        res.writeHead(500, { 'Content-Type': 'text/plain' });
+        res.end('Internal Server Error');
       }
     } else {
       // PROMPT: Ensure the entry point (HTML) is NEVER cached to prevent "Zombie App" states

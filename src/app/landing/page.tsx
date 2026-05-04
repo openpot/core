@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { LogoMark } from '@/components/ui/Logo';
@@ -28,6 +28,18 @@ export default function LandingPage() {
     }, 5000);
     return () => clearInterval(timer);
   }, [screenshots.length]);
+
+  const handleCommunitySignup = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const email = String(formData.get('email')).trim();
+    
+    if (!email) return;
+
+    const title = encodeURIComponent('Community signup request');
+    const body = encodeURIComponent(`Please add me to community updates.\n\nEmail: ${email}`);
+    window.location.href = `https://github.com/openpot/core/issues/new?title=${title}&body=${body}`;
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-[#020617] text-slate-50 selection:bg-emerald-500/30">
@@ -100,7 +112,6 @@ export default function LandingPage() {
                     fill
                     style={{ objectFit: 'cover' }}
                     priority={idx === 0}
-                    unoptimized
                   />
                 </div>
               ))}
@@ -157,9 +168,10 @@ export default function LandingPage() {
           <p className="text-slate-400 mb-8 max-w-md mx-auto">
             Stay updated on new features and private tracking protocols. We promise: No tracking, no spam.
           </p>
-          <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto" onSubmit={(e) => e.preventDefault()}>
+          <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto" onSubmit={handleCommunitySignup}>
             <input 
               type="email" 
+              name="email"
               placeholder="Enter your email" 
               className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
               required

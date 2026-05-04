@@ -1,8 +1,8 @@
 # --- Stage 1: Build ---
 FROM node:22-alpine AS builder
 
-# Check for pnpm availability or install it
-RUN apk add --no-cache git && npm install -g pnpm@10.10.0
+# Install pnpm
+RUN npm install -g pnpm@10.10.0
 
 WORKDIR /app
 
