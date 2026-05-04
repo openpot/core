@@ -14,8 +14,8 @@ import { Footer } from '@/components/ui/Footer';
 export default function LandingPage() {
   const screenshots = [
     { src: '/images/dashboard-1.jpg', alt: 'Native Home Screen Experience' },
-    { src: '/images/dashboard-2.jpg', alt: 'Precision Consumption Tracking' },
-    { src: '/images/dashboard-3.jpg', alt: 'Zero-Knowledge Local History' },
+    { src: '/images/dashboard-3.jpg', alt: 'Precision Consumption Tracking' },
+    { src: '/images/dashboard-2.jpg', alt: 'Zero-Knowledge Local History' },
     { src: '/images/dashboard-4.jpg', alt: 'Sovereign Update Control' },
   ];
 
