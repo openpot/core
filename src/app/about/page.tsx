@@ -3,6 +3,7 @@ import { Logo, LogoMark } from '@/components/ui/Logo';
 import { Footer } from '@/components/ui/Footer';
 import { NetworkSettings } from '@/components/features/settings/NetworkSettings';
 import { APP_VERSION } from '@/lib/version';
+import { RELEASES } from '@/data/releases';
 
 export const metadata = {
   title: 'About Us | Openpot',
@@ -70,7 +71,7 @@ export default function AboutPage() {
 
           <section className="space-y-6 border-t border-border-subtle pt-8">
             <h2 className="text-xl font-bold tracking-tight text-text-primary text-left">
-              Release Log
+              Recent Release Notes
             </h2>
             
             <div className="space-y-6">
