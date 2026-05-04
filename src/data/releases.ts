@@ -7,6 +7,16 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: 'v0.20.0',
+    title: 'The Infrastructure Sync',
+    date: '2026-05-04',
+    changes: [
+      'CI/CD Modernization: Opted into Node.js 24 for all GitHub Actions to resolve deprecation warnings.',
+      'Version Parity: Synchronized release notes with the latest automated version bumps.',
+      'UI Transparency: Finalized the "Last Checked" update monitor and normalized version comparison.'
+    ]
+  },
+  {
     version: 'v0.19.0',
     title: 'The Quality Sync',
     date: '2026-05-04',
