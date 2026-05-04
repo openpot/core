@@ -72,10 +72,7 @@ Openpot is fully automated via GitHub Actions. When changes are merged into the 
 3. **Registry Push**: The image is pushed to the GitHub Container Registry (GHCR).
 4. **Auto-Redeploy**: A redeployment is automatically triggered on the hosting platform (Koyeb).
 
-For manual control or local builds, you can still use:
-```bash
-./scripts/deploy-prod.sh
-```
+For manual control, you can use the production build commands in `DEVELOPMENT.md`.
 
 ## 🛡️ Security & Privacy
 
