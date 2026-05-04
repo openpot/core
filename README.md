@@ -66,17 +66,13 @@ To test the PWA installation experience on a mobile device, you must serve the a
 
 ### 🚢 Production Deployment
 
-Openpot uses a "Git-Lite" containerized deployment workflow. It builds a secure, hardened Nginx Docker image locally and pushes it to the GitHub Container Registry (GHCR), which can then be automatically deployed by platforms like Koyeb.
+Openpot is fully automated via GitHub Actions. When changes are merged into the `main` branch, the following occurs:
+1. **CI Validation**: Runs linting, unit tests, and Playwright E2E tests.
+2. **Docker Build**: A secure, hardened Nginx Docker image is built and tagged with the commit SHA.
+3. **Registry Push**: The image is pushed to the GitHub Container Registry (GHCR).
+4. **Auto-Redeploy**: A redeployment is automatically triggered on the hosting platform (Koyeb).
 
-1. Ensure you have Docker installed and are authenticated with GHCR:
-   ```bash
-   echo "YOUR_GITHUB_TOKEN" | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password-stdin
-   ```
-2. Run the deployment script:
-   ```bash
-   ./scripts/deploy-prod.sh
-   ```
-3. Your chosen hosting platform (e.g., Koyeb) will detect the updated `:latest` tag and redeploy automatically.
+For manual control, you can use the production build commands in `DEVELOPMENT.md`.
 
 ## 🛡️ Security & Privacy
 

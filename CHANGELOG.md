@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.9.0] - 2026-05-04
+
+### Added
+- **Automated CI/CD Pipeline**: Integrated GitHub Actions for automated Docker builds, GHCR pushes, and Koyeb redeployments.
+- **Lockfile Hardening**: Switched to enforced `--frozen-lockfile` in CI to ensure 100% reproducible builds and dependency security.
+- **Open-Source Readiness**: Finalized documentation, contribution guidelines, and community templates for public launch.
+
+### Changed
+- **Deployment Workflow**: Transitioned from manual local deployments to a fully automated cloud-native pipeline.
+
 ## [0.8.0] - 2026-04-21
 
 ### Added

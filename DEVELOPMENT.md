@@ -55,8 +55,22 @@ pnpm e2e
 ```
 *Note: The test runner will automatically start a production build of the server. No manual server start is required.*
 
-## 🔒 Security Principles
+## 🚢 CI/CD & Deployment
 
-1. **Self-Contained**: No external CDNs. All assets (fonts, icons, scripts) must be bundled locally.
-2. **Minimal Surface**: Only use dependencies that are strictly necessary and audited for privacy.
-3. **Zero Telemetry**: Do not add any analytics or "ping-home" functionality.
+We use **GitHub Actions** for all production builds and deployments.
+
+### CI (Continuous Integration)
+On every Pull Request to `main`, the workflow:
+1. Installs dependencies using `pnpm` (enforcing `--frozen-lockfile`).
+2. Runs `pnpm run lint` to ensure code quality.
+3. Runs `pnpm run test` for unit testing.
+4. Builds the application and runs **Playwright** E2E tests.
+
+### CD (Continuous Deployment)
+On every push to `main`, the workflow additionally:
+1. Builds a production Docker image based on `alpine-nginx`.
+2. Pushes the image to **GHCR** (`ghcr.io/openpot/openpot`).
+3. Triggers a redeploy on **Koyeb** via the Koyeb CLI.
+
+---
+Built with ❤️ for the sovereign community.
