@@ -36,6 +36,19 @@ export function NetworkSettings() {
   const [serverVersion, setServerVersion] = useState<string | null>(null);
   const [installDate, setInstallDate] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [lastChecked, setLastChecked] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('op_last_update_check');
+    }
+    return null;
+  });
+
+  // Persist lastChecked
+  useEffect(() => {
+    if (lastChecked) {
+      localStorage.setItem('op_last_update_check', lastChecked);
+    }
+  }, [lastChecked]);
 
   /**
    * Phase 1: Check for Updates
@@ -55,6 +68,8 @@ export function NetworkSettings() {
       // Normalize: remove leading 'v' and build hashes for comparison
       const cleanCurrent = CURRENT_VERSION.split('-')[0].replace(/^v/, '');
       const cleanLatest = latestVersion.split('-')[0].replace(/^v/, '');
+
+      setLastChecked(new Date().toLocaleString());
 
       if (cleanCurrent === cleanLatest) {
         setStatus('up-to-date');
@@ -292,9 +307,10 @@ export function NetworkSettings() {
             <p className="text-sm font-semibold text-text-primary tracking-wider">Software Version</p>
             <div className="flex flex-col items-start gap-1">
               <code className="rounded bg-bg-subtle px-1.5 py-0.5 text-[10px] text-text-secondary">{CURRENT_VERSION}</code>
-              <span className="text-[10px] text-text-tertiary">
-                (Installed{installDate ? ` on ${formatDate(installDate)}` : ''})
-              </span>
+              <p className="text-[10px] text-text-tertiary">
+                {installDate ? `Installed on ${formatDate(installDate)}` : 'Installing...'}
+                {lastChecked && ` • Checked on ${formatDate(lastChecked)}`}
+              </p>
             </div>
           </div>
           
