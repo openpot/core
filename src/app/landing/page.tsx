@@ -13,10 +13,10 @@ import { Footer } from '@/components/ui/Footer';
  */
 export default function LandingPage() {
   const screenshots = [
-    { src: '/images/dashboard-1.jpg', alt: 'Openpot Timer & Dashboard' },
-    { src: '/images/dashboard-2.jpg', alt: 'Consumption History & Stats' },
-    { src: '/images/dashboard-3.jpg', alt: 'Secure Local Storage Tracking' },
-    { src: '/images/dashboard-4.jpg', alt: 'About Openpot & Privacy Controls' },
+    { src: '/images/dashboard-1.jpg', alt: 'Native Home Screen Experience' },
+    { src: '/images/dashboard-2.jpg', alt: 'Precision Consumption Tracking' },
+    { src: '/images/dashboard-3.jpg', alt: 'Zero-Knowledge Local History' },
+    { src: '/images/dashboard-4.jpg', alt: 'Sovereign Update Control' },
   ];
 
   const [activeIndex, setActiveIndex] = useState(0);
@@ -108,7 +108,7 @@ export default function LandingPage() {
             </div>
             
             <div className="mt-4 text-[10px] font-mono text-slate-600 uppercase tracking-[0.2em]">
-              {activeIndex + 1} / {screenshots.length} — Dashboard
+              {activeIndex + 1} / {screenshots.length} — {screenshots[activeIndex].alt}
             </div>
           </div>
 
