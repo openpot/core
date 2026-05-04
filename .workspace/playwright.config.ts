@@ -1,5 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const WEB_SERVER_TIMEOUT_MS = 240 * 1000;
+
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
@@ -49,6 +51,6 @@ export default defineConfig({
     command: process.env.CI ? 'PORT=3006 pnpm start:ci' : 'PORT=3006 pnpm start:e2e',
     url: 'http://localhost:3006',
     reuseExistingServer: !process.env.CI,
-    timeout: 240 * 1000,
+    timeout: WEB_SERVER_TIMEOUT_MS,
   },
 });
