@@ -73,7 +73,7 @@ export default function LandingPage() {
               href="https://github.com/openpot/core/blob/main/CONTRIBUTING.md" 
               className="px-12 py-4 bg-slate-800/50 hover:bg-slate-800 text-slate-200 font-semibold rounded-xl transition-all border border-slate-700/50 active:scale-95 text-lg"
             >
-              Contribute To Open-Source
+              Contribute To Cause
             </a>
           </div>
           <p className="text-sm text-slate-500 mt-6 italic">
