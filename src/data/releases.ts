@@ -7,6 +7,45 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: 'v0.16.0',
+    title: 'The Hardening Sync',
+    date: '2026-05-04',
+    changes: [
+      'Security Hardening: Implemented robust path traversal protection and URL decoding validation in the HTTPS server.',
+      'Hook Optimization: Re-engineered Network Settings with memoized handlers and corrected synchronization hooks.',
+      'Premium Landing: Finalized the privacy-first community signup and standardized documentation footer.',
+      'CI/CD Stability: Resolved blocking linting errors and standardized the production deployment pipeline.'
+    ]
+  },
+  {
+    version: 'v0.14.0',
+    title: 'The Brand Unification Sync',
+    date: '2026-05-04',
+    changes: [
+      'Visual Identity: Synchronized Openpot branding across the landing page and PWA with a unified design system.',
+      'Community Launch: Integrated a privacy-first community signup mechanism and redirected documentation to GitHub.',
+      'Carousel Showcase: Added an interactive carousel featuring high-fidelity app walkthroughs and feature spotlights.'
+    ]
+  },
+  {
+    version: 'v0.13.0',
+    title: 'The Automated Release Sync',
+    date: '2026-05-04',
+    changes: [
+      'CI Automation: Fully automated GitHub releases and version management within the deployment pipeline.',
+      'Registry Standardization: Aligned package naming conventions across GHCR for consistent image management.'
+    ]
+  },
+  {
+    version: 'v0.12.0',
+    title: 'The Transparency Sync',
+    date: '2026-05-04',
+    changes: [
+      'Release Visibility: Implemented the "Recent Release Notes" viewer and real-time version status monitoring.',
+      'Installation Tracking: Added local installation timestamping to track session history across updates.'
+    ]
+  },
+  {
     version: 'v0.9.0',
     title: 'The Public Ready Sync',
     date: '2026-05-04',
