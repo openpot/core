@@ -48,15 +48,15 @@ export default function LandingPage() {
         </div>
 
         {/* Product Mockup */}
-        <div className="mt-20 relative w-full aspect-square md:aspect-video flex items-center justify-center">
-          <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-transparent to-transparent z-10" />
-          <div className="relative w-full max-w-4xl animate-float">
+        <div className="mt-20 relative w-full max-w-[320px] mx-auto flex items-center justify-center">
+          <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-transparent to-transparent z-10 pointer-events-none" />
+          <div className="relative w-full animate-float">
             <Image 
               src="/images/mockup.png" 
-              alt="Openpot PWA Interface Mockup" 
-              width={1200} 
-              height={800} 
-              className="rounded-2xl shadow-2xl shadow-emerald-950/20"
+              alt="Openpot PWA Screenshot" 
+              width={472} 
+              height={1024} 
+              className="rounded-[2.5rem] border-[12px] border-slate-900 shadow-2xl shadow-emerald-950/40"
               priority
             />
           </div>
