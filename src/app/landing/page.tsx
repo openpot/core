@@ -48,9 +48,9 @@ export default function LandingPage() {
         <div className="flex flex-row items-center justify-center gap-2">
           <LogoMark aria-hidden="true" className="h-[48px] w-auto text-text-primary sm:h-[60px]" />
           <div className="flex flex-col items-start gap-1 leading-none">
-            <h1 className="text-3xl font-bold tracking-tight text-text-primary sm:text-4xl leading-none">
+            <span className="text-3xl font-bold tracking-tight text-text-primary sm:text-4xl leading-none">
               Openpot
-            </h1>
+            </span>
             <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-text-secondary sm:text-[12px] leading-none">
               Secure Session Tracker
             </p>
@@ -138,21 +138,21 @@ export default function LandingPage() {
           <div className="flex flex-col gap-16 text-left max-w-md w-full">
             <div className="space-y-4">
               <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center text-emerald-500 font-bold text-xl">01</div>
-              <h3 className="text-xl font-semibold">Zero-Knowledge</h3>
+              <h2 className="text-xl font-semibold">Zero-Knowledge</h2>
               <p className="text-slate-400 leading-relaxed">
                 We never see your data because we never touch it. No accounts, no database, no logs.
               </p>
             </div>
             <div className="space-y-4">
               <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center text-emerald-500 font-bold text-xl">02</div>
-              <h3 className="text-xl font-semibold">Local-First</h3>
+              <h2 className="text-xl font-semibold">Local-First</h2>
               <p className="text-slate-400 leading-relaxed">
                 Everything runs inside your browser&apos;s secure context. Offline-ready and cryptographically private.
               </p>
             </div>
             <div className="space-y-4">
               <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center text-emerald-500 font-bold text-xl">03</div>
-              <h3 className="text-xl font-semibold">Premium PWA</h3>
+              <h2 className="text-xl font-semibold">Premium PWA</h2>
               <p className="text-slate-400 leading-relaxed">
                 Install directly to your home screen. Experience a native feel without the surveillance of App Stores.
               </p>
