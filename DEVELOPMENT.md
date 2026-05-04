@@ -57,20 +57,28 @@ pnpm e2e
 
 ## 🚢 CI/CD & Deployment
 
-We use **GitHub Actions** for all production builds and deployments.
+We use **GitHub Actions** for all production builds and deployments. Due to repository security rules (**Signed Commits** and **Required Pull Requests**), we use a two-stage release process.
 
-### CI (Continuous Integration)
-On every Pull Request to `main`, the workflow:
+### Stage 1: Continuous Integration (CI)
+On every Pull Request to `main`, and on every push to `main`, the workflow:
 1. Installs dependencies using `pnpm` (enforcing `--frozen-lockfile`).
 2. Runs `pnpm run lint` to ensure code quality.
 3. Runs `pnpm run test` for unit testing.
 4. Builds the application and runs **Playwright** E2E tests.
 
-### CD (Continuous Deployment)
-On every push to `main`, the workflow additionally:
-1. Builds a production Docker image based on `alpine-nginx`.
-2. Pushes the image to **GHCR** (`ghcr.io/openpot/openpot`).
-3. Triggers a redeploy on **Koyeb** via the Koyeb CLI.
+### Stage 2: Automated Versioning & Gated Deployment
+Once a feature or fix is merged into `main`, the CI automatically generates a **Version Bump Pull Request**:
+1. It increments the version in `package.json` (patch level).
+2. It generates a new entry in `CHANGELOG.md`.
+3. It creates a new PR back to `main`.
+
+**Merging this Version Bump PR is the "Release Gate" for Production.**
+
+### Stage 3: Continuous Deployment (CD)
+Only when the automated **Version Bump PR** is merged into `main`, the workflow triggers:
+1. **Docker Build**: A production Docker image based on `alpine-nginx` is built.
+2. **Registry Push**: The image is pushed to **GHCR** (`ghcr.io/openpot/openpot`).
+3. **Koyeb Redeploy**: Triggers a redeploy on **Koyeb** via the Koyeb CLI.
 
 ---
 Built with ❤️ for the sovereign community.
