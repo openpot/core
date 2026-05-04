@@ -171,9 +171,12 @@ export default function LandingPage() {
               Join
             </button>
           </form>
-          <div className="mt-8 flex justify-center gap-6 text-sm text-slate-500">
-            <a href="https://github.com/openpot/core" className="hover:text-white transition-colors">GitHub Repository</a>
-            <a href="https://github.com/openpot/core/issues" className="hover:text-white transition-colors">Report Issues</a>
+          <div className="mt-8 flex flex-wrap justify-center gap-x-8 gap-y-4 text-xs font-medium text-slate-500">
+            <a href="https://github.com/openpot/core/blob/main/README.md" className="hover:text-white transition-colors">About</a>
+            <a href="https://github.com/openpot/core/blob/main/NOTICE.md" className="hover:text-white transition-colors">Notice</a>
+            <a href="https://github.com/openpot/core/blob/main/CONTRIBUTING.md" className="hover:text-white transition-colors">Contribute</a>
+            <a href="https://github.com/openpot/core/blob/main/CODE_OF_CONDUCT.md" className="hover:text-white transition-colors">Code of Conduct</a>
+            <a href="https://github.com/openpot/core/blob/main/LICENSE" className="hover:text-white transition-colors">License</a>
           </div>
         </div>
       </main>
