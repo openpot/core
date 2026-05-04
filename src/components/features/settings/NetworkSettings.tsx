@@ -62,7 +62,7 @@ export function NetworkSettings() {
       console.error('Check failed:', err);
       setStatus('error');
     }
-  }, []);
+  }, [CURRENT_VERSION]);
 
   /**
    * Phase 2: Download Updates
