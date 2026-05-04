@@ -128,6 +128,9 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_APP_VERSION: APP_VERSION,
   },
   allowedDevOrigins: isDevelopment ? localDevOrigins : undefined,
+  images: {
+    unoptimized: true,
+  },
   // Headers are disabled in 'export' mode, moved to vercel.json for production
 };
 
