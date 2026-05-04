@@ -48,7 +48,7 @@ export default defineConfig({
   webServer: {
     command: process.env.CI ? 'PORT=3006 pnpm start:ci' : 'PORT=3006 pnpm start:e2e',
     url: 'http://localhost:3006',
-    reuseExistingServer: false,
+    reuseExistingServer: !process.env.CI,
     timeout: 240 * 1000,
   },
 });
