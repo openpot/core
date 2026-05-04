@@ -171,6 +171,7 @@ export default function LandingPage() {
               type="email"
               name="email"
               placeholder="Enter your email"
+              aria-label="Email address for community updates"
               className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
               required
             />
