@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 
 import { APP_VERSION as CURRENT_VERSION } from '@/lib/version';
-import { RELEASES, Release } from '@/data/releases';
+import { RELEASES } from '@/data/releases';
 
 const AUTO_UPDATE_KEY = 'openpot_auto_update';
 const INSTALL_DATE_KEY = 'openpot_install_date';
