@@ -7,6 +7,33 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: 'v0.19.0',
+    title: 'The Quality Sync',
+    date: '2026-05-04',
+    changes: [
+      'Code Quality: Resolved automated findings for code scanning and quality alerts.',
+      'Version Reliability: Synchronized versioning metadata across the build pipeline.'
+    ]
+  },
+  {
+    version: 'v0.18.0',
+    title: 'The Consistency Sync',
+    date: '2026-05-04',
+    changes: [
+      'UX Consistency: Normalized version comparison to prevent redundant update notifications.',
+      'Bug Fix: Resolved "Latest Releases" popup logic to correctly show historical notes based on local version.'
+    ]
+  },
+  {
+    version: 'v0.17.0',
+    title: 'The Emergency Sync',
+    date: '2026-05-04',
+    changes: [
+      'Critical Fix: Resolved accidental merge conflict markers on the main branch.',
+      'CI Stabilization: Fixed blocking linting errors in Network Settings synchronization.'
+    ]
+  },
+  {
     version: 'v0.16.0',
     title: 'The Hardening Sync',
     date: '2026-05-04',
