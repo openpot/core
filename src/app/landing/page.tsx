@@ -138,7 +138,7 @@ export default function LandingPage() {
               <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center text-emerald-500 font-bold text-xl">02</div>
               <h3 className="text-xl font-semibold">Local-First</h3>
               <p className="text-slate-400 leading-relaxed">
-                Everything runs inside your browser's secure context. Offline-ready and cryptographically private.
+                Everything runs inside your browser&apos;s secure context. Offline-ready and cryptographically private.
               </p>
             </div>
             <div className="space-y-4">
