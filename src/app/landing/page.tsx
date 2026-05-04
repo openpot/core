@@ -1,3 +1,6 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Logo } from '@/components/ui/Logo';
@@ -5,8 +8,27 @@ import { Footer } from '@/components/ui/Footer';
 
 /**
  * Openpot Landing Page
+ * 
+ * Featuring a premium carousel of actual app screenshots.
  */
 export default function LandingPage() {
+  const screenshots = [
+    { src: '/images/dashboard-1.jpg', alt: 'Openpot Timer & Dashboard' },
+    { src: '/images/dashboard-2.jpg', alt: 'Consumption History & Stats' },
+    { src: '/images/dashboard-3.jpg', alt: 'Secure Local Storage Tracking' },
+    { src: '/images/dashboard-4.jpg', alt: 'About Openpot & Privacy Controls' },
+  ];
+
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  // Auto-cycle carousel
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveIndex((current) => (current + 1) % screenshots.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [screenshots.length]);
+
   return (
     <div className="min-h-screen flex flex-col bg-[#020617] text-slate-50 selection:bg-emerald-500/30">
       {/* Header */}
@@ -23,7 +45,7 @@ export default function LandingPage() {
 
       {/* Hero Section */}
       <main className="flex-1 flex flex-col items-center justify-center text-center px-6 pt-12 pb-24 max-w-5xl mx-auto w-full">
-        <div className="space-y-6 max-w-3xl">
+        <div className="space-y-6 max-w-3xl mb-16">
           <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-tight">
             Sovereign Tracking for the <span className="text-emerald-500">Modern Human.</span>
           </h1>
@@ -47,18 +69,47 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Product Dashboard Showcase */}
-        <div className="mt-16 relative w-full max-w-4xl mx-auto flex items-center justify-center">
-          <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-transparent to-transparent z-10 pointer-events-none" />
-          <div className="relative w-full animate-float">
-            <Image 
-              src="/images/dashboard.png" 
-              alt="Openpot Secure Dashboard" 
-              width={1024} 
-              height={1024} 
-              className="rounded-3xl shadow-2xl shadow-emerald-950/40"
-              priority
-            />
+        {/* Dashboard Carousel */}
+        <div className="relative w-full max-w-[320px] mx-auto group">
+          {/* Glass background decoration */}
+          <div className="absolute -inset-4 bg-emerald-500/5 rounded-[3rem] blur-2xl group-hover:bg-emerald-500/10 transition-all" />
+          
+          <div className="relative aspect-[472/1024] w-full overflow-hidden rounded-[2.5rem] border-[12px] border-slate-900 shadow-2xl shadow-black/50">
+            {screenshots.map((shot, idx) => (
+              <div 
+                key={shot.src}
+                className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                  idx === activeIndex ? 'opacity-100' : 'opacity-0'
+                }`}
+              >
+                <Image 
+                  src={shot.src} 
+                  alt={shot.alt} 
+                  fill
+                  style={{ objectFit: 'cover' }}
+                  priority={idx === 0}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Carousel Indicators */}
+          <div className="mt-8 flex justify-center gap-3">
+            {screenshots.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setActiveIndex(idx)}
+                className={`h-1.5 transition-all rounded-full ${
+                  idx === activeIndex ? 'w-8 bg-emerald-500' : 'w-2 bg-slate-700'
+                }`}
+                aria-label={`Go to slide ${idx + 1}`}
+              />
+            ))}
+          </div>
+          
+          {/* Mobile indicator for swipe/scroll feel */}
+          <div className="mt-4 text-xs font-mono text-slate-500 uppercase tracking-widest">
+            {activeIndex + 1} / {screenshots.length} — {screenshots[activeIndex].alt}
           </div>
         </div>
 
@@ -89,17 +140,6 @@ export default function LandingPage() {
       </main>
 
       <Footer />
-      
-      <style jsx>{`
-        @keyframes float {
-          0% { transform: translateY(0px); }
-          50% { transform: translateY(-10px); }
-          100% { transform: translateY(0px); }
-        }
-        .animate-float {
-          animation: float 6s ease-in-out infinite;
-        }
-      `}</style>
     </div>
   );
 }
