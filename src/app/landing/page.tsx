@@ -45,11 +45,6 @@ export default function LandingPage() {
           </div>
         </div>
         
-        <nav className="flex gap-8 text-sm font-medium text-slate-400">
-          <a href="https://github.com/openpot/core" className="hover:text-white transition-colors">GitHub</a>
-          <a href="https://github.com/openpot/core/blob/main/CONTRIBUTING.md" className="hover:text-white transition-colors">Contribute</a>
-          <Link href="/about" className="hover:text-white transition-colors">Protocol</Link>
-        </nav>
       </header>
 
       {/* Hero Section */}
