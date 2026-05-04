@@ -2,7 +2,7 @@
 FROM node:22-alpine AS builder
 
 # Check for pnpm availability or install it
-RUN npm install -g pnpm@10.10.0
+RUN apk add --no-cache git && npm install -g pnpm@10.10.0
 
 WORKDIR /app
 

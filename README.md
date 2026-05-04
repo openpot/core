@@ -66,11 +66,11 @@ To test the PWA installation experience on a mobile device, you must serve the a
 
 ### 🚢 Production Deployment
 
-Openpot is fully automated via GitHub Actions. When changes are merged into the `main` branch, the following occurs:
-1. **CI Validation**: Runs linting, unit tests, and Playwright E2E tests.
-2. **Docker Build**: A secure, hardened Nginx Docker image is built and tagged with the commit SHA.
-3. **Registry Push**: The image is pushed to the GitHub Container Registry (GHCR).
-4. **Auto-Redeploy**: A redeployment is automatically triggered on the hosting platform (Koyeb).
+Openpot follows a two-stage automated release process via GitHub Actions:
+1. **CI & Versioning**: When changes are merged to `main`, the CI validates the build and automatically creates a **Version Bump PR**.
+2. **Release Gate**: Merging the Version Bump PR triggers the final **Docker build**, push to **GHCR**, and redeploy on **Koyeb**.
+
+For more details on the release pipeline, see [DEVELOPMENT.md](DEVELOPMENT.md).
 
 For manual control, you can use the production build commands in `DEVELOPMENT.md`.
 
