@@ -181,21 +181,23 @@ export default function LandingPage() {
               Join
             </button>
           </form>
-          <nav 
-            aria-label="Footer Navigation"
-            className="mt-12 mb-8 flex flex-wrap justify-center items-center gap-3 text-[10px] font-bold uppercase tracking-widest text-slate-500"
-          >
-            <a href="https://github.com/openpot/core/blob/main/README.md" className="hover:text-white transition-colors">About</a>
-            <span className="opacity-30 text-[8px]" aria-hidden="true">•</span>
-            <a href="https://github.com/openpot/core/blob/main/NOTICE.md" className="hover:text-white transition-colors">Notice</a>
-            <span className="opacity-30 text-[8px]" aria-hidden="true">•</span>
-            <a href="https://github.com/openpot/core/blob/main/CONTRIBUTING.md" className="hover:text-white transition-colors">Contribute</a>
-            <span className="opacity-30 text-[8px]" aria-hidden="true">•</span>
-            <a href="https://github.com/openpot/core/blob/main/CODE_OF_CONDUCT.md" className="hover:text-white transition-colors">Code of Conduct</a>
-            <span className="opacity-30 text-[8px]" aria-hidden="true">•</span>
-            <a href="https://github.com/openpot/core/blob/main/LICENSE" className="hover:text-white transition-colors">License</a>
-          </nav>
         </div>
+
+        {/* External Footer */}
+        <nav 
+          aria-label="Footer Navigation"
+          className="mt-24 mb-12 flex flex-wrap justify-center items-center gap-3 text-[10px] font-bold uppercase tracking-widest text-slate-500"
+        >
+          <a href="https://github.com/openpot/core/blob/main/README.md" className="hover:text-white transition-colors">ABOUT</a>
+          <span className="opacity-30 text-[8px]" aria-hidden="true">•</span>
+          <a href="https://github.com/openpot/core/blob/main/NOTICE.md" className="hover:text-white transition-colors">NOTICE</a>
+          <span className="opacity-30 text-[8px]" aria-hidden="true">•</span>
+          <a href="https://github.com/openpot/core/blob/main/CONTRIBUTING.md" className="hover:text-white transition-colors">CONTRIBUTE</a>
+          <span className="opacity-30 text-[8px]" aria-hidden="true">•</span>
+          <a href="https://github.com/openpot/core/blob/main/CODE_OF_CONDUCT.md" className="hover:text-white transition-colors">CODE OF CONDUCT</a>
+          <span className="opacity-30 text-[8px]" aria-hidden="true">•</span>
+          <a href="https://github.com/openpot/core/blob/main/LICENSE" className="hover:text-white transition-colors">LICENSE</a>
+        </nav>
       </main>
     </div>
   );
