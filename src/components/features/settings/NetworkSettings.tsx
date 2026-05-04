@@ -66,8 +66,8 @@ export function NetworkSettings() {
       setServerVersion(latestVersion);
 
       // Normalize: remove leading 'v' and build hashes for comparison
-      const cleanCurrent = CURRENT_VERSION.split('-')[0].replace(/^v/, '');
-      const cleanLatest = latestVersion.split('-')[0].replace(/^v/, '');
+      const cleanCurrent = (CURRENT_VERSION.split('-')[0] ?? '').replace(/^v/, '');
+      const cleanLatest = (latestVersion.split('-')[0] ?? '').replace(/^v/, '');
 
       setLastChecked(new Date().toLocaleString());
 
@@ -239,7 +239,7 @@ export function NetworkSettings() {
     if (!serverVersion) return [];
     
     // Normalize: remove leading 'v' if present, and remove build hash
-    const cleanCurrent = CURRENT_VERSION.split('-')[0].replace(/^v/, '');
+    const cleanCurrent = (CURRENT_VERSION.split('-')[0] ?? '').replace(/^v/, '');
     
     // Find all releases newer than current version
     const currentIndex = RELEASES.findIndex(r => r.version.replace(/^v/, '') === cleanCurrent);
