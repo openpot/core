@@ -69,72 +69,76 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Dashboard Carousel */}
-        <div className="relative w-full max-w-[320px] mx-auto group">
-          {/* Glass background decoration */}
-          <div className="absolute -inset-4 bg-emerald-500/5 rounded-[3rem] blur-2xl group-hover:bg-emerald-500/10 transition-all" />
-          
-          <div className="relative aspect-[472/1024] w-full overflow-hidden rounded-[2.5rem] border-[12px] border-slate-900 shadow-2xl shadow-black/50">
-            {screenshots.map((shot, idx) => (
-              <div 
-                key={shot.src}
-                className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-                  idx === activeIndex ? 'opacity-100' : 'opacity-0'
-                }`}
-              >
-                <Image 
-                  src={shot.src} 
-                  alt={shot.alt} 
-                  fill
-                  style={{ objectFit: 'cover' }}
-                  priority={idx === 0}
+        {/* Product Showcase Section */}
+        <div className="mt-20 flex flex-col lg:flex-row items-center justify-center gap-16 lg:gap-24 w-full">
+          {/* Dashboard Carousel */}
+          <div className="relative w-full max-w-[320px] group flex-shrink-0">
+            {/* Glass background decoration */}
+            <div className="absolute -inset-4 bg-emerald-500/5 rounded-[3rem] blur-2xl group-hover:bg-emerald-500/10 transition-all" />
+            
+            <div className="relative aspect-[472/1024] w-full overflow-hidden rounded-[2.5rem] border-[12px] border-slate-900 shadow-2xl shadow-black/50">
+              {screenshots.map((shot, idx) => (
+                <div 
+                  key={shot.src}
+                  className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                    idx === activeIndex ? 'opacity-100' : 'opacity-0'
+                  }`}
+                >
+                  <Image 
+                    src={shot.src} 
+                    alt={shot.alt} 
+                    fill
+                    style={{ objectFit: 'cover' }}
+                    priority={idx === 0}
+                    unoptimized
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* Carousel Indicators */}
+            <div className="mt-8 flex justify-center gap-3">
+              {screenshots.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setActiveIndex(idx)}
+                  className={`h-1.5 transition-all rounded-full ${
+                    idx === activeIndex ? 'w-8 bg-emerald-500' : 'w-2 bg-slate-700'
+                  }`}
+                  aria-label={`Go to slide ${idx + 1}`}
                 />
-              </div>
-            ))}
+              ))}
+            </div>
+            
+            {/* Mobile indicator for swipe/scroll feel */}
+            <div className="mt-4 text-xs font-mono text-slate-500 uppercase tracking-widest">
+              {activeIndex + 1} / {screenshots.length} — {screenshots[activeIndex].alt}
+            </div>
           </div>
 
-          {/* Carousel Indicators */}
-          <div className="mt-8 flex justify-center gap-3">
-            {screenshots.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => setActiveIndex(idx)}
-                className={`h-1.5 transition-all rounded-full ${
-                  idx === activeIndex ? 'w-8 bg-emerald-500' : 'w-2 bg-slate-700'
-                }`}
-                aria-label={`Go to slide ${idx + 1}`}
-              />
-            ))}
-          </div>
-          
-          {/* Mobile indicator for swipe/scroll feel */}
-          <div className="mt-4 text-xs font-mono text-slate-500 uppercase tracking-widest">
-            {activeIndex + 1} / {screenshots.length} — {screenshots[activeIndex].alt}
-          </div>
-        </div>
-
-        {/* Feature Grid */}
-        <div className="mt-32 grid md:grid-cols-3 gap-12 text-left w-full">
-          <div className="space-y-4">
-            <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center text-emerald-500 font-bold text-xl">01</div>
-            <h3 className="text-xl font-semibold">Zero-Knowledge</h3>
-            <p className="text-slate-400 leading-relaxed">
-              We never see your data because we never touch it. No accounts, no database, no logs.
-            </p>
-          </div>
-          <div className="space-y-4">
-            <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center text-emerald-500 font-bold text-xl">02</div>
-            <h3 className="text-xl font-semibold">Local-First</h3>
-            <p className="text-slate-400 leading-relaxed">
-              Everything runs inside your browser's secure context. Offline-ready and cryptographically private.
-            </p>
-          </div>
-          <div className="space-y-4">
-            <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center text-emerald-500 font-bold text-xl">03</div>
-            <h3 className="text-xl font-semibold">Premium PWA</h3>
-            <p className="text-slate-400 leading-relaxed">
-              Install directly to your home screen. Experience a native feel without the surveillance of App Stores.
-            </p>
+          {/* Feature List (Vertical) */}
+          <div className="flex flex-col gap-12 text-left max-w-md w-full">
+            <div className="space-y-4">
+              <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center text-emerald-500 font-bold text-xl">01</div>
+              <h3 className="text-xl font-semibold">Zero-Knowledge</h3>
+              <p className="text-slate-400 leading-relaxed">
+                We never see your data because we never touch it. No accounts, no database, no logs.
+              </p>
+            </div>
+            <div className="space-y-4">
+              <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center text-emerald-500 font-bold text-xl">02</div>
+              <h3 className="text-xl font-semibold">Local-First</h3>
+              <p className="text-slate-400 leading-relaxed">
+                Everything runs inside your browser's secure context. Offline-ready and cryptographically private.
+              </p>
+            </div>
+            <div className="space-y-4">
+              <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center text-emerald-500 font-bold text-xl">03</div>
+              <h3 className="text-xl font-semibold">Premium PWA</h3>
+              <p className="text-slate-400 leading-relaxed">
+                Install directly to your home screen. Experience a native feel without the surveillance of App Stores.
+              </p>
+            </div>
           </div>
         </div>
       </main>
