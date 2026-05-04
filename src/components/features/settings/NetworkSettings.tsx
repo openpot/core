@@ -49,10 +49,14 @@ export function NetworkSettings() {
       if (!response.ok) throw new Error('Fetch failed');
       
       const data = await response.json();
-      const latestVersion = data.version;
+      const latestVersion = data.version as string;
       setServerVersion(latestVersion);
 
-      if (latestVersion === CURRENT_VERSION) {
+      // Normalize: remove leading 'v' and build hashes for comparison
+      const cleanCurrent = CURRENT_VERSION.split('-')[0].replace(/^v/, '');
+      const cleanLatest = latestVersion.split('-')[0].replace(/^v/, '');
+
+      if (cleanCurrent === cleanLatest) {
         setStatus('up-to-date');
       } else {
         setStatus('available');
@@ -218,12 +222,24 @@ export function NetworkSettings() {
 
   const getFilteredReleases = () => {
     if (!serverVersion) return [];
+    
+    // Normalize: remove leading 'v' if present, and remove build hash
+    const cleanCurrent = CURRENT_VERSION.split('-')[0].replace(/^v/, '');
+    
     // Find all releases newer than current version
-    const currentIndex = RELEASES.findIndex(r => r.version === CURRENT_VERSION);
+    const currentIndex = RELEASES.findIndex(r => r.version.replace(/^v/, '') === cleanCurrent);
+    
     if (currentIndex === -1) {
       // If current version not found (e.g. dev build), show only latest
       return RELEASES.slice(0, 1);
     }
+    
+    // If we are at the latest version, but the popup was triggered (e.g. build hash mismatch),
+    // show at least the latest release note.
+    if (currentIndex === 0) {
+        return RELEASES.slice(0, 1);
+    }
+
     return RELEASES.slice(0, currentIndex);
   };
 
