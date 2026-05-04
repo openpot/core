@@ -75,7 +75,7 @@ export default function AboutPage() {
             </h2>
             
             <div className="space-y-6">
-              {RELEASES.slice(0, 2).map((release, index) => (
+              {RELEASES.slice(0, 8).map((release, index) => (
                 <div key={release.version} className={`space-y-2 ${index > 0 ? 'opacity-60' : ''}`}>
                   <div className="flex items-center gap-2">
                     <span className={`text-[10px] font-bold uppercase tracking-tighter px-1.5 py-0.5 rounded ${

@@ -7,6 +7,72 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: 'v0.19.0',
+    title: 'The Quality Sync',
+    date: '2026-05-04',
+    changes: [
+      'Code Quality: Resolved automated findings for code scanning and quality alerts.',
+      'Version Reliability: Synchronized versioning metadata across the build pipeline.'
+    ]
+  },
+  {
+    version: 'v0.18.0',
+    title: 'The Consistency Sync',
+    date: '2026-05-04',
+    changes: [
+      'UX Consistency: Normalized version comparison to prevent redundant update notifications.',
+      'Bug Fix: Resolved "Latest Releases" popup logic to correctly show historical notes based on local version.'
+    ]
+  },
+  {
+    version: 'v0.17.0',
+    title: 'The Emergency Sync',
+    date: '2026-05-04',
+    changes: [
+      'Critical Fix: Resolved accidental merge conflict markers on the main branch.',
+      'CI Stabilization: Fixed blocking linting errors in Network Settings synchronization.'
+    ]
+  },
+  {
+    version: 'v0.16.0',
+    title: 'The Hardening Sync',
+    date: '2026-05-04',
+    changes: [
+      'Security Hardening: Implemented robust path traversal protection and URL decoding validation in the HTTPS server.',
+      'Hook Optimization: Re-engineered Network Settings with memoized handlers and corrected synchronization hooks.',
+      'Premium Landing: Finalized the privacy-first community signup and standardized documentation footer.',
+      'CI/CD Stability: Resolved blocking linting errors and standardized the production deployment pipeline.'
+    ]
+  },
+  {
+    version: 'v0.14.0',
+    title: 'The Brand Unification Sync',
+    date: '2026-05-04',
+    changes: [
+      'Visual Identity: Synchronized Openpot branding across the landing page and PWA with a unified design system.',
+      'Community Launch: Integrated a privacy-first community signup mechanism and redirected documentation to GitHub.',
+      'Carousel Showcase: Added an interactive carousel featuring high-fidelity app walkthroughs and feature spotlights.'
+    ]
+  },
+  {
+    version: 'v0.13.0',
+    title: 'The Automated Release Sync',
+    date: '2026-05-04',
+    changes: [
+      'CI Automation: Fully automated GitHub releases and version management within the deployment pipeline.',
+      'Registry Standardization: Aligned package naming conventions across GHCR for consistent image management.'
+    ]
+  },
+  {
+    version: 'v0.12.0',
+    title: 'The Transparency Sync',
+    date: '2026-05-04',
+    changes: [
+      'Release Visibility: Implemented the "Recent Release Notes" viewer and real-time version status monitoring.',
+      'Installation Tracking: Added local installation timestamping to track session history across updates.'
+    ]
+  },
+  {
     version: 'v0.9.0',
     title: 'The Public Ready Sync',
     date: '2026-05-04',
