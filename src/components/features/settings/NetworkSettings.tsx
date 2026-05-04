@@ -37,6 +37,107 @@ export function NetworkSettings() {
   const [installDate, setInstallDate] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
 
+  /**
+   * Phase 1: Check for Updates
+   * Fetches the build-time version manifest WITHOUT triggering a SW update.
+   */
+  const checkUpdate = useCallback(async () => {
+    setStatus('checking');
+    try {
+      // Small metadata fetch - strictly for comparison
+      const response = await fetch(`/version.json?t=${Date.now()}`);
+      if (!response.ok) throw new Error('Fetch failed');
+      
+      const data = await response.json();
+      const latestVersion = data.version;
+      setServerVersion(latestVersion);
+
+      if (latestVersion === CURRENT_VERSION) {
+        setStatus('up-to-date');
+      } else {
+        setStatus('available');
+        setShowModal(true);
+      }
+    } catch (err) {
+      console.error('Check failed:', err);
+      setStatus('error');
+    }
+  }, [CURRENT_VERSION]);
+
+  /**
+   * Phase 2: Download Updates
+   * Explicitly triggers the Service Worker update check and download.
+   */
+  const pullUpdate = useCallback(async () => {
+    if (!('serviceWorker' in navigator)) return;
+    setStatus('pulling');
+    
+    try {
+      const registration = await navigator.serviceWorker.getRegistration();
+      if (registration) {
+        // 1. If we're already waiting, go straight to ready
+        if (registration.waiting) {
+          setStatus('ready');
+          return;
+        }
+
+        // 2. Setup a listener for the incoming update
+        const onUpdateFound = () => {
+          const newWorker = registration.installing;
+          if (newWorker) {
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed') {
+                setStatus('ready');
+              }
+            });
+          }
+        };
+
+        registration.addEventListener('updatefound', onUpdateFound);
+
+        // 3. Trigger the update
+        await registration.update();
+        
+        // 4. Fallback: Check if it finished instantly or was already installing
+        if (registration.waiting) {
+          setStatus('ready');
+        } else if (registration.installing) {
+          onUpdateFound();
+        } else {
+          // Safety timeout if registration.update() finishes but no worker is found
+          // (This can happen if the browser determines the hashes match after a deeper check)
+          setTimeout(() => {
+            if (!registration.waiting && !registration.installing) {
+              setStatus('up-to-date');
+            }
+          }, 3000);
+        }
+      }
+    } catch (err) {
+      console.error('Pull failed:', err);
+      setStatus('error');
+    }
+  }, []);
+
+  /**
+   * Phase 3: Apply Update
+   * Replaces the old worker with the new one and reloads the page.
+   */
+  const applyUpdate = useCallback(async () => {
+    if (!('serviceWorker' in navigator)) return;
+    
+    const registration = await navigator.serviceWorker.getRegistration();
+    if (registration?.waiting) {
+      // 1. Setup a one-time listener for the new worker taking control
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        window.location.reload();
+      }, { once: true });
+
+      // 2. Tell the waiting worker to skip waiting
+      registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+    }
+  }, []);
+
   // Initialize from localStorage
   useEffect(() => {
     const saved = localStorage.getItem(AUTO_UPDATE_KEY);
@@ -95,7 +196,7 @@ export function NetworkSettings() {
       clearTimeout(initialTimer);
       clearInterval(intervalId);
     };
-  }, [autoUpdate, status]);
+  }, [autoUpdate, status, checkUpdate]);
 
   // Handle automatic progression through update stages
   useEffect(() => {
@@ -106,117 +207,14 @@ export function NetworkSettings() {
     } else if (status === 'ready') {
       applyUpdate();
     }
-  }, [status, autoUpdate]);
+  }, [status, autoUpdate, pullUpdate, applyUpdate]);
 
   const toggleAutoUpdate = (enabled: boolean) => {
     setAutoUpdate(enabled);
     localStorage.setItem(AUTO_UPDATE_KEY, String(enabled));
   };
 
-  /**
-   * Phase 1: Check for Updates
-   * Fetches the build-time version manifest WITHOUT triggering a SW update.
-   */
-  const checkUpdate = async () => {
-    setStatus('checking');
-    try {
-      // Small metadata fetch - strictly for comparison
-      const response = await fetch(`/version.json?t=${Date.now()}`);
-      if (!response.ok) throw new Error('Fetch failed');
-      
-      const data = await response.json();
-      const latestVersion = data.version;
-      setServerVersion(latestVersion);
 
-      if (latestVersion === CURRENT_VERSION) {
-        setStatus('up-to-date');
-      } else {
-        setStatus('available');
-        setShowModal(true);
-      }
-    } catch (err) {
-      console.error('Check failed:', err);
-      setStatus('error');
-    }
-  };
-
-  /**
-   * Phase 2: Download Updates
-   * Explicitly triggers the Service Worker update check and download.
-   */
-  const pullUpdate = async () => {
-    if (!('serviceWorker' in navigator)) return;
-    setStatus('pulling');
-    
-    try {
-      const registration = await navigator.serviceWorker.getRegistration();
-      if (registration) {
-        // 1. If we're already waiting, go straight to ready
-        if (registration.waiting) {
-          setStatus('ready');
-          return;
-        }
-
-        // 2. Setup a listener for the incoming update
-        const onUpdateFound = () => {
-          const newWorker = registration.installing;
-          if (newWorker) {
-            newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'installed') {
-                setStatus('ready');
-              }
-            });
-          }
-        };
-
-        registration.addEventListener('updatefound', onUpdateFound);
-
-        // 3. Trigger the update
-        await registration.update();
-        
-        // 4. Fallback: Check if it finished instantly or was already installing
-        if (registration.waiting) {
-          setStatus('ready');
-        } else if (registration.installing) {
-          onUpdateFound();
-        } else {
-          // Safety timeout if registration.update() finishes but no worker is found
-          // (This can happen if the browser determines the hashes match after a deeper check)
-          setTimeout(() => {
-            if (!registration.waiting && !registration.installing) {
-              setStatus('up-to-date');
-            }
-          }, 3000);
-        }
-      }
-    } catch (err) {
-      console.error('Pull failed:', err);
-      setStatus('error');
-    }
-  };
-
-  /**
-   * Phase 3: Apply Update
-   * Replaces the old worker with the new one and reloads the page.
-   */
-  const applyUpdate = async () => {
-    if (!('serviceWorker' in navigator)) return;
-    
-    const registration = await navigator.serviceWorker.getRegistration();
-    if (registration?.waiting) {
-      // 1. Update the install date before we reload so the new version sees it
-      // Wait, the new version will run the useEffect on mount anyway, but let's be explicit
-      localStorage.setItem(INSTALL_DATE_KEY, new Date().toISOString());
-
-      // 2. Setup a one-time listener for the new worker taking control
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        window.location.reload();
-      }, { once: true });
-
-      // 3. Tell the waiting worker to skip waiting
-      registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-    }
-  };
 
   const getFilteredReleases = () => {
     if (!serverVersion) return [];

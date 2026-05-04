@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { LogoMark } from '@/components/ui/Logo';
@@ -29,6 +29,18 @@ export default function LandingPage() {
     return () => clearInterval(timer);
   }, [screenshots.length]);
 
+  const handleCommunitySignup = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const email = String(formData.get('email')).trim();
+
+    if (!email) return;
+
+    const title = encodeURIComponent('Community signup request');
+    const body = encodeURIComponent(`Please add me to community updates.\n\nEmail: ${email}`);
+    window.location.href = `https://github.com/openpot/core/issues/new?title=${title}&body=${body}`;
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-[#020617] text-slate-50 selection:bg-emerald-500/30">
       {/* Centered Brand Header */}
@@ -44,7 +56,7 @@ export default function LandingPage() {
             </p>
           </div>
         </div>
-        
+
       </header>
 
       {/* Hero Section */}
@@ -54,18 +66,18 @@ export default function LandingPage() {
             Sovereign Tracking for the <span className="text-emerald-500">Modern Human.</span>
           </h1>
           <p className="text-xl md:text-2xl text-slate-400 leading-relaxed max-w-2xl mx-auto">
-            A premium, zero-knowledge session tracker built for complete anonymity. 
-            Your data stays on your device—cryptographically invisible to the world.
+            A premium, zero-knowledge session tracker built for complete anonymity.
+            Your data stays on your device. Cryptographically invisible to the world.
           </p>
           <div className="pt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a 
-              href="https://app.openpot.co" 
+            <a
+              href="https://app.openpot.co"
               className="px-12 py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl transition-all shadow-lg shadow-emerald-500/20 active:scale-95 text-lg"
             >
               Launch Secure App
             </a>
-            <a 
-              href="https://github.com/openpot/core/blob/main/CONTRIBUTING.md" 
+            <a
+              href="https://github.com/openpot/core/blob/main/CONTRIBUTING.md"
               className="px-10 py-4 bg-slate-800/50 hover:bg-slate-800 text-slate-200 font-semibold rounded-xl transition-all border border-slate-700/50 active:scale-95 text-lg flex items-center justify-center gap-3"
             >
               <span>Contribute To Cause</span>
@@ -85,22 +97,20 @@ export default function LandingPage() {
           <div className="relative w-full max-w-[320px] group flex-shrink-0">
             {/* Glass background decoration */}
             <div className="absolute -inset-4 bg-emerald-500/5 rounded-[3rem] blur-2xl group-hover:bg-emerald-500/10 transition-all" />
-            
+
             <div className="relative aspect-[472/1024] w-full overflow-hidden rounded-[2.5rem] border-[12px] border-slate-900 shadow-2xl shadow-black/50">
               {screenshots.map((shot, idx) => (
-                <div 
+                <div
                   key={shot.src}
-                  className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-                    idx === activeIndex ? 'opacity-100' : 'opacity-0'
-                  }`}
+                  className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${idx === activeIndex ? 'opacity-100' : 'opacity-0'
+                    }`}
                 >
-                  <Image 
-                    src={shot.src} 
-                    alt={shot.alt} 
+                  <Image
+                    src={shot.src}
+                    alt={shot.alt}
                     fill
                     style={{ objectFit: 'cover' }}
                     priority={idx === 0}
-                    unoptimized
                   />
                 </div>
               ))}
@@ -112,14 +122,13 @@ export default function LandingPage() {
                 <button
                   key={idx}
                   onClick={() => setActiveIndex(idx)}
-                  className={`h-1.5 transition-all rounded-full ${
-                    idx === activeIndex ? 'w-8 bg-emerald-500' : 'w-2 bg-slate-700'
-                  }`}
+                  className={`h-1.5 transition-all rounded-full ${idx === activeIndex ? 'w-8 bg-emerald-500' : 'w-2 bg-slate-700'
+                    }`}
                   aria-label={`Go to slide ${idx + 1}`}
                 />
               ))}
             </div>
-            
+
             <div className="mt-4 text-[10px] font-mono text-slate-600 uppercase tracking-[0.2em]">
               {activeIndex + 1} / {screenshots.length} — {screenshots[activeIndex]?.alt}
             </div>
@@ -157,31 +166,37 @@ export default function LandingPage() {
           <p className="text-slate-400 mb-8 max-w-md mx-auto">
             Stay updated on new features and private tracking protocols. We promise: No tracking, no spam.
           </p>
-          <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto" onSubmit={(e) => e.preventDefault()}>
-            <input 
-              type="email" 
-              placeholder="Enter your email" 
+          <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto" onSubmit={handleCommunitySignup}>
+            <input
+              type="email"
+              name="email"
+              placeholder="Enter your email"
               className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
               required
             />
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl px-8 py-3 transition-all active:scale-95"
             >
               Join
             </button>
           </form>
-          <div className="mt-8 flex flex-wrap justify-center gap-x-8 gap-y-4 text-xs font-medium text-slate-500">
+          <nav 
+            aria-label="Footer Navigation"
+            className="mt-12 mb-8 flex flex-wrap justify-center items-center gap-3 text-[10px] font-bold uppercase tracking-widest text-slate-500"
+          >
             <a href="https://github.com/openpot/core/blob/main/README.md" className="hover:text-white transition-colors">About</a>
+            <span className="opacity-30 text-[8px]" aria-hidden="true">•</span>
             <a href="https://github.com/openpot/core/blob/main/NOTICE.md" className="hover:text-white transition-colors">Notice</a>
+            <span className="opacity-30 text-[8px]" aria-hidden="true">•</span>
             <a href="https://github.com/openpot/core/blob/main/CONTRIBUTING.md" className="hover:text-white transition-colors">Contribute</a>
+            <span className="opacity-30 text-[8px]" aria-hidden="true">•</span>
             <a href="https://github.com/openpot/core/blob/main/CODE_OF_CONDUCT.md" className="hover:text-white transition-colors">Code of Conduct</a>
+            <span className="opacity-30 text-[8px]" aria-hidden="true">•</span>
             <a href="https://github.com/openpot/core/blob/main/LICENSE" className="hover:text-white transition-colors">License</a>
-          </div>
+          </nav>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }
