@@ -33,8 +33,18 @@ const isPathWithinRoot = (root, targetPath) => {
 
 const server = https.createServer(options, (req, res) => {
   const parsedUrl = url.parse(req.url);
-  const pathname = parsedUrl.pathname || '/';
+  let pathname = parsedUrl.pathname || '/';
   
+  // 0. Handle malformed URLs
+  try {
+    pathname = decodeURIComponent(pathname);
+  } catch (_) {
+    res.writeHead(400);
+    res.end('400 Bad Request');
+    return;
+  }
+  
+  // 1. Resolve path and ensure it stays within root
   let filePath = path.resolve(OUT_DIR, pathname === '/' ? 'index.html' : pathname.substring(1));
   
   if (!isPathWithinRoot(OUT_DIR, filePath)) {
