@@ -121,7 +121,7 @@ export default function LandingPage() {
             </div>
             
             <div className="mt-4 text-[10px] font-mono text-slate-600 uppercase tracking-[0.2em]">
-              {activeIndex + 1} / {screenshots.length} — {screenshots[activeIndex].alt}
+              {activeIndex + 1} / {screenshots.length} — {screenshots[activeIndex]?.alt}
             </div>
           </div>
 
