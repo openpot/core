@@ -3,6 +3,12 @@
   "version": "0.9.0",
   "private": true,
   "packageManager": "pnpm@10.10.0",
+  "pnpm": {
+    "overrides": {
+      "postcss": "^8.5.10",
+      "serialize-javascript": "^6.0.2"
+    }
+  },
   "scripts": {
     "dev": "next dev",
     "dev:https": "bash ./scripts/dev-https.sh",
@@ -19,27 +25,27 @@
   },
   "dependencies": {
     "@ducanh2912/next-pwa": "^10.2.9",
-    "next": "^15.0.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "next": "^15.5.15",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5"
   },
   "devDependencies": {
-    "@axe-core/playwright": "^4.10.2",
-    "@eslint/eslintrc": "^3.3.1",
-    "@playwright/test": "^1.54.0",
-    "@tailwindcss/postcss": "^4.0.0",
-    "@types/node": "^22.0.0",
-    "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0",
-    "@vitest/coverage-v8": "^3.2.0",
-    "eslint": "^9.0.0",
-    "eslint-config-next": "^15.0.0",
-    "eslint-plugin-jsx-a11y": "^6.10.0",
-    "postcss": "^8.4.0",
-    "prettier": "^3.5.0",
-    "tailwindcss": "^4.0.0",
-    "typescript": "^5.8.0",
-    "serve": "^14.2.0",
-    "vitest": "^3.2.0"
+    "@axe-core/playwright": "^4.11.3",
+    "@eslint/eslintrc": "^3.3.5",
+    "@playwright/test": "^1.59.1",
+    "@tailwindcss/postcss": "^4.2.4",
+    "@types/node": "^22.19.17",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitest/coverage-v8": "^3.2.4",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^15.5.15",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "postcss": "^8.5.13",
+    "prettier": "^3.8.3",
+    "serve": "^14.2.6",
+    "tailwindcss": "^4.2.4",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
   }
 }
