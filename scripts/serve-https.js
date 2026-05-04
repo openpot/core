@@ -26,23 +26,49 @@ const mimeTypes = {
   '.wasm': 'application/wasm',
 };
 
+const isPathWithinRoot = (root, targetPath) => {
+  const relative = path.relative(root, targetPath);
+  return relative && !relative.startsWith('..') && !path.isAbsolute(relative) || relative === '';
+};
+
 const server = https.createServer(options, (req, res) => {
   const parsedUrl = url.parse(req.url);
-  let pathname = parsedUrl.pathname;
+  let pathname = parsedUrl.pathname || '/';
+
+  try {
+    pathname = decodeURIComponent(pathname);
+  } catch (_) {
+    res.writeHead(400);
+    res.end('Bad Request');
+    return;
+  }
   
-  let filePath = path.join(OUT_DIR, pathname === '/' ? 'index.html' : pathname);
+  const requestPath = pathname === '/' ? '/index.html' : pathname;
+  let filePath = path.resolve(OUT_DIR, `.${requestPath}`);
+
+  if (!isPathWithinRoot(OUT_DIR, filePath)) {
+    res.writeHead(403);
+    res.end('Forbidden');
+    return;
+  }
   
   // 1. Force directory requests to index.html
   if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
-    filePath = path.join(filePath, 'index.html');
+    const indexPath = path.resolve(filePath, 'index.html');
+    if (!isPathWithinRoot(OUT_DIR, indexPath)) {
+      res.writeHead(403);
+      res.end('Forbidden');
+      return;
+    }
+    filePath = indexPath;
   }
   
   // 2. Handle Next.js 'trailingSlash: true' cleaner: if a path doesn't have an extension
   // and isn't a directory, it might be a clean URL that needs /index.html
   if (!path.extname(filePath) && !fs.existsSync(filePath)) {
-    const dirPath = filePath.endsWith('/') ? filePath : filePath + '/';
-    if (fs.existsSync(dirPath + 'index.html')) {
-       filePath = dirPath + 'index.html';
+    const indexPath = path.resolve(filePath, 'index.html');
+    if (isPathWithinRoot(OUT_DIR, indexPath) && fs.existsSync(indexPath)) {
+      filePath = indexPath;
     }
   }
 
