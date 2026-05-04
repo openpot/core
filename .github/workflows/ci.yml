@@ -136,3 +136,19 @@ jobs:
         if: steps.check_bump.outputs.skip == 'true'
         run: |
           $HOME/.koyeb/bin/koyeb service redeploy openpot/openpot --token ${{ secrets.KOYEB_API_TOKEN }}
+
+      - name: Extract version
+        if: steps.check_bump.outputs.skip == 'true'
+        id: get_version
+        run: |
+          VERSION=$(grep '"version":' package.json | head -1 | cut -d '"' -f 4)
+          echo "version=v$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        if: steps.check_bump.outputs.skip == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.get_version.outputs.version }}
+          name: Release ${{ steps.get_version.outputs.version }}
+          generate_release_notes: true
+          token: ${{ secrets.GITHUB_TOKEN }}
