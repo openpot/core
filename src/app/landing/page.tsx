@@ -47,16 +47,16 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Product Mockup */}
-        <div className="mt-20 relative w-full max-w-[320px] mx-auto flex items-center justify-center">
+        {/* Product Dashboard Showcase */}
+        <div className="mt-16 relative w-full max-w-4xl mx-auto flex items-center justify-center">
           <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-transparent to-transparent z-10 pointer-events-none" />
           <div className="relative w-full animate-float">
             <Image 
-              src="/images/mockup.png" 
-              alt="Openpot PWA Screenshot" 
-              width={472} 
+              src="/images/dashboard.png" 
+              alt="Openpot Secure Dashboard" 
+              width={1024} 
               height={1024} 
-              className="rounded-[2.5rem] border-[12px] border-slate-900 shadow-2xl shadow-emerald-950/40"
+              className="rounded-3xl shadow-2xl shadow-emerald-950/40"
               priority
             />
           </div>
