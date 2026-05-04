@@ -28,17 +28,12 @@ const mimeTypes = {
 
 const isPathWithinRoot = (root, targetPath) => {
   const relative = path.relative(root, targetPath);
-<<<<<<< HEAD
   return relative === '' || (relative && !relative.startsWith('..') && !path.isAbsolute(relative));
-=======
-  return relative && !relative.startsWith('..') && !path.isAbsolute(relative) || relative === '';
->>>>>>> origin/main
 };
 
 const server = https.createServer(options, (req, res) => {
   const parsedUrl = url.parse(req.url);
   let pathname = parsedUrl.pathname || '/';
-<<<<<<< HEAD
   
   // 0. Handle malformed URLs
   try {
@@ -65,54 +60,17 @@ const server = https.createServer(options, (req, res) => {
     fileStat = null;
   }
   
-  // 1. Force directory requests to index.html
+  // 2. Force directory requests to index.html
   if (fileStat && fileStat.isDirectory()) {
     filePath = path.join(filePath, 'index.html');
     try {
       fileStat = fs.statSync(filePath);
     } catch (_) {
       fileStat = null;
-=======
-
-  try {
-    pathname = decodeURIComponent(pathname);
-  } catch (_) {
-    res.writeHead(400);
-    res.end('Bad Request');
-    return;
-  }
-  
-  const requestPath = pathname === '/' ? '/index.html' : pathname;
-  let filePath = path.resolve(OUT_DIR, `.${requestPath}`);
-
-  if (!isPathWithinRoot(OUT_DIR, filePath)) {
-    res.writeHead(403);
-    res.end('Forbidden');
-    return;
-  }
-  
-  // 1. Force directory requests to index.html
-  if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
-    const indexPath = path.resolve(filePath, 'index.html');
-    if (!isPathWithinRoot(OUT_DIR, indexPath)) {
-      res.writeHead(403);
-      res.end('Forbidden');
-      return;
-    }
-    filePath = indexPath;
-  }
-  
-  // 2. Handle Next.js 'trailingSlash: true' cleaner: if a path doesn't have an extension
-  // and isn't a directory, it might be a clean URL that needs /index.html
-  if (!path.extname(filePath) && !fs.existsSync(filePath)) {
-    const indexPath = path.resolve(filePath, 'index.html');
-    if (isPathWithinRoot(OUT_DIR, indexPath) && fs.existsSync(indexPath)) {
-      filePath = indexPath;
->>>>>>> origin/main
     }
   }
   
-  // 2. Handle Next.js 'trailingSlash: true' cleaner
+  // 3. Handle Next.js 'trailingSlash: true' cleaner
   if (!fileStat && !path.extname(filePath)) {
     const dirPath = filePath.endsWith('/') ? filePath : filePath + '/';
     const indexHtml = path.join(dirPath, 'index.html');
@@ -140,7 +98,7 @@ const server = https.createServer(options, (req, res) => {
         res.end('Internal Server Error');
       }
     } else {
-      // PROMPT: Ensure the entry point (HTML) is NEVER cached to prevent "Zombie App" states
+      // Ensure the entry point (HTML) is NEVER cached to prevent "Zombie App" states
       if (extname === '.html') {
         res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
         res.setHeader('Pragma', 'no-cache');
