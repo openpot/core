@@ -62,17 +62,23 @@ export default function LandingPage() {
             A premium, zero-knowledge session tracker built for complete anonymity. 
             Your data stays on your device—mathematically invisible to the world.
           </p>
-          <div className="pt-8 flex flex-col items-center justify-center gap-4">
+          <div className="pt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <a 
               href="https://app.openpot.co" 
               className="px-12 py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl transition-all shadow-lg shadow-emerald-500/20 active:scale-95 text-lg"
             >
               Launch Secure App
             </a>
-            <p className="text-sm text-slate-500 mt-2 italic">
-              No accounts. No telemetry. Fully Local-First.
-            </p>
+            <a 
+              href="https://github.com/openpot/core/blob/main/CONTRIBUTING.md" 
+              className="px-12 py-4 bg-slate-800/50 hover:bg-slate-800 text-slate-200 font-semibold rounded-xl transition-all border border-slate-700/50 active:scale-95 text-lg"
+            >
+              Contribute
+            </a>
           </div>
+          <p className="text-sm text-slate-500 mt-6 italic">
+            No accounts. No telemetry. Fully Local-First.
+          </p>
         </div>
 
         {/* Product Showcase Section */}
