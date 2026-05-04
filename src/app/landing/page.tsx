@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Logo } from '@/components/ui/Logo';
+import { LogoMark } from '@/components/ui/Logo';
 import { Footer } from '@/components/ui/Footer';
 
 /**
@@ -31,12 +31,21 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#020617] text-slate-50 selection:bg-emerald-500/30">
-      {/* Header */}
-      <header className="w-full max-w-7xl mx-auto px-6 py-8 flex justify-between items-center">
-        <div className="w-40">
-          <Logo />
+      {/* Centered Brand Header */}
+      <header className="w-full max-w-7xl mx-auto px-6 py-12 flex flex-col items-center gap-8">
+        <div className="flex flex-row items-center justify-center gap-3">
+          <LogoMark aria-hidden="true" className="h-[48px] w-auto text-emerald-500 sm:h-[60px]" />
+          <div className="flex flex-col items-start gap-1 leading-none">
+            <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl leading-none uppercase">
+              Openpot
+            </h1>
+            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-emerald-500/80 sm:text-[12px] leading-none">
+              Secure Session Tracker
+            </p>
+          </div>
         </div>
-        <nav className="hidden md:flex gap-8 text-sm font-medium text-slate-400">
+        
+        <nav className="flex gap-8 text-sm font-medium text-slate-400">
           <a href="https://github.com/openpot/core" className="hover:text-white transition-colors">GitHub</a>
           <a href="https://github.com/openpot/core/blob/main/CONTRIBUTING.md" className="hover:text-white transition-colors">Contribute</a>
           <Link href="/about" className="hover:text-white transition-colors">Protocol</Link>
