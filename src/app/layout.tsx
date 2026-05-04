@@ -9,6 +9,7 @@ import './globals.css';
  * We use simple metadata but ensure the manifest and icons are consistent.
  */
 export const metadata: Metadata = {
+  metadataBase: new URL('https://openpot.co'),
   applicationName: 'Openpot',
   title: 'Openpot',
   description: 'A zero-knowledge session timer secured locally and synced anonymously.',
