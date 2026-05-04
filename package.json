@@ -13,6 +13,7 @@
     "dev": "next dev",
     "dev:https": "bash ./scripts/dev-https.sh",
     "serve:pwa": "npm run build && node scripts/serve-https.js",
+    "prebuild": "node -e \"const pkg=require('./package.json'); require('fs').writeFileSync('./public/version.json', JSON.stringify({version: 'v' + pkg.version, timestamp: Date.now()}, null, 2))\"",
     "build": "next build",
     "start": "next start",
     "start:e2e": "next build && npx serve -l ${PORT:-3000} out",

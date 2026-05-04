@@ -2,9 +2,12 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
+import { APP_VERSION as CURRENT_VERSION } from '@/lib/version';
+import { RELEASES, Release } from '@/data/releases';
+
 const AUTO_UPDATE_KEY = 'openpot_auto_update';
 const INSTALL_DATE_KEY = 'openpot_install_date';
-const CURRENT_VERSION = process.env.NEXT_PUBLIC_APP_VERSION || 'v0.0.0-dev';
+const SAVED_VERSION_KEY = 'openpot_app_version';
 
 const formatDate = (dateStr: string) => {
   try {
@@ -32,6 +35,7 @@ export function NetworkSettings() {
   const [status, setStatus] = useState<UpdateStatus>('idle');
   const [serverVersion, setServerVersion] = useState<string | null>(null);
   const [installDate, setInstallDate] = useState<string | null>(null);
+  const [showModal, setShowModal] = useState(false);
 
   // Initialize from localStorage
   useEffect(() => {
@@ -39,12 +43,19 @@ export function NetworkSettings() {
     setAutoUpdate(saved === 'true');
     
     // Installation Date Logic
+    const lastVersion = localStorage.getItem(SAVED_VERSION_KEY);
     let savedDate = localStorage.getItem(INSTALL_DATE_KEY);
-    if (!savedDate && 'serviceWorker' in navigator && navigator.serviceWorker.controller) {
-      // If controlled but no date, this is likely an existing user's first time on this version
+
+    if (lastVersion !== CURRENT_VERSION) {
+      // New version detected! Update the installation date to now.
+      savedDate = new Date().toISOString();
+      localStorage.setItem(SAVED_VERSION_KEY, CURRENT_VERSION);
+      localStorage.setItem(INSTALL_DATE_KEY, savedDate);
+    } else if (!savedDate && 'serviceWorker' in navigator && navigator.serviceWorker.controller) {
       savedDate = new Date().toISOString();
       localStorage.setItem(INSTALL_DATE_KEY, savedDate);
     }
+    
     if (savedDate) setInstallDate(savedDate);
 
     // Check for "waiting" worker on mount
@@ -121,6 +132,7 @@ export function NetworkSettings() {
         setStatus('up-to-date');
       } else {
         setStatus('available');
+        setShowModal(true);
       }
     } catch (err) {
       console.error('Check failed:', err);
@@ -192,14 +204,29 @@ export function NetworkSettings() {
     
     const registration = await navigator.serviceWorker.getRegistration();
     if (registration?.waiting) {
-      // 1. Setup a one-time listener for the new worker taking control
+      // 1. Update the install date before we reload so the new version sees it
+      // Wait, the new version will run the useEffect on mount anyway, but let's be explicit
+      localStorage.setItem(INSTALL_DATE_KEY, new Date().toISOString());
+
+      // 2. Setup a one-time listener for the new worker taking control
       navigator.serviceWorker.addEventListener('controllerchange', () => {
         window.location.reload();
       }, { once: true });
 
-      // 2. Tell the waiting worker to skip waiting
+      // 3. Tell the waiting worker to skip waiting
       registration.waiting.postMessage({ type: 'SKIP_WAITING' });
     }
+  };
+
+  const getFilteredReleases = () => {
+    if (!serverVersion) return [];
+    // Find all releases newer than current version
+    const currentIndex = RELEASES.findIndex(r => r.version === CURRENT_VERSION);
+    if (currentIndex === -1) {
+      // If current version not found (e.g. dev build), show only latest
+      return RELEASES.slice(0, 1);
+    }
+    return RELEASES.slice(0, currentIndex);
   };
 
   return (
@@ -344,6 +371,88 @@ export function NetworkSettings() {
           </div>
         )}
       </div>
+
+      {/* Release Notes Modal */}
+      {showModal && serverVersion && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="panel-shell relative w-full max-w-lg overflow-hidden border border-border-subtle bg-bg-page p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="mb-6 flex items-center justify-between border-b border-border-subtle pb-4">
+              <div className="space-y-1">
+                <h3 className="text-lg font-bold text-text-primary">New Update Available</h3>
+                <p className="text-xs text-text-secondary">Version <code className="text-primary">{serverVersion}</code> is ready.</p>
+              </div>
+              <button 
+                onClick={() => setShowModal(false)}
+                className="text-text-tertiary transition-colors hover:text-text-primary"
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="max-h-[300px] overflow-y-auto pr-2 space-y-6 mb-8 custom-scrollbar">
+              {getFilteredReleases().map((release) => (
+                <div key={release.version} className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold text-primary uppercase tracking-tighter bg-primary/10 px-1.5 py-0.5 rounded">
+                      {release.version}
+                    </span>
+                    <span className="text-xs font-bold text-text-primary">{release.title}</span>
+                  </div>
+                  <ul className="space-y-1.5 text-[13px] text-text-secondary list-none pl-1">
+                    {release.changes.map((change, i) => (
+                      <li key={i} className="flex items-start gap-2">
+                        <span className="text-primary mt-1">•</span>
+                        <span>{change}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+              {getFilteredReleases().length === 0 && (
+                <p className="text-xs italic text-text-tertiary text-center py-4">
+                  Stability improvements and security patches.
+                </p>
+              )}
+            </div>
+
+            <div className="flex items-center justify-end gap-3 border-t border-border-subtle pt-6">
+              <button
+                onClick={() => setShowModal(false)}
+                className="h-10 px-4 text-xs font-bold text-text-secondary transition-colors hover:text-text-primary"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  if (status === 'ready') {
+                    await applyUpdate();
+                  } else {
+                    await pullUpdate();
+                  }
+                }}
+                disabled={status === 'pulling'}
+                className="inline-flex h-10 items-center justify-center rounded-lg bg-primary px-6 text-xs font-bold text-white shadow-lg shadow-primary/20 transition-all hover:opacity-90 disabled:opacity-50"
+              >
+                {status === 'pulling' ? (
+                  <span className="flex items-center gap-2">
+                    <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    Downloading...
+                  </span>
+                ) : status === 'ready' ? (
+                   'Install & Reload'
+                ) : (
+                  'Update Now'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
