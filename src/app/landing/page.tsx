@@ -55,7 +55,7 @@ export default function LandingPage() {
           </h1>
           <p className="text-xl md:text-2xl text-slate-400 leading-relaxed max-w-2xl mx-auto">
             A premium, zero-knowledge session tracker built for complete anonymity. 
-            Your data stays on your device—mathematically invisible to the world.
+            Your data stays on your device—cryptographically invisible to the world.
           </p>
           <div className="pt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <a 
