@@ -1,0 +1,71 @@
+{
+  "landing": {
+    "title": "Openpot",
+    "subtitle": "Sicherer Sitzungstracker",
+    "heroTitle": "Souveränes Tracking für den",
+    "heroTitleHighlight": "Modernen Menschen.",
+    "heroDescription": "Ein erstklassiger Zero-Knowledge-Sitzungstracker, der für vollständige Anonymität entwickelt wurde. Ihre Daten bleiben auf Ihrem Gerät. Kryptografisch unsichtbar für die Welt.",
+    "launchApp": "Sichere App Starten",
+    "contribute": "Zur Sache Beitragen",
+    "noTelemetry": "Keine Konten. Keine Telemetrie. Vollständig lokal.",
+    "carousel": {
+      "slide1": "Natives Homescreen-Erlebnis",
+      "slide2": "Präzise Verbrauchsverfolgung",
+      "slide3": "Lokaler Zero-Knowledge-Verlauf",
+      "slide4": "Souveräne Update-Kontrolle"
+    },
+    "features": {
+      "f1Title": "Zero-Knowledge",
+      "f1Desc": "Wir sehen Ihre Daten nie, weil wir sie nie berühren. Keine Konten, keine Datenbank, keine Protokolle.",
+      "f2Title": "Lokal Zuerst",
+      "f2Desc": "Alles läuft im sicheren Kontext Ihres Browsers. Offline-fähig und kryptografisch privat.",
+      "f3Title": "Premium PWA",
+      "f3Desc": "Direkt auf dem Startbildschirm installieren. Erleben Sie ein natives Gefühl ohne die Überwachung von App Stores."
+    },
+    "community": {
+      "title": "Treten Sie der Community bei.",
+      "desc": "Bleiben Sie über neue Funktionen und private Tracking-Protokolle auf dem Laufenden. Wir versprechen: Kein Tracking, kein Spam.",
+      "placeholder": "Geben Sie Ihre E-Mail ein",
+      "ariaLabel": "E-Mail-Adresse für Community-Updates",
+      "join": "Beitreten"
+    },
+    "footer": {
+      "about": "ÜBER UNS",
+      "notice": "HINWEIS",
+      "contribute": "BEITRAGEN",
+      "codeOfConduct": "VERHALTENSKODEX",
+      "license": "LIZENZ"
+    }
+  },
+  "dashboard": {
+    "header": {
+      "title": "Openpot"
+    },
+    "timer": {
+      "active": "Sitzung Aktiv",
+      "ready": "Bereit zum Starten",
+      "start": "START",
+      "end": "ENDE"
+    },
+    "history": {
+      "title": "Verlauf",
+      "duration": "Dauer",
+      "cost": "Kosten",
+      "amount": "Menge",
+      "noSessions": "Noch keine Sitzungen aufgezeichnet.",
+      "clearAll": "Alles löschen"
+    },
+    "settings": {
+      "title": "Netzwerkeinstellungen",
+      "version": "Softwareversion",
+      "checking": "Suche nach Updates...",
+      "upToDate": "System auf dem neuesten Stand.",
+      "updateAvailable": "Update Verfügbar!",
+      "applyUpdate": "Sicheres Update Anwenden",
+      "lastChecked": "Zuletzt überprüft",
+      "language": "Sprache",
+      "languageHelp": "Wählen Sie Ihre bevorzugte Anwendungssprache.",
+      "close": "Schließen"
+    }
+  }
+}

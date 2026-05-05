@@ -1,0 +1,71 @@
+{
+  "landing": {
+    "title": "Openpot",
+    "subtitle": "Secure Session Tracker",
+    "heroTitle": "Sovereign Tracking for the",
+    "heroTitleHighlight": "Modern Human.",
+    "heroDescription": "A premium, zero-knowledge session tracker built for complete anonymity. Your data stays on your device. Cryptographically invisible to the world.",
+    "launchApp": "Launch Secure App",
+    "contribute": "Contribute To Cause",
+    "noTelemetry": "No accounts. No telemetry. Fully Local-First.",
+    "carousel": {
+      "slide1": "Native Home Screen Experience",
+      "slide2": "Precision Consumption Tracking",
+      "slide3": "Zero-Knowledge Local History",
+      "slide4": "Sovereign Update Control"
+    },
+    "features": {
+      "f1Title": "Zero-Knowledge",
+      "f1Desc": "We never see your data because we never touch it. No accounts, no database, no logs.",
+      "f2Title": "Local-First",
+      "f2Desc": "Everything runs inside your browser's secure context. Offline-ready and cryptographically private.",
+      "f3Title": "Premium PWA",
+      "f3Desc": "Install directly to your home screen. Experience a native feel without the surveillance of App Stores."
+    },
+    "community": {
+      "title": "Join the community.",
+      "desc": "Stay updated on new features and private tracking protocols. We promise: No tracking, no spam.",
+      "placeholder": "Enter your email",
+      "ariaLabel": "Email address for community updates",
+      "join": "Join"
+    },
+    "footer": {
+      "about": "ABOUT",
+      "notice": "NOTICE",
+      "contribute": "CONTRIBUTE",
+      "codeOfConduct": "CODE OF CONDUCT",
+      "license": "LICENSE"
+    }
+  },
+  "dashboard": {
+    "header": {
+      "title": "Openpot"
+    },
+    "timer": {
+      "active": "Session Active",
+      "ready": "Ready to Start",
+      "start": "START",
+      "end": "END"
+    },
+    "history": {
+      "title": "History",
+      "duration": "Duration",
+      "cost": "Cost",
+      "amount": "Amount",
+      "noSessions": "No sessions recorded yet.",
+      "clearAll": "Clear All"
+    },
+    "settings": {
+      "title": "Network Settings",
+      "version": "Software Version",
+      "checking": "Checking for updates...",
+      "upToDate": "System up to date.",
+      "updateAvailable": "Update Available!",
+      "applyUpdate": "Apply Secure Update",
+      "lastChecked": "Last checked",
+      "language": "Language",
+      "languageHelp": "Select your preferred application language.",
+      "close": "Close"
+    }
+  }
+}

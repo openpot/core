@@ -16,6 +16,7 @@ import { InstallPromotionBanner } from './InstallPromotionBanner';
 import { SessionHistoryList } from './SessionHistoryList';
 import { exportSessionsToCSV } from '@/lib/utils/export-csv';
 import { usePwaInstall } from '@/hooks/use-pwa-install';
+import { useTranslation } from '@/i18n/I18nProvider';
 
 
 const PILL_CLASSES = "inline-flex items-center justify-center h-9 min-w-[85px] rounded-full border border-border bg-bg-overlay px-4 text-xs font-semibold font-sans uppercase tracking-widest text-text-secondary transition-all leading-none";
@@ -32,6 +33,7 @@ import type { SessionRecord } from '@/types/session';
  * @returns A responsive timer dashboard for the MVP home screen.
  */
 export function SecureTimerDashboard() {
+  const { t } = useTranslation();
   const {
     formattedElapsed,
     historyError,
@@ -226,10 +228,11 @@ export function SecureTimerDashboard() {
   }, [isIdle, methods, ghostLibrary, customName]);
 
   const primaryActionLabel = isStopped
-    ? 'New Session'
+    ? t('dashboard.timer.ready') // Used as 'New Session' equivalent
     : isActive
-      ? 'Stop Session'
-      : 'Start Session';
+      ? t('dashboard.timer.end')
+      : t('dashboard.timer.start');
+
 
 
   return (
@@ -239,10 +242,10 @@ export function SecureTimerDashboard() {
           <LogoMark aria-hidden="true" className="h-[38px] w-auto text-text-primary sm:h-[45px]" />
           <div className="flex flex-col items-start gap-1 leading-none">
             <h1 className="text-2xl font-bold tracking-tight text-text-primary sm:text-3xl leading-none">
-              Openpot
+              {t('dashboard.header.title')}
             </h1>
             <p className="text-[8px] font-bold uppercase tracking-[0.15em] text-text-secondary sm:text-[10px] leading-none">
-              Secure Session Tracker
+              {t('landing.subtitle')}
             </p>
           </div>
         </header>

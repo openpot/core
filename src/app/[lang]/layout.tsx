@@ -1,8 +1,10 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import { PwaRegistration } from '@/components/pwa/PwaRegistration';
+import { locales, getDictionary, type Locale } from '@/i18n/config';
+import { I18nProvider } from '@/i18n/I18nProvider';
 
-import './globals.css';
+import '../globals.css';
 
 /**
  * Directive 2: Stable PWA Tags
@@ -41,6 +43,11 @@ export const viewport: Viewport = {
 
 interface RootLayoutProps {
   children: ReactNode;
+  params: Promise<{ lang: string }>;
+}
+
+export function generateStaticParams() {
+  return locales.map((lang) => ({ lang }));
 }
 
 /**
@@ -49,9 +56,12 @@ interface RootLayoutProps {
  * 1. Mounting PwaRegistration for manual SW control.
  * 2. Providing a stable document structure.
  */
-export default function RootLayout({ children }: RootLayoutProps) {
+export default async function RootLayout({ children, params }: RootLayoutProps) {
+  const { lang } = await params;
+  const dict = await getDictionary(lang as Locale);
+
   return (
-    <html lang="en">
+    <html lang={lang}>
       <head>
         {/* Stale Build Guard: Prevents UI breakage when hashes change during zero-network state */}
         <script
@@ -89,7 +99,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
       </head>
       <body className="antialiased">
         <PwaRegistration />
-        {children}
+        <I18nProvider dict={dict} locale={lang}>
+          {children}
+        </I18nProvider>
       </body>
     </html>
   );
