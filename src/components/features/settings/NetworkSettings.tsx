@@ -1,6 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
+import { useRouter, usePathname } from 'next/navigation';
+import { useTranslation } from '@/i18n/I18nProvider';
 
 import { APP_VERSION as CURRENT_VERSION } from '@/lib/version';
 import { RELEASES } from '@/data/releases';
@@ -31,6 +34,10 @@ type UpdateStatus = 'idle' | 'checking' | 'up-to-date' | 'available' | 'pulling'
  * over service worker update checks.
  */
 export function NetworkSettings() {
+  const { t, locale } = useTranslation();
+  const router = useRouter();
+  const pathname = usePathname();
+
   const [autoUpdate, setAutoUpdate] = useState(false);
   const [status, setStatus] = useState<UpdateStatus>('idle');
   const [serverVersion, setServerVersion] = useState<string | null>(null);
@@ -42,6 +49,13 @@ export function NetworkSettings() {
     }
     return null;
   });
+
+  const handleLanguageChange = (newLocale: string) => {
+    localStorage.setItem('openpot_locale', newLocale);
+    // Remove the current locale from the pathname and prepend the new one
+    const newPath = pathname.replace(`/${locale}`, `/${newLocale}`);
+    router.replace(newPath);
+  };
 
   // Persist lastChecked
   useEffect(() => {
@@ -262,11 +276,29 @@ export function NetworkSettings() {
     <div className="mt-8 space-y-6 rounded-xl border border-border-subtle bg-bg-overlay/50 p-6">
       <div className="space-y-1">
         <h3 className="text-sm font-bold uppercase tracking-widest text-text-primary">
-          Network & Privacy Controls
+          {t('dashboard.settings.title')}
         </h3>
         <p className="text-xs text-text-tertiary">
           Openpot runs 100% offline. You control when it communicates with the server.
         </p>
+      </div>
+
+      {/* Language Switcher Section */}
+      <div className="mb-6 space-y-4 rounded-xl border border-border bg-bg-surface p-5 transition-colors hover:border-border-hover">
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <p className="text-sm font-semibold text-text-primary">{t('dashboard.settings.language')}</p>
+            <p className="text-[10px] text-text-tertiary">{t('dashboard.settings.languageHelp')}</p>
+          </div>
+          <select 
+            value={locale}
+            onChange={(e) => handleLanguageChange(e.target.value)}
+            className="rounded bg-bg-overlay px-3 py-1 text-xs text-text-primary outline-none border border-border"
+          >
+            <option value="en">English (US)</option>
+            <option value="de">Deutsch</option>
+          </select>
+        </div>
       </div>
 
       {/* Background Toggle */}
@@ -304,12 +336,12 @@ export function NetworkSettings() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <p className="text-sm font-semibold text-text-primary tracking-wider">Software Version</p>
+            <p className="text-sm font-semibold text-text-primary tracking-wider">{t('dashboard.settings.version')}</p>
             <div className="flex flex-col items-start gap-1">
               <code className="rounded bg-bg-subtle px-1.5 py-0.5 text-[10px] text-text-secondary">{CURRENT_VERSION}</code>
               <p className="text-[10px] text-text-tertiary">
                 {installDate ? `Installed on ${formatDate(installDate)}` : 'Installing...'}
-                {lastChecked && ` • Checked on ${formatDate(lastChecked)}`}
+                {lastChecked && ` • ${t('dashboard.settings.lastChecked')} ${formatDate(lastChecked)}`}
               </p>
             </div>
           </div>
@@ -443,7 +475,7 @@ export function NetworkSettings() {
                 </p>
               )}
               <div className="pt-2 flex justify-center">
-                <a 
+                <Link 
                   href="/about#releases" 
                   onClick={() => setShowModal(false)}
                   className="text-[10px] font-bold text-primary hover:underline flex items-center gap-1"
@@ -452,7 +484,7 @@ export function NetworkSettings() {
                   <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                   </svg>
-                </a>
+                </Link>
               </div>
             </div>
 
